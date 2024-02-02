@@ -1,0 +1,22 @@
+{
+  "name": "analytics",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dubinc/analytics.git"
+  },
+  "license": "MPL-2.0",
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "prettier": "@vercel/style-guide/prettier",
+  "dependencies": {
+    "lint-staged": "^13.2.2"
+  },
+  "devDependencies": {
+    "@vercel/style-guide": "^5.0.1",
+    "husky": "^8.0.3",
+    "prettier": "3.2.4",
+    "typescript": "^5.1.6"
+  },
+  "packageManager": "pnpm@8.6.5"
+}
