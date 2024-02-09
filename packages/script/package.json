@@ -1,0 +1,11 @@
+{
+  "name": "script",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "terser src/index.js -o dist/analytics/script.min.js -c -m"
+  },
+  "devDependencies": {
+    "terser": "^5.7.0"
+  }
+}
