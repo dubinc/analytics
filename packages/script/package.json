@@ -1,6 +1,6 @@
 {
   "name": "script",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "src/index.js",
   "scripts": {
     "build": "terser src/index.js -o dist/analytics/script.min.js -c -m"
