@@ -3,7 +3,8 @@
   "version": "0.0.2",
   "main": "src/index.js",
   "scripts": {
-    "build": "terser src/index.js -o dist/analytics/script.min.js -c -m"
+    "prebuild": "mkdir -p dist/analytics",
+    "build": "pnpm run prebuild && terser src/index.js -o dist/analytics/script.min.js -c -m"
   },
   "devDependencies": {
     "terser": "^5.7.0"
