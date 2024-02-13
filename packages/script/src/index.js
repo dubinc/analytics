@@ -61,8 +61,8 @@
     // API endpoint where the tracking data is sent
     const dubApiTrackEndpoint = 'https://api.dub.co/analytics/track';
 
-    const dcId = getCookie(IDENTIFIER);
-    if (!dcId) {
+    const dclid = getCookie(IDENTIFIER);
+    if (!dclid) {
       // If dclid is not found, return because we can't track without it
       return;
     }
