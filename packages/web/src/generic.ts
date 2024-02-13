@@ -1,4 +1,4 @@
-import { name as packageName, version } from '../package.json';
+import { version } from '../package.json';
 import type {
   AllowedPropertyValues,
   AnalyticsProps,
@@ -12,20 +12,23 @@ import { isBrowser, parseProperties } from './utils';
 function inject(props: AnalyticsProps = {}): void {
   if (!isBrowser()) return;
 
-  const apiKey = props.apiKey || process.env.NEXT_PUBLIC_DUB_ANALYTICS_API_KEY;
+  const apiKey =
+    props.apiKey ||
+    process.env.NEXT_PUBLIC_DUB_ANALYTICS_API_KEY ||
+    process.env.DUB_ANALYTICS_API_KEY;
   if (!apiKey) {
     throw new Error('[Dub Web Analytics] Please provide an API key to use.');
   }
 
-  // const src = 'https://cdn.dub.co/v1/analytics/script.js'
-  const src = 'http://localhost:8080/dub-script.js';
-
+  const src =
+    process.env.NEXT_PUBLIC_DUB_ANALYTICS_SCRIPT_SRC ||
+    process.env.DUB_ANALYTICS_SCRIPT_SRC ||
+    'https://dubcdn.com/analytics/dubScript.js';
   if (document.head.querySelector(`script[src*="${src}"]`)) return;
 
   const script = document.createElement('script');
   script.src = src;
   script.defer = true;
-  script.setAttribute('data-sdkn', packageName);
   script.setAttribute('data-sdkv', version);
   script.setAttribute('data-api-key', apiKey);
 

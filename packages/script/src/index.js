@@ -27,18 +27,30 @@
     }
   }
 
-  // Utility function to get the API key from the script tag
-  function getApiKey() {
+  function getScript() {
     const scripts = document.getElementsByTagName('script');
     for (let i = 0; i < scripts.length; i++) {
-      if (scripts[i].src.includes('dub-script.js')) {
-        return scripts[i].getAttribute('data-api-key');
+      if (scripts[i].src.includes('dubScript.js')) {
+        return scripts[i];
       }
     }
     return null;
   }
 
-  const apiKey = getApiKey();
+  function getApiKey(script) {
+    return script.getAttribute('data-api-key');
+  }
+
+  function getSDKVersion(script) {
+    return script.getAttribute('data-sdkv');
+  }
+
+  const script = getScript();
+  if (!script) {
+    console.error('[Dub Web Analytics] Script not found.');
+    return;
+  }
+  const apiKey = getApiKey(script);
   if (!apiKey) {
     console.error('[Dub Web Analytics] API key not found.');
     return;
@@ -47,10 +59,16 @@
   // The track function which sends data to your backend
   function track(eventName, properties = {}) {
     // API endpoint where the tracking data is sent
-    const endpoint = 'https://api.dub.co/analytics/track';
+    const dubApiTrackEndpoint = 'https://api.dub.co/analytics/track';
+
+    const dcId = getCookie(IDENTIFIER);
+    if (!dcId) {
+      // If dclid is not found, return because we can't track without it
+      return;
+    }
 
     // Make the API request
-    fetch(endpoint, {
+    fetch(dubApiTrackEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,13 +76,18 @@
       body: JSON.stringify({
         event: eventName,
         properties: properties,
-        dclid: getCookie(IDENTIFIER) || undefined,
+        dclid,
         apiKey,
+        sdkVersion: getSDKVersion(script),
       }),
     })
       .then((response) => response.json())
-      .then((data) => console.log('Tracking data sent successfully:', data))
-      .catch((error) => console.error('Error sending tracking data:', error));
+      .catch((error) =>
+        console.error(
+          '[Dub Web Analytics] Error sending tracking data:',
+          error,
+        ),
+      );
   }
 
   // Inject the .da object into window with the .track function

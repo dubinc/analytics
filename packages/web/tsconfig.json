@@ -3,5 +3,5 @@
   "compilerOptions": {
     "module": "esnext",
   },
-  "include": ["src", "../script/dub-analytic-script.js"],
+  "include": ["src", "../script/src/index.js"],
 }

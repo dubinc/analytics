@@ -4,7 +4,7 @@
   "main": "src/index.js",
   "scripts": {
     "prebuild": "mkdir -p dist/analytics",
-    "build": "pnpm run prebuild && terser src/index.js -o dist/analytics/script.min.js -c -m"
+    "build": "pnpm run prebuild && terser src/index.js -o dist/analytics/dubScript.js -c -m"
   },
   "devDependencies": {
     "terser": "^5.7.0"
