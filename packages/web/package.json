@@ -46,7 +46,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "@vercel/eslint-config"
+      "@dub/eslint-config"
     ],
     "rules": {
       "tsdoc/syntax": "off"
@@ -56,10 +56,10 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@dub/eslint-config": "workspace:0.0.0",
     "@swc/core": "^1.3.66",
     "@types/node": "^20.3.1",
     "@types/react": "^18.2.14",
-    "@vercel/eslint-config": "workspace:0.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tsup": "7.1.0"
