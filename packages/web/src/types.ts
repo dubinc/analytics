@@ -4,9 +4,7 @@ export interface AnalyticsProps {
   apiKey?: string;
 }
 
-export type TrackEventProperties = {
-  [key: string]: AllowedPropertyValues;
-};
+export type TrackEventProperties = Record<string, AllowedPropertyValues>;
 
 export interface TrackFunction {
   (eventName: string, properties?: TrackEventProperties): void;

@@ -52,12 +52,13 @@ function track(
   if (!isBrowser()) {
     const msg =
       '[Dub Web Analytics] is currently only supported in the browser environment. The server tracking is coming soon.';
+    // eslint-disable-next-line no-console -- Logging to console is intentional
     console.warn(msg);
     return;
   }
 
   if (!properties) {
-    window.da?.track?.('event', { eventName });
+    window.da?.track('event', { eventName });
     return;
   }
 
@@ -66,11 +67,12 @@ function track(
       strip: true,
     });
 
-    window.da?.track?.('event', {
+    window.da?.track('event', {
       eventName,
       properties: cleanedProperties,
     });
   } catch (err) {
+    // eslint-disable-next-line no-console -- Logging to console is intentional
     console.error(err);
   }
 }

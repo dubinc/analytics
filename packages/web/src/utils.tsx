@@ -20,7 +20,6 @@ export function parseProperties(
   if (!properties) return undefined;
   let props = properties;
   const errorProperties: string[] = [];
-  // @ts-ignore
   for (const [key, value] of Object.entries(properties)) {
     if (typeof value === 'object' && value !== null) {
       if (options.strip) {

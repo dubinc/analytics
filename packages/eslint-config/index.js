@@ -10,6 +10,9 @@ module.exports = {
   env: {
     jest: true,
   },
+  rules: {
+    'jest/no-deprecated-functions': 'off',
+  },
   parserOptions: {
     project: './tsconfig.json',
   },
