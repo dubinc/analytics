@@ -76,8 +76,8 @@
       body: JSON.stringify({
         event: eventName,
         properties: properties,
-        dclid,
-        apiKey,
+        dclid: dclid,
+        apiKey: apiKey,
         sdkVersion: getSDKVersion(script),
       }),
     })
