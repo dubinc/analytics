@@ -18,7 +18,7 @@ jobs:
         uses: ./.github/composite-actions/install
 
       - name: Install Dependencies and Build
-        run: pnpm filter @dub/analytics-script build
+        run: pnpm --filter @dub/analytics-script build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@1
