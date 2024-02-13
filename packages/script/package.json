@@ -1,5 +1,5 @@
 {
-  "name": "script",
+  "name": "@dub/analytics-script",
   "version": "0.0.3",
   "main": "src/index.js",
   "scripts": {
