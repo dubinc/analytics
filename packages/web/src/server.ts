@@ -3,23 +3,52 @@ import { version } from '../package.json';
 import type { AllowedPropertyValues } from './types';
 import { isProduction, parseProperties } from './utils';
 
-export async function lead(
+/**
+ * Tracks a lead event.
+ * @param request - The request object.
+ * @param apiKey - The API key.
+ * @param properties - Additional properties of the event. Nested objects are not supported. Allowed values are `string`, `number`, `boolean`, and `null`.
+ * ```ts
+ * import { track } from '@dub/analytics/server';
+ *
+ * track.lead(request, apiKey, {
+ *  cta: 'Sign Up',
+ * });
+ * ```
+ */
+async function lead(
   request: Request,
   apiKey: string,
   properties?: Record<string, AllowedPropertyValues>,
 ): Promise<void> {
-  return track(request, apiKey, 'lead', properties);
+  return _track(request, apiKey, 'lead', properties);
 }
 
-export async function sale(
+/**
+ * Tracks a sale event.
+ * @param request - The request object.
+ * @param apiKey - The API key.
+ * @param properties - Additional properties of the event. Nested objects are not supported. Allowed values are `string`, `number`, `boolean`, and `null`.
+ * @param properties.value - The value of the sale in cents.
+ * @param properties.currency - The currency of the sale.
+ * ```ts
+ * import { track } from '@dub/analytics/server';
+ *
+ * track.sale(request, apiKey, {
+ *  value: 1000, // $10.00
+ *  currency: 'USD',
+ * });
+ * ```
+ */
+async function sale(
   request: Request,
   apiKey: string,
   properties?: Record<string, AllowedPropertyValues>,
 ): Promise<void> {
-  return track(request, apiKey, 'sale', properties);
+  return _track(request, apiKey, 'sale', properties);
 }
 
-async function track(
+async function _track(
   request: Request,
   apiKey: string,
   eventName: string,
@@ -81,3 +110,10 @@ async function track(
     console.error(err);
   }
 }
+
+const track = {
+  lead,
+  sale,
+};
+
+export { track };

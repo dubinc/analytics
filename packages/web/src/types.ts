@@ -6,6 +6,11 @@ export interface AnalyticsProps {
 
 export type TrackEventProperties = Record<string, AllowedPropertyValues>;
 
+export type SaleEventProperties = TrackEventProperties & {
+  value: number;
+  currency: string;
+};
+
 export interface TrackFunction {
   (eventName: string, properties?: TrackEventProperties): void;
   signUp: (properties: TrackEventProperties) => void;

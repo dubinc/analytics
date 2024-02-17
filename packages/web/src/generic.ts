@@ -2,6 +2,7 @@ import { version } from '../package.json';
 import type {
   AllowedPropertyValues,
   AnalyticsProps,
+  SaleEventProperties,
   TrackEventProperties,
 } from './types';
 import { isBrowser, isProduction, parseProperties } from './utils';
@@ -45,7 +46,7 @@ function inject(props: AnalyticsProps = {}): void {
  * @param eventName - The name of the event.
  * @param [properties] - Additional properties of the event. Nested objects are not supported. Allowed values are `string`, `number`, `boolean`, and `null`.
  */
-function track(
+function _track(
   eventName: string,
   properties?: Record<string, AllowedPropertyValues>,
 ): void {
@@ -77,12 +78,45 @@ function track(
   }
 }
 
-track.lead = (properties: TrackEventProperties) => {
-  track('lead', properties);
+/**
+ * Tracks a lead event.
+ * @param properties - Additional properties of the event. Nested objects are not supported. Allowed values are `string`, `number`, `boolean`, and `null`.
+ *
+ * @example
+ * ```ts
+ * import { track } from '@dub/analytics';
+ *
+ * track.lead({
+ *  cta: 'Sign Up',
+ * });
+ * ```
+ */
+const lead = (properties: TrackEventProperties): void => {
+  _track('lead', properties);
 };
 
-track.sale = (properties: TrackEventProperties) => {
-  track('sale', properties);
+/**
+ * Tracks a sale event.
+ * @param properties - Additional properties of the event. Nested objects are not supported. Allowed values are `string`, `number`, `boolean`, and `null`.
+ * @param properties.value - The value of the sale in cents.
+ * @param properties.currency - The currency of the sale.
+ * @example
+ * ```ts
+ * import { track } from '@dub/analytics';
+ *
+ * track.sale({
+ *  value: 1000, // $10.00
+ *  currency: 'USD',
+ * });
+ * ```
+ */
+const sale = (properties: SaleEventProperties): void => {
+  _track('sale', properties);
+};
+
+const track = {
+  lead,
+  sale,
 };
 
 export { inject, track };
