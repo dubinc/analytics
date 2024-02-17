@@ -45,6 +45,10 @@
     return script.getAttribute('data-sdkv');
   }
 
+  function getTrackEndpoint(script) {
+    return script.getAttribute('data-track-endpoint');
+  }
+
   const script = getScript();
   if (!script) {
     console.error('[Dub Web Analytics] Script not found.');
@@ -59,7 +63,11 @@
   // The track function which sends data to your backend
   function track(eventName, properties = {}) {
     // API endpoint where the tracking data is sent
-    const dubApiTrackEndpoint = 'https://api.dub.co/analytics/track';
+    const dubApiTrackEndpoint = getTrackEndpoint(script);
+    if (!dubApiTrackEndpoint) {
+      console.error('[Dub Web Analytics] API endpoint not found.');
+      return;
+    }
 
     const dclid = getCookie(IDENTIFIER);
     if (!dclid) {

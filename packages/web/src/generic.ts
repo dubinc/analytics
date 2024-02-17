@@ -27,11 +27,18 @@ function inject(props: AnalyticsProps = {}): void {
     'https://dubcdn.com/analytics/dubScript.js';
   if (document.head.querySelector(`script[src*="${src}"]`)) return;
 
+  const trackEndpoint =
+    props.trackEndpoint ||
+    process.env.NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT ||
+    process.env.DUB_ANALYTICS_TRACK_ENDPOINT ||
+    'https://api.dub.co/analytics/track';
+
   const script = document.createElement('script');
   script.src = src;
   script.defer = true;
   script.setAttribute('data-sdkv', version);
   script.setAttribute('data-api-key', apiKey);
+  script.setAttribute('data-track-endpoint', trackEndpoint);
 
   script.onerror = (): void => {
     // eslint-disable-next-line no-console -- Logging to console is intentional

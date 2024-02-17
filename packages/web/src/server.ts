@@ -90,8 +90,11 @@ async function _track(
       timestamp: new Date().getTime(),
     };
 
-    const ENDPOINT = 'https://api.dub.co/analytics/track';
-    await fetch(ENDPOINT, {
+    const trackEndpoint =
+      process.env.NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT ||
+      process.env.DUB_ANALYTICS_TRACK_ENDPOINT ||
+      'https://api.dub.co/analytics/track';
+    await fetch(trackEndpoint, {
       headers: {
         'content-type': 'application/json',
       },

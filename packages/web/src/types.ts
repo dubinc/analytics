@@ -2,6 +2,7 @@ export type AllowedPropertyValues = string | number | boolean | null;
 
 export interface AnalyticsProps {
   apiKey?: string;
+  trackEndpoint?: string;
 }
 
 export type TrackEventProperties = Record<string, AllowedPropertyValues>;
