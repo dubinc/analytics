@@ -4,7 +4,7 @@ import type {
   AnalyticsProps,
   TrackEventProperties,
 } from './types';
-import { isBrowser, parseProperties } from './utils';
+import { isBrowser, isProduction, parseProperties } from './utils';
 
 /**
  * Injects the Dub Web Analytics script into the page head.
@@ -64,7 +64,7 @@ function track(
 
   try {
     const cleanedProperties = parseProperties(properties, {
-      strip: true,
+      strip: isProduction(),
     });
 
     window.da?.track('event', {
