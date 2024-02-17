@@ -79,6 +79,7 @@
         dclid: dclid,
         apiKey: apiKey,
         sdkVersion: getSDKVersion(script),
+        timestamp: new Date().getTime(),
       }),
     })
       .then((response) => response.json())
