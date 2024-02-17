@@ -3,7 +3,23 @@ import { version } from '../package.json';
 import type { AllowedPropertyValues } from './types';
 import { isProduction, parseProperties } from './utils';
 
-export async function track(
+export async function lead(
+  request: Request,
+  apiKey: string,
+  properties?: Record<string, AllowedPropertyValues>,
+): Promise<void> {
+  return track(request, apiKey, 'lead', properties);
+}
+
+export async function sale(
+  request: Request,
+  apiKey: string,
+  properties?: Record<string, AllowedPropertyValues>,
+): Promise<void> {
+  return track(request, apiKey, 'sale', properties);
+}
+
+async function track(
   request: Request,
   apiKey: string,
   eventName: string,
