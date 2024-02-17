@@ -43,7 +43,7 @@ async function track(
     ?.split('=')[1];
   if (!dclid) {
     console.error(
-      '[Dub Web Analytics] `dclid` cookie is missing. Make sure to use the `withDub` higher-order component to track page views.',
+      '[Dub Web Analytics] `dclid` cookie is missing. Please make sure that the `dclid` cookie is set on the client side. We will only track events if the `dclid` cookie is present.',
     );
     return;
   }
