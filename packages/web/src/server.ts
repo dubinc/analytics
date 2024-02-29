@@ -21,7 +21,7 @@ async function lead(
   apiKey: string,
   properties?: Record<string, AllowedPropertyValues>,
 ): Promise<void> {
-  return _track(request, apiKey, 'lead', properties);
+  return _trackConversion(request, apiKey, 'lead', properties);
 }
 
 /**
@@ -45,34 +45,46 @@ async function sale(
   apiKey: string,
   properties?: Record<string, AllowedPropertyValues>,
 ): Promise<void> {
-  return _track(request, apiKey, 'sale', properties);
+  return _trackConversion(request, apiKey, 'sale', properties);
 }
 
-async function _track(
+function getClickId(request: Request): string | undefined {
+  const cookies = request.headers.get('cookie');
+  const clickId = cookies
+    ?.split(';')
+    .find((c) => c.trim().startsWith('dclid'))
+    ?.split('=')[1];
+
+  return clickId;
+}
+
+function validateApiKey(apiKey: string): void {
+  if (!apiKey) {
+    throw new Error('[Dub Web Analytics] Please provide an API key to use.');
+  }
+}
+
+function ensureServerEnvironment(): void {
+  if (typeof window !== 'undefined') {
+    throw new Error(
+      '[Dub Web Analytics] This function is only meant to be used in a server environment.',
+    );
+  }
+}
+
+async function _trackConversion(
   request: Request,
   apiKey: string,
   eventName: string,
   properties?: Record<string, AllowedPropertyValues>,
 ): Promise<void> {
-  if (typeof window !== 'undefined') {
-    console.log(
-      '[Dub Web Analytics] It seems like you imported the `track` function from `@dub/analytics/server` in a browser environment. This function is only meant to be used in a server environment.',
-    );
-    return;
-  }
+  ensureServerEnvironment();
+  validateApiKey(apiKey);
 
-  if (!apiKey) {
-    throw new Error('[Dub Web Analytics] Please provide an API key to use.');
-  }
-
-  const cookies = request.headers.get('cookie');
-  const dclid = cookies
-    ?.split(';')
-    .find((c) => c.trim().startsWith('dclid'))
-    ?.split('=')[1];
-  if (!dclid) {
+  const clickId = getClickId(request);
+  if (!clickId) {
     console.error(
-      '[Dub Web Analytics] `dclid` cookie is missing. Please make sure that the `dclid` cookie is set on the client side. We will only track events if the `dclid` cookie is present.',
+      '[Dub Web Analytics] The click id cookie is missing. Please make sure that the `dclid` cookie is set on the client side. We will only track events if the `dclid` cookie is present.',
     );
     return;
   }
@@ -82,10 +94,9 @@ async function _track(
       strip: isProduction(),
     });
     const body = {
-      event: eventName,
+      eventName,
       properties: props,
-      dclid,
-      apiKey,
+      clickId,
       sdkVersion: version,
       timestamp: new Date().getTime(),
     };
@@ -93,10 +104,63 @@ async function _track(
     const trackEndpoint =
       process.env.NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT ||
       process.env.DUB_ANALYTICS_TRACK_ENDPOINT ||
-      'https://api.dub.co/analytics/track';
+      'https://api.dub.co/analytics/track/conversion';
     await fetch(trackEndpoint, {
       headers: {
         'content-type': 'application/json',
+        'x-api-key': apiKey,
+      },
+      body: JSON.stringify(body),
+      method: 'POST',
+    }).catch((err: unknown) => {
+      if (err instanceof Error && 'response' in err) {
+        console.error(err.response);
+      } else {
+        console.error(err);
+      }
+    });
+
+    return void 0;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function click(
+  request: Request,
+  apiKey: string,
+  properties?: Record<string, AllowedPropertyValues>,
+): Promise<void> {
+  ensureServerEnvironment();
+  validateApiKey(apiKey);
+
+  const clickId = getClickId(request);
+  if (!clickId) {
+    console.error(
+      '[Dub Web Analytics] The click id cookie is missing. Please make sure that the `dclid` cookie is set on the client side. We will only track events if the `dclid` cookie is present.',
+    );
+    return;
+  }
+
+  try {
+    const props = parseProperties(properties, {
+      strip: isProduction(),
+    });
+    const body = {
+      properties: props,
+      clickId,
+      sdkVersion: version,
+      timestamp: new Date().getTime(),
+    };
+
+    const trackEndpoint =
+      process.env.NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT ||
+      process.env.DUB_ANALYTICS_TRACK_ENDPOINT ||
+      'https://api.dub.co/analytics/track/click';
+    await fetch(trackEndpoint, {
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
       },
       body: JSON.stringify(body),
       method: 'POST',
@@ -115,6 +179,7 @@ async function _track(
 }
 
 const track = {
+  click,
   lead,
   sale,
 };

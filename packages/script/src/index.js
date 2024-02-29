@@ -60,8 +60,7 @@
     return;
   }
 
-  // The track function which sends data to your backend
-  function track(eventName, properties = {}) {
+  function trackClick(properties = {}) {
     // API endpoint where the tracking data is sent
     const dubApiTrackEndpoint = getTrackEndpoint(script);
     if (!dubApiTrackEndpoint) {
@@ -69,23 +68,60 @@
       return;
     }
 
-    const dclid = getCookie(IDENTIFIER);
-    if (!dclid) {
+    const clickId = getCookie(IDENTIFIER);
+    if (!clickId) {
       // If dclid is not found, return because we can't track without it
       return;
     }
 
     // Make the API request
-    fetch(dubApiTrackEndpoint, {
+    fetch(`${dubApiTrackEndpoint}/click`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': apiKey,
       },
       body: JSON.stringify({
-        event: eventName,
+        clickId: clickId,
+        properties,
+        sdkVersion: getSDKVersion(script),
+        timestamp: new Date().getTime(),
+      }),
+    })
+      .then((response) => response.json())
+      .catch((error) =>
+        console.error(
+          '[Dub Web Analytics] Error sending tracking data:',
+          error,
+        ),
+      );
+  }
+
+  function trackConversion(eventName, properties = {}) {
+    // API endpoint where the tracking data is sent
+    const dubApiTrackEndpoint = getTrackEndpoint(script);
+    if (!dubApiTrackEndpoint) {
+      console.error('[Dub Web Analytics] API endpoint not found.');
+      return;
+    }
+
+    const clickId = getCookie(IDENTIFIER);
+    if (!clickId) {
+      // If dclid is not found, return because we can't track without it
+      return;
+    }
+
+    // Make the API request
+    fetch(`${dubApiTrackEndpoint}/conversion`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        eventName: eventName,
         properties: properties,
-        dclid: dclid,
-        apiKey: apiKey,
+        clickId: clickId,
         sdkVersion: getSDKVersion(script),
         timestamp: new Date().getTime(),
       }),
@@ -100,7 +136,10 @@
   }
 
   // Inject the .da object into window with the .track function
-  window.da = { track };
+  window.da = {
+    trackClick,
+    trackConversion,
+  };
 
   // Check for dclid on page load
   watchForId();

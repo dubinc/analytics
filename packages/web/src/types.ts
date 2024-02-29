@@ -24,7 +24,11 @@ declare global {
   interface Window {
     // Base interface
     da?: {
-      track: (event: string, properties?: unknown) => void;
+      trackClick: (properties?: TrackEventProperties) => void;
+      trackConversion: (
+        eventName: string,
+        properties?: TrackEventProperties,
+      ) => void;
     };
   }
 }

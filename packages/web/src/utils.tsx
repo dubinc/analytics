@@ -36,7 +36,7 @@ export function parseProperties(
   options: {
     strip?: boolean;
   },
-): Error | Record<string, AllowedPropertyValues> | undefined {
+): Record<string, AllowedPropertyValues> | undefined {
   if (!properties) return undefined;
   let props = properties;
   const errorProperties: string[] = [];
