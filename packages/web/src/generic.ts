@@ -5,7 +5,13 @@ import type {
   SaleEventProperties,
   TrackEventProperties,
 } from './types';
-import { isBrowser, isProduction, parseProperties } from './utils';
+import {
+  getScriptSrc,
+  getTrackEndpoint,
+  isBrowser,
+  isProduction,
+  parseProperties,
+} from './utils';
 
 /**
  * Injects the Dub Web Analytics script into the page head.
@@ -21,17 +27,10 @@ function inject(props: AnalyticsProps = {}): void {
     throw new Error('[Dub Web Analytics] Please provide an API key to use.');
   }
 
-  const src =
-    process.env.NEXT_PUBLIC_DUB_ANALYTICS_SCRIPT_SRC ||
-    process.env.DUB_ANALYTICS_SCRIPT_SRC ||
-    'https://dubcdn.com/analytics/dubScript.js';
-  if (document.head.querySelector(`script[src*="${src}"]`)) return;
+  const src = getScriptSrc();
+  const trackEndpoint = props.trackEndpoint || getTrackEndpoint();
 
-  const trackEndpoint =
-    props.trackEndpoint ||
-    process.env.NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT ||
-    process.env.DUB_ANALYTICS_TRACK_ENDPOINT ||
-    'https://api.dub.co/analytics/track';
+  if (document.head.querySelector(`script[src*="${src}"]`)) return;
 
   const script = document.createElement('script');
   script.src = src;
@@ -52,7 +51,7 @@ function inject(props: AnalyticsProps = {}): void {
  * Tracks a click event.
  * @param [properties] - Additional properties of the event. Nested objects are not supported. Allowed values are `string`, `number`, `boolean`, and `null`.
  */
-function trackClick(properties?: Record<string, AllowedPropertyValues>): void {
+function trackClick(url: string): void {
   if (!isBrowser()) {
     const msg =
       '[Dub Web Analytics] is currently only supported in the browser environment. The server tracking is coming soon.';
@@ -61,17 +60,9 @@ function trackClick(properties?: Record<string, AllowedPropertyValues>): void {
     return;
   }
 
-  if (!properties) {
-    window.da?.trackClick({});
-    return;
-  }
-
   try {
-    const cleanedProperties = parseProperties(properties, {
-      strip: isProduction(),
-    });
-
-    window.da?.trackClick(cleanedProperties);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- The `da` object is injected by the script
+    window.da?.trackClick(url);
   } catch (err) {
     // eslint-disable-next-line no-console -- Logging to console is intentional
     console.error(err);
@@ -96,6 +87,7 @@ function _trackConversion(
   }
 
   if (!properties) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- The `da` object is injected by the script
     window.da?.trackConversion(eventName, {});
     return;
   }
@@ -105,7 +97,8 @@ function _trackConversion(
       strip: isProduction(),
     });
 
-    window.da.trackConversion(eventName, cleanedProperties);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- The `da` object is injected by the script
+    window.da?.trackConversion(eventName, cleanedProperties);
   } catch (err) {
     // eslint-disable-next-line no-console -- Logging to console is intentional
     console.error(err);

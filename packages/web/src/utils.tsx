@@ -1,5 +1,24 @@
 import type { AllowedPropertyValues } from './types';
 
+export const CLICK_ID_COOKIE_NAME = 'dclid';
+export const VIA_QUERY_PARAM = 'via';
+
+export function getScriptSrc(): string {
+  return (
+    process.env.NEXT_PUBLIC_DUB_ANALYTICS_SCRIPT_SRC ||
+    process.env.DUB_ANALYTICS_SCRIPT_SRC ||
+    'https://dubcdn.com/analytics/dubScript.js'
+  );
+}
+
+export function getTrackEndpoint(): string {
+  return (
+    process.env.NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT ||
+    process.env.DUB_ANALYTICS_TRACK_ENDPOINT ||
+    'https://api.dub.co/analytics/track'
+  );
+}
+
 export function isBrowser(): boolean {
   return typeof window !== 'undefined';
 }
@@ -58,4 +77,14 @@ export function parseProperties(
     );
   }
   return props as Record<string, AllowedPropertyValues>;
+}
+
+export function getClickId(request: Request): string | undefined {
+  const cookies = request.headers.get('cookie');
+  const clickId = cookies
+    ?.split(';')
+    .find((c) => c.trim().startsWith(CLICK_ID_COOKIE_NAME))
+    ?.split('=')[1];
+
+  return clickId;
 }

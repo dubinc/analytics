@@ -1,12 +1,13 @@
 (function () {
-  const IDENTIFIER = 'dclid';
+  const VIA_KEY = 'via';
+  const CLICK_ID_KEY = 'dclid';
 
-  // Utility function to get a cookie by name
-  function getCookie(name) {
+  // Utility function to get a cookie by key
+  function getCookie(key) {
     let cookieArray = document.cookie.split(';');
     for (let i = 0; i < cookieArray.length; i++) {
       let cookiePair = cookieArray[i].split('=');
-      if (name == cookiePair[0].trim()) {
+      if (key == cookiePair[0].trim()) {
         return decodeURIComponent(cookiePair[1]);
       }
     }
@@ -14,17 +15,20 @@
   }
 
   // Utility function to set a cookie
-  function setCookie(name, value) {
-    document.cookie = name + '=' + (value || '') + '; path=/';
+  function setCookie(key, value) {
+    document.cookie = key + '=' + (value || '') + '; path=/';
   }
 
-  // Function to check for IDENTIFIER param in the URL and update cookie if necessary
-  function watchForId() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const dclid = urlParams.get(IDENTIFIER);
-    if (dclid && !getCookie(IDENTIFIER)) {
-      setCookie(IDENTIFIER, dclid, 365); // Save for 1 year
-    }
+  // Function to check for {key} param in the URL and update cookie if necessary
+  function watchForQueryParam() {
+    const paramKeys = [CLICK_ID_KEY, VIA_KEY];
+    const params = new URLSearchParams(window.location.search);
+    paramKeys.forEach((key) => {
+      const param = params.get(key);
+      if (param && !getCookie(key)) {
+        setCookie(key, param, 365); // Save for 1 year
+      }
+    });
   }
 
   function getScript() {
@@ -60,7 +64,14 @@
     return;
   }
 
-  function trackClick(properties = {}) {
+  const handleInitialClickTracking = () => {
+    const via = getCookie(VIA_KEY);
+    if (via) {
+      trackClick(document.location.href);
+    }
+  };
+
+  function trackClick(url) {
     // API endpoint where the tracking data is sent
     const dubApiTrackEndpoint = getTrackEndpoint(script);
     if (!dubApiTrackEndpoint) {
@@ -68,9 +79,9 @@
       return;
     }
 
-    const clickId = getCookie(IDENTIFIER);
+    const clickId = getCookie(CLICK_ID_KEY);
     if (!clickId) {
-      // If dclid is not found, return because we can't track without it
+      // If click id was not found, return because we can't track without it
       return;
     }
 
@@ -83,12 +94,17 @@
       },
       body: JSON.stringify({
         clickId: clickId,
-        properties,
+        url: url,
         sdkVersion: getSDKVersion(script),
         timestamp: new Date().getTime(),
       }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        const body = response.json();
+        if (response.status === 200) {
+          setCookie(CLICK_ID_KEY, body.click_id);
+        }
+      })
       .catch((error) =>
         console.error(
           '[Dub Web Analytics] Error sending tracking data:',
@@ -105,9 +121,9 @@
       return;
     }
 
-    const clickId = getCookie(IDENTIFIER);
+    const clickId = getCookie(CLICK_ID_KEY);
     if (!clickId) {
-      // If dclid is not found, return because we can't track without it
+      // If click id was not found, return because we can't track without it
       return;
     }
 
@@ -141,13 +157,13 @@
     trackConversion,
   };
 
-  // Check for dclid on page load
-  watchForId();
+  watchForQueryParam();
+  handleInitialClickTracking();
 
   // Listen for URL changes in case of SPA where the page doesn't reload
-  window.addEventListener('popstate', watchForId);
-  window.addEventListener('pushState', watchForId);
-  window.addEventListener('replaceState', watchForId);
+  window.addEventListener('popstate', watchForQueryParam);
+  window.addEventListener('pushState', watchForQueryParam);
+  window.addEventListener('replaceState', watchForQueryParam);
 
   // For single page applications, also observe for pushState and replaceState
   const originalPushState = history.pushState;

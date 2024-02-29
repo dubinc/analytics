@@ -1,7 +1,13 @@
 /* eslint-disable no-console -- Allow logging on the server */
 import { version } from '../package.json';
-import type { AllowedPropertyValues } from './types';
-import { isProduction, parseProperties } from './utils';
+import type { AllowedPropertyValues, ClickApiResponse } from './types';
+import {
+  CLICK_ID_COOKIE_NAME,
+  getClickId,
+  getTrackEndpoint,
+  isProduction,
+  parseProperties,
+} from './utils';
 
 /**
  * Tracks a lead event.
@@ -48,43 +54,27 @@ async function sale(
   return _trackConversion(request, apiKey, 'sale', properties);
 }
 
-function getClickId(request: Request): string | undefined {
-  const cookies = request.headers.get('cookie');
-  const clickId = cookies
-    ?.split(';')
-    .find((c) => c.trim().startsWith('dclid'))
-    ?.split('=')[1];
-
-  return clickId;
-}
-
-function validateApiKey(apiKey: string): void {
-  if (!apiKey) {
-    throw new Error('[Dub Web Analytics] Please provide an API key to use.');
-  }
-}
-
-function ensureServerEnvironment(): void {
-  if (typeof window !== 'undefined') {
-    throw new Error(
-      '[Dub Web Analytics] This function is only meant to be used in a server environment.',
-    );
-  }
-}
-
+// Private function to track a conversion event. Not exposed in the SKD.
 async function _trackConversion(
   request: Request,
   apiKey: string,
   eventName: string,
   properties?: Record<string, AllowedPropertyValues>,
 ): Promise<void> {
-  ensureServerEnvironment();
-  validateApiKey(apiKey);
+  if (typeof window !== 'undefined') {
+    throw new Error(
+      '[Dub Web Analytics] This function is only meant to be used in a server environment.',
+    );
+  }
+
+  if (!apiKey) {
+    throw new Error('[Dub Web Analytics] Please provide an API key to use.');
+  }
 
   const clickId = getClickId(request);
   if (!clickId) {
     console.error(
-      '[Dub Web Analytics] The click id cookie is missing. Please make sure that the `dclid` cookie is set on the client side. We will only track events if the `dclid` cookie is present.',
+      `[Dub Web Analytics] The click id cookie is missing. Please make sure that the '${CLICK_ID_COOKIE_NAME}' cookie is set on the client side. We will only track events if the '${CLICK_ID_COOKIE_NAME}' cookie is present.`,
     );
     return;
   }
@@ -101,11 +91,8 @@ async function _trackConversion(
       timestamp: new Date().getTime(),
     };
 
-    const trackEndpoint =
-      process.env.NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT ||
-      process.env.DUB_ANALYTICS_TRACK_ENDPOINT ||
-      'https://api.dub.co/analytics/track/conversion';
-    await fetch(trackEndpoint, {
+    const trackEndpoint = getTrackEndpoint();
+    await fetch(`${trackEndpoint}/conversion`, {
       headers: {
         'content-type': 'application/json',
         'x-api-key': apiKey,
@@ -126,56 +113,80 @@ async function _trackConversion(
   }
 }
 
+/**
+ * Tracks a click event.
+ * @param request - The request object.
+ * @param apiKey - The API key.
+ * @param url - The URL of the clicked link.
+ * ```ts
+ * import { track } from '@dub/analytics/server';
+ *
+ * track.click(request, apiKey, 'https://example.com');
+ * ```
+ */
 async function click(
   request: Request,
   apiKey: string,
-  properties?: Record<string, AllowedPropertyValues>,
-): Promise<void> {
-  ensureServerEnvironment();
-  validateApiKey(apiKey);
+  url: string,
+): Promise<{ click_id?: string; success: boolean }> {
+  if (typeof window !== 'undefined') {
+    throw new Error(
+      '[Dub Web Analytics] This function is only meant to be used in a server environment.',
+    );
+  }
+
+  if (!apiKey) {
+    throw new Error('[Dub Web Analytics] Please provide an API key to use.');
+  }
 
   const clickId = getClickId(request);
   if (!clickId) {
     console.error(
-      '[Dub Web Analytics] The click id cookie is missing. Please make sure that the `dclid` cookie is set on the client side. We will only track events if the `dclid` cookie is present.',
+      `[Dub Web Analytics] The click id cookie is missing. Please make sure that the '${CLICK_ID_COOKIE_NAME}' cookie is set on the client side. We will only track events if the '${CLICK_ID_COOKIE_NAME}' cookie is present.`,
     );
-    return;
+    return {
+      success: false,
+    };
   }
 
   try {
-    const props = parseProperties(properties, {
-      strip: isProduction(),
-    });
     const body = {
-      properties: props,
       clickId,
+      url,
       sdkVersion: version,
       timestamp: new Date().getTime(),
     };
 
-    const trackEndpoint =
-      process.env.NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT ||
-      process.env.DUB_ANALYTICS_TRACK_ENDPOINT ||
-      'https://api.dub.co/analytics/track/click';
-    await fetch(trackEndpoint, {
+    const trackEndpoint = getTrackEndpoint();
+    const response = await fetch(`${trackEndpoint}/click`, {
       headers: {
         'content-type': 'application/json',
         'x-api-key': apiKey,
       },
       body: JSON.stringify(body),
       method: 'POST',
-    }).catch((err: unknown) => {
-      if (err instanceof Error && 'response' in err) {
-        console.error(err.response);
-      } else {
-        console.error(err);
-      }
     });
 
-    return void 0;
+    if (!response.ok) {
+      console.error(response);
+      return {
+        success: false,
+      };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- We trust the server response
+    const data: ClickApiResponse = await response.json();
+    return {
+      success: true,
+      click_id: data.click_id,
+    };
   } catch (err) {
     console.error(err);
   }
+
+  return {
+    success: false,
+  };
 }
 
 const track = {

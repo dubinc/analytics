@@ -1,5 +1,9 @@
 export type AllowedPropertyValues = string | number | boolean | null;
 
+export interface ClickApiResponse {
+  click_id: string;
+}
+
 export interface AnalyticsProps {
   apiKey?: string;
   trackEndpoint?: string;
@@ -24,7 +28,7 @@ declare global {
   interface Window {
     // Base interface
     da?: {
-      trackClick: (properties?: TrackEventProperties) => void;
+      trackClick: (url: string) => void;
       trackConversion: (
         eventName: string,
         properties?: TrackEventProperties,
