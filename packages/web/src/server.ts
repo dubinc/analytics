@@ -154,7 +154,6 @@ async function click(
   try {
     const body = {
       clickId,
-      affiliateUsername: getAffiliateUsername(request),
       url,
       sdkVersion: version,
       timestamp: new Date().getTime(),
