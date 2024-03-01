@@ -147,6 +147,7 @@
         eventName: eventName,
         properties: properties,
         clickId: clickId,
+        affiliateUsername: getCookie(AFFILIATE_COOKIE),
         sdkVersion: getSDKVersion(script),
         timestamp: new Date().getTime(),
       }),

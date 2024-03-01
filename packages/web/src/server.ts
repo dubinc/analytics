@@ -3,6 +3,7 @@ import { version } from '../package.json';
 import type { AllowedPropertyValues, ClickApiResponse } from './types';
 import {
   CLICK_ID_COOKIE_NAME,
+  getAffiliateUsername,
   getClickId,
   getTrackEndpoint,
   isProduction,
@@ -87,6 +88,7 @@ async function _trackConversion(
       eventName,
       properties: props,
       clickId,
+      affiliateUsername: getAffiliateUsername(request),
       sdkVersion: version,
       timestamp: new Date().getTime(),
     };
@@ -152,6 +154,7 @@ async function click(
   try {
     const body = {
       clickId,
+      affiliateUsername: getAffiliateUsername(request),
       url,
       sdkVersion: version,
       timestamp: new Date().getTime(),

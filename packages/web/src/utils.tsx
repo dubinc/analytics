@@ -2,6 +2,7 @@ import type { AllowedPropertyValues } from './types';
 
 export const CLICK_ID_COOKIE_NAME = 'dclid';
 export const AFFILIATE_PARAM_KEY = 'via';
+export const AFFILIATE_COOKIE_NAME = 'daff';
 
 export function getScriptSrc(): string {
   return (
@@ -84,6 +85,16 @@ export function getClickId(request: Request): string | undefined {
   const clickId = cookies
     ?.split(';')
     .find((c) => c.trim().startsWith(CLICK_ID_COOKIE_NAME))
+    ?.split('=')[1];
+
+  return clickId;
+}
+
+export function getAffiliateUsername(request: Request): string | undefined {
+  const cookies = request.headers.get('cookie');
+  const clickId = cookies
+    ?.split(';')
+    .find((c) => c.trim().startsWith(AFFILIATE_COOKIE_NAME))
     ?.split('=')[1];
 
   return clickId;
