@@ -1,35 +1,5 @@
 (function () {
-  const VIA_KEY = 'via';
   const CLICK_ID_KEY = 'dclid';
-
-  // Utility function to get a cookie by key
-  function getCookie(key) {
-    let cookieArray = document.cookie.split(';');
-    for (let i = 0; i < cookieArray.length; i++) {
-      let cookiePair = cookieArray[i].split('=');
-      if (key == cookiePair[0].trim()) {
-        return decodeURIComponent(cookiePair[1]);
-      }
-    }
-    return null;
-  }
-
-  // Utility function to set a cookie
-  function setCookie(key, value) {
-    document.cookie = key + '=' + (value || '') + '; path=/';
-  }
-
-  // Function to check for {key} param in the URL and update cookie if necessary
-  function watchForQueryParam() {
-    const paramKeys = [CLICK_ID_KEY, VIA_KEY];
-    const params = new URLSearchParams(window.location.search);
-    paramKeys.forEach((key) => {
-      const param = params.get(key);
-      if (param && !getCookie(key)) {
-        setCookie(key, param, 365); // Save for 1 year
-      }
-    });
-  }
 
   function getScript() {
     const scripts = document.getElementsByTagName('script');
@@ -53,6 +23,10 @@
     return script.getAttribute('data-track-endpoint');
   }
 
+  function getAffiliateParamKey(script) {
+    return script.getAttribute('data-affiliate-param-key');
+  }
+
   const script = getScript();
   if (!script) {
     console.error('[Dub Web Analytics] Script not found.');
@@ -63,9 +37,39 @@
     console.error('[Dub Web Analytics] API key not found.');
     return;
   }
+  const affiliateParamKey = getAffiliateParamKey(script);
+
+  // Utility function to get a cookie by key
+  function getCookie(key) {
+    let cookieArray = document.cookie.split(';');
+    for (let i = 0; i < cookieArray.length; i++) {
+      let cookiePair = cookieArray[i].split('=');
+      if (key == cookiePair[0].trim()) {
+        return decodeURIComponent(cookiePair[1]);
+      }
+    }
+    return null;
+  }
+
+  // Utility function to set a cookie
+  function setCookie(key, value) {
+    document.cookie = key + '=' + (value || '') + '; path=/';
+  }
+
+  // Function to check for {key} param in the URL and update cookie if necessary
+  function watchForQueryParam() {
+    const paramKeys = [CLICK_ID_KEY, affiliateParamKey];
+    const params = new URLSearchParams(window.location.search);
+    paramKeys.forEach((key) => {
+      const param = params.get(key);
+      if (param && !getCookie(key)) {
+        setCookie(key, param, 365); // Save for 1 year
+      }
+    });
+  }
 
   const handleInitialClickTracking = () => {
-    const via = getCookie(VIA_KEY);
+    const via = getCookie(affiliateParamKey);
     if (via) {
       trackClick(document.location.href);
     }

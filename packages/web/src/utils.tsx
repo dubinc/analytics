@@ -1,7 +1,7 @@
 import type { AllowedPropertyValues } from './types';
 
 export const CLICK_ID_COOKIE_NAME = 'dclid';
-export const VIA_QUERY_PARAM = 'via';
+export const AFFILIATE_PARAM_KEY = 'via';
 
 export function getScriptSrc(): string {
   return (

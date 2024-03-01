@@ -7,6 +7,7 @@ import type { AnalyticsProps } from './types';
  * @param props - Analytics options.
  * @param props.apiKey - Your project's API key. If not provided, the API key will be read from the `NEXT_PUBLIC_DUB_ANALYTICS_API_KEY` environment variable.
  * @param props.trackEndpoint - The endpoint to send tracking events to. If not provided, the endpoint will be read from the `NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT` environment variable or fall back to the default.
+ * @param props.affiliateParamKey - The query parameter key to use for affiliate tracking. If not provided, it will default to `via`.
  * ```js
  * import { Analytics as DubAnalytics } from '@dub/analytics/react';
  *
@@ -20,9 +21,13 @@ import type { AnalyticsProps } from './types';
  * }
  * ```
  */
-function Analytics({ apiKey, trackEndpoint }: AnalyticsProps): null {
+function Analytics({
+  apiKey,
+  trackEndpoint,
+  affiliateParamKey,
+}: AnalyticsProps): null {
   useEffect(() => {
-    inject({ apiKey, trackEndpoint });
+    inject({ apiKey, trackEndpoint, affiliateParamKey });
   }, [apiKey, trackEndpoint]);
 
   return null;

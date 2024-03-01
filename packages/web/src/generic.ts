@@ -6,6 +6,7 @@ import type {
   TrackEventProperties,
 } from './types';
 import {
+  AFFILIATE_PARAM_KEY,
   getScriptSrc,
   getTrackEndpoint,
   isBrowser,
@@ -38,6 +39,10 @@ function inject(props: AnalyticsProps = {}): void {
   script.setAttribute('data-sdkv', version);
   script.setAttribute('data-api-key', apiKey);
   script.setAttribute('data-track-endpoint', trackEndpoint);
+  script.setAttribute(
+    'data-affiliate-param-key',
+    props.affiliateParamKey || AFFILIATE_PARAM_KEY,
+  );
 
   script.onerror = (): void => {
     // eslint-disable-next-line no-console -- Logging to console is intentional
