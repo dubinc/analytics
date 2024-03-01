@@ -57,3 +57,5 @@
     return Response.json({ message: 'Event tracked' });
   }
   ```
+
+  Note: the SKD also has automatic tracking of "clicks" for affiliate attribution when the via query parameter is present in the URL. It will automatically track the click, store the affiliate ID in a cookie, and be able to associate future leads and sales with the affiliate.
