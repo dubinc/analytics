@@ -2,6 +2,7 @@
 import { version } from '../package.json';
 import type { AllowedPropertyValues, ClickApiResponse } from './types';
 import {
+  AFFILIATE_PARAM_KEY,
   CLICK_ID_COOKIE_NAME,
   getAffiliateUsername,
   getClickId,
@@ -120,6 +121,8 @@ async function _trackConversion(
  * @param request - The request object.
  * @param apiKey - The API key.
  * @param url - The URL of the clicked link.
+ * @param options - Additional options.
+ * @param options.affiliateParamKey - The query parameter key used to track affiliate usernames, defaults to 'via'.
  * ```ts
  * import { track } from '@dub/analytics/server';
  *
@@ -130,6 +133,9 @@ async function click(
   request: Request,
   apiKey: string,
   url: string,
+  options?: {
+    affiliateParamKey?: string;
+  },
 ): Promise<{ clickId?: string; success: boolean }> {
   if (typeof window !== 'undefined') {
     throw new Error(
@@ -155,6 +161,7 @@ async function click(
     const body = {
       clickId,
       url,
+      affiliateParamKey: options?.affiliateParamKey || AFFILIATE_PARAM_KEY,
       sdkVersion: version,
       timestamp: new Date().getTime(),
     };

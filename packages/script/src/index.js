@@ -1,6 +1,7 @@
 (function () {
   const CLICK_ID = 'dclid';
   const AFFILIATE_COOKIE = 'daff';
+  const AFFILIATE_PARAM_KEY = 'via';
 
   function getScript() {
     const scripts = document.getElementsByTagName('script');
@@ -38,7 +39,7 @@
     console.error('[Dub Web Analytics] API key not found.');
     return;
   }
-  const affiliateParamKey = getAffiliateParamKey(script);
+  const affiliateParamKey = getAffiliateParamKey(script) || AFFILIATE_PARAM_KEY;
 
   // Utility function to get a cookie by key
   function getCookie(key) {

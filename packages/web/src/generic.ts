@@ -39,10 +39,9 @@ function inject(props: AnalyticsProps = {}): void {
   script.setAttribute('data-sdkv', version);
   script.setAttribute('data-api-key', apiKey);
   script.setAttribute('data-track-endpoint', trackEndpoint);
-  script.setAttribute(
-    'data-affiliate-param-key',
-    props.affiliateParamKey || AFFILIATE_PARAM_KEY,
-  );
+  if (props.affiliateParamKey) {
+    script.setAttribute('data-affiliate-param-key', props.affiliateParamKey);
+  }
 
   script.onerror = (): void => {
     // eslint-disable-next-line no-console -- Logging to console is intentional
