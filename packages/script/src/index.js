@@ -1,5 +1,6 @@
 (function () {
-  const CLICK_ID_KEY = 'dclid';
+  const CLICK_ID = 'dclid';
+  const AFFILIATE_COOKIE = 'daff';
 
   function getScript() {
     const scripts = document.getElementsByTagName('script');
@@ -56,21 +57,25 @@
     document.cookie = key + '=' + (value || '') + '; path=/';
   }
 
-  // Function to check for {key} param in the URL and update cookie if necessary
+  // Function to check for {keys} in the URL and update cookie if necessary
   function watchForQueryParam() {
-    const paramKeys = [CLICK_ID_KEY, affiliateParamKey];
-    const params = new URLSearchParams(window.location.search);
-    paramKeys.forEach((key) => {
-      const param = params.get(key);
-      if (param && !getCookie(key)) {
-        setCookie(key, param, 365); // Save for 1 year
+    const keys = [
+      { query: CLICK_ID, cookie: CLICK_ID },
+      { query: affiliateParamKey, cookie: AFFILIATE_COOKIE },
+    ];
+    const searchParams = new URLSearchParams(window.location.search);
+    keys.forEach((key) => {
+      const param = searchParams.get(key.query);
+      if (param && !getCookie(key.cookie)) {
+        setCookie(key.cookie, param);
       }
     });
   }
 
+  // If the affiliate cookie is already set, track the initial click
   const handleInitialClickTracking = () => {
-    const via = getCookie(affiliateParamKey);
-    if (via) {
+    const affiliateCookie = getCookie(AFFILIATE_COOKIE);
+    if (affiliateCookie) {
       trackClick(document.location.href);
     }
   };
@@ -83,9 +88,9 @@
       return;
     }
 
-    const clickId = getCookie(CLICK_ID_KEY);
-    if (!clickId) {
-      // If click id was not found, return because we can't track without it
+    const clickId = getCookie(CLICK_ID);
+    if (clickId) {
+      // If click id was found, return because we don't want to track the same click twice
       return;
     }
 
@@ -97,8 +102,8 @@
         'x-api-key': apiKey,
       },
       body: JSON.stringify({
-        clickId: clickId,
         url: url,
+        affiliateParamKey: affiliateParamKey,
         sdkVersion: getSDKVersion(script),
         timestamp: new Date().getTime(),
       }),
@@ -106,7 +111,7 @@
       .then((response) => {
         const body = response.json();
         if (response.status === 200) {
-          setCookie(CLICK_ID_KEY, body.click_id);
+          setCookie(CLICK_ID, body.clickId);
         }
       })
       .catch((error) =>
@@ -125,7 +130,7 @@
       return;
     }
 
-    const clickId = getCookie(CLICK_ID_KEY);
+    const clickId = getCookie(CLICK_ID);
     if (!clickId) {
       // If click id was not found, return because we can't track without it
       return;

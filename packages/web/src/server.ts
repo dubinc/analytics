@@ -128,7 +128,7 @@ async function click(
   request: Request,
   apiKey: string,
   url: string,
-): Promise<{ click_id?: string; success: boolean }> {
+): Promise<{ clickId?: string; success: boolean }> {
   if (typeof window !== 'undefined') {
     throw new Error(
       '[Dub Web Analytics] This function is only meant to be used in a server environment.',
@@ -178,7 +178,7 @@ async function click(
     const data: ClickApiResponse = await response.json();
     return {
       success: true,
-      click_id: data.click_id,
+      clickId: data.clickId,
     };
   } catch (err) {
     console.error(err);

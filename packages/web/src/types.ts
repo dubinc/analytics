@@ -1,7 +1,7 @@
 export type AllowedPropertyValues = string | number | boolean | null;
 
 export interface ClickApiResponse {
-  click_id: string;
+  clickId: string;
 }
 
 export interface AnalyticsProps {
