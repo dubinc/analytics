@@ -28,7 +28,7 @@ function Analytics({
 }: AnalyticsProps): null {
   useEffect(() => {
     inject({ apiKey, trackEndpoint, affiliateParamKey });
-  }, [apiKey, trackEndpoint]);
+  }, [apiKey, trackEndpoint, affiliateParamKey]);
 
   return null;
 }
