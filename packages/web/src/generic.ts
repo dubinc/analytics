@@ -61,7 +61,6 @@ function trackClick(url: string): void {
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- The `da` object is injected by the script
     window.da?.trackClick(url);
   } catch (err) {
     // eslint-disable-next-line no-console -- Logging to console is intentional
@@ -87,7 +86,6 @@ function _trackConversion(
   }
 
   if (!properties) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- The `da` object is injected by the script
     window.da?.trackConversion(eventName, {});
     return;
   }
@@ -97,7 +95,6 @@ function _trackConversion(
       strip: isProduction(),
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- The `da` object is injected by the script
     window.da?.trackConversion(eventName, cleanedProperties);
   } catch (err) {
     // eslint-disable-next-line no-console -- Logging to console is intentional
