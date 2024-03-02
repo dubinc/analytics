@@ -16,7 +16,7 @@ export function getTrackEndpoint(): string {
   return (
     process.env.NEXT_PUBLIC_DUB_ANALYTICS_TRACK_ENDPOINT ||
     process.env.DUB_ANALYTICS_TRACK_ENDPOINT ||
-    'https://api.dub.co/analytics/track'
+    'https://api.dub.co/track'
   );
 }
 
