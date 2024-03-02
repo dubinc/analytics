@@ -98,7 +98,7 @@ async function _trackConversion(
     await fetch(`${trackEndpoint}/conversion`, {
       headers: {
         'content-type': 'application/json',
-        'x-api-key': apiKey,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(body),
       method: 'POST',
@@ -170,7 +170,7 @@ async function click(
     const response = await fetch(`${trackEndpoint}/click`, {
       headers: {
         'content-type': 'application/json',
-        'x-api-key': apiKey,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(body),
       method: 'POST',

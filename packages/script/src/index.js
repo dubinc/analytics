@@ -100,7 +100,7 @@
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         url: url,
@@ -142,7 +142,7 @@
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         eventName: eventName,
