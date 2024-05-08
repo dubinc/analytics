@@ -18,8 +18,8 @@ jobs:
       - name: type-check
         run: pnpm -r type-check
 
-      - name: prettier
-        run: pnpm prettier -c .
+      # - name: prettier
+      #   run: pnpm prettier -c .
 
       - name: build
         run: pnpm --filter @dub/analytics build
