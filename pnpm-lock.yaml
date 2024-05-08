@@ -28,7 +28,7 @@ importers:
     dependencies:
       '@dub/analytics':
         specifier: workspace:*
-        version: link:../../packages/web
+        version: link:../../packages/script
       cookie:
         specifier: ^0.6.0
         version: 0.6.0

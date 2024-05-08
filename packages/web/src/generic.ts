@@ -6,7 +6,6 @@ import type {
   TrackEventProperties,
 } from './types';
 import {
-  AFFILIATE_PARAM_KEY,
   getScriptSrc,
   getTrackEndpoint,
   isBrowser,
