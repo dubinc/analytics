@@ -1,16 +1,21 @@
 'use client';
 
-import { track } from '@dub/analytics';
+// import Script from 'next/script';
+import { Analytics as DubAnalytics } from '@dub/analytics/react';
 
 export default function Home() {
   return (
     <main>
-      <button onClick={() => track.lead({ firstName: 'Mylo' })}>
-        Track Lead
-      </button>
-      <button onClick={() => track.sale({ value: 300, currency: 'USD' })}>
-        Track Purchase
-      </button>
+      <DubAnalytics />
+      {/* <Script
+        // src="./js/dubScript.js"
+        src="https://www.dubcdn.com/analytics/script.js"
+        onLoad={() => console.log('loaded dub')}
+        onError={(e: Error) => {
+          console.error('Script failed to load', e);
+        }}
+        strategy="afterInteractive"
+      /> */}
     </main>
   );
 }
