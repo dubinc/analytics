@@ -3,12 +3,17 @@
   const COOKIE_EXPIRES = 60 * 24 * 60 * 60 * 1000; // 60 days
 
   function getScript() {
-    const scripts = document.getElementsByTagName('script');
+    const scripts = document.querySelectorAll('script');
+
     for (let i = 0; i < scripts.length; i++) {
-      if (scripts[i].src.includes('dubScript.js')) {
-        return scripts[i];
+      if (
+        scripts[i].src &&
+        scripts[i].src.includes('dubcdn.com/analytics/script.js')
+      ) {
+        return true;
       }
     }
+
     return null;
   }
 
