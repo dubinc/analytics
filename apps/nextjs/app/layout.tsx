@@ -8,7 +8,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>{children}</body>
-      <DubAnalytics apiKey="apiKey" affiliateParamKey="ref" />
+      <DubAnalytics />
     </html>
   );
 }
