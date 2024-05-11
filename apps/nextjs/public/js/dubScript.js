@@ -8,7 +8,7 @@
     for (let i = 0; i < scripts.length; i++) {
       if (
         scripts[i].src &&
-        scripts[i].src.includes('dubcdn.com/analytics/script.js')
+        scripts[i].src.includes('dubcdn.com/analytics/dubScript.js')
       ) {
         return true;
       }
