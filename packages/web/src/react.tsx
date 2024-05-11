@@ -18,14 +18,10 @@ import type { AnalyticsProps } from './types';
  * }
  * ```
  */
-function Analytics({
-  apiKey,
-  trackEndpoint,
-  affiliateParamKey,
-}: AnalyticsProps): null {
+function Analytics(): null {
   useEffect(() => {
     inject();
-  }, [apiKey, trackEndpoint, affiliateParamKey]);
+  }, []);
 
   return null;
 }
