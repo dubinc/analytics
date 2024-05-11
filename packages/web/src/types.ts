@@ -4,12 +4,6 @@ export interface ClickApiResponse {
   clickId: string;
 }
 
-export interface AnalyticsProps {
-  apiKey?: string;
-  trackEndpoint?: string;
-  affiliateParamKey?: string;
-}
-
 export type TrackEventProperties = Record<string, AllowedPropertyValues>;
 
 export type SaleEventProperties = TrackEventProperties & {
