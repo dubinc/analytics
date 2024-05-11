@@ -1,18 +1,16 @@
 // import { track } from '@dub/analytics/server';
 
-const tackingEndpoint = 'http://localhost:8888/api/track';
-const apiKey = 'iGjIsxS2OsMuQFaRdH5jZKNn';
 const customerId = 'iGyAA2';
 
 export async function POST() {
   // TODO:
   // Use SDK method to track a sale
 
-  await fetch(`${tackingEndpoint}/sale`, {
+  await fetch(`${process.env.DUB_API_URL}/track/sale`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${process.env.DUB_API_KEY}`,
     },
     body: JSON.stringify({
       customerId,
