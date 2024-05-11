@@ -1,4 +1,3 @@
-// import { track } from '@dub/analytics/server';
 import { cookies } from 'next/headers';
 
 const customerId = 'iGyAA2';

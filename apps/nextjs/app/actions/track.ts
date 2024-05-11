@@ -1,7 +1,5 @@
 'use server';
 
-import { track } from '@dub/analytics/server';
-
 // Track lead
 export async function trackLead() {
   console.log('Lead tracked');

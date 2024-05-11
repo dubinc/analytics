@@ -1,5 +1,3 @@
-// import { track } from '@dub/analytics/server';
-
 const customerId = 'iGyAA2';
 
 export async function POST() {
