@@ -21,41 +21,9 @@
     return (
       <html lang="en">
         <body>{children}</body>
-        <DubAnalytics apiKey="apiKey" />
+        <DubAnalytics />
       </html>
     );
   }
   ```
-  You can all use the `inject({ apiKey })` function to add the tracking script to other frameworks.
-
-  5. Use the `sale` and `lead` functions to track conversions.
-
-  Client side:
-  ```tsx
-  import { track } from '@dub/analytics';
-
-  export const LeadButton = () => (
-    <button onClick={() => track.lead({ property: 'value' })}>
-      Track Lead
-    </button>
-  );
-
-  export const SaleButton = () => (
-    <button onClick={() => track.sale({ value: 100, currency: 'USD' })}>
-      Track Sale
-    </button>
-  );
-  ```
-
-  Server side:
-  ```ts
-  import { track } from '@dub/analytics/server';
-
-  export async function GET(request: Request) {
-    track.lead(request, 'apiKey', { property: 'value' });
-
-    return Response.json({ message: 'Event tracked' });
-  }
-  ```
-
-  Note: the SKD also has automatic tracking of "clicks" for affiliate attribution when the via query parameter is present in the URL. It will automatically track the click, store the affiliate ID in a cookie, and be able to associate future leads and sales with the affiliate.
+  You can all use the `inject()` function to add the tracking script to other frameworks.

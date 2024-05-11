@@ -8,7 +8,7 @@ export function getScriptSrc(): string {
   return (
     process.env.NEXT_PUBLIC_DUB_ANALYTICS_SCRIPT_SRC ||
     process.env.DUB_ANALYTICS_SCRIPT_SRC ||
-    'https://dubcdn.com/analytics/dubScript.js'
+    'https://dubcdn.com/analytics/script.js'
   );
 }
 
