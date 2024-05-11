@@ -1,8 +1,7 @@
 /* eslint-disable no-console -- Allow logging on the server */
 import { version } from '../package.json';
-import type { AllowedPropertyValues, ClickApiResponse } from './types';
+import type { AllowedPropertyValues } from './types';
 import {
-  AFFILIATE_PARAM_KEY,
   CLICK_ID_COOKIE_NAME,
   getAffiliateUsername,
   getClickId,
@@ -116,90 +115,7 @@ async function _trackConversion(
   }
 }
 
-/**
- * Tracks a click event.
- * @param request - The request object.
- * @param apiKey - The API key.
- * @param url - The URL of the clicked link.
- * @param options - Additional options.
- * @param options.affiliateParamKey - The query parameter key used to track affiliate usernames, defaults to 'via'.
- * ```ts
- * import { track } from '@dub/analytics/server';
- *
- * track.click(request, apiKey, 'https://example.com');
- * ```
- */
-async function click(
-  request: Request,
-  apiKey: string,
-  url: string,
-  options?: {
-    affiliateParamKey?: string;
-  },
-): Promise<{ clickId?: string; success: boolean }> {
-  if (typeof window !== 'undefined') {
-    throw new Error(
-      '[Dub Web Analytics] This function is only meant to be used in a server environment.',
-    );
-  }
-
-  if (!apiKey) {
-    throw new Error('[Dub Web Analytics] Please provide an API key to use.');
-  }
-
-  const clickId = getClickId(request);
-  if (!clickId) {
-    console.error(
-      `[Dub Web Analytics] The click id cookie is missing. Please make sure that the '${CLICK_ID_COOKIE_NAME}' cookie is set on the client side. We will only track events if the '${CLICK_ID_COOKIE_NAME}' cookie is present.`,
-    );
-    return {
-      success: false,
-    };
-  }
-
-  try {
-    const body = {
-      clickId,
-      url,
-      affiliateParamKey: options?.affiliateParamKey || AFFILIATE_PARAM_KEY,
-      sdkVersion: version,
-      timestamp: new Date().getTime(),
-    };
-
-    const trackEndpoint = getTrackEndpoint();
-    const response = await fetch(`${trackEndpoint}/click`, {
-      headers: {
-        'content-type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      console.error(response);
-      return {
-        success: false,
-      };
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- We trust the server response
-    const data: ClickApiResponse = await response.json();
-    return {
-      success: true,
-      clickId: data.clickId,
-    };
-  } catch (err) {
-    console.error(err);
-  }
-
-  return {
-    success: false,
-  };
-}
-
 const track = {
-  click,
   lead,
   sale,
 };
