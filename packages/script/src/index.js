@@ -2,6 +2,7 @@
   const CLICK_ID = 'dclid';
   const AFFILIATE_COOKIE = 'daff';
   const AFFILIATE_PARAM_KEY = 'via';
+  const COOKIE_EXPIRES = 60 * 24 * 60 * 60 * 1000; // 60 days
 
   function getScript() {
     const scripts = document.getElementsByTagName('script');
@@ -11,10 +12,6 @@
       }
     }
     return null;
-  }
-
-  function getApiKey(script) {
-    return script.getAttribute('data-api-key');
   }
 
   function getSDKVersion(script) {
@@ -34,11 +31,7 @@
     console.error('[Dub Web Analytics] Script not found.');
     return;
   }
-  const apiKey = getApiKey(script);
-  if (!apiKey) {
-    console.error('[Dub Web Analytics] API key not found.');
-    return;
-  }
+
   const affiliateParamKey = getAffiliateParamKey(script) || AFFILIATE_PARAM_KEY;
 
   // Utility function to get a cookie by key
@@ -54,12 +47,15 @@
   }
 
   // Utility function to set a cookie
-  function setCookie(key, value) {
-    document.cookie = key + '=' + (value || '') + '; path=/';
+  function setCookie(key, value, expires) {
+    document.cookie =
+      key + '=' + (value || '') + '; path=/; expires=' + expires;
   }
 
   // Function to check for {keys} in the URL and update cookie if necessary
   function watchForQueryParam() {
+    const expires = new Date(Date.now() + COOKIE_EXPIRES).toUTCString();
+
     const keys = [
       { query: CLICK_ID, cookie: CLICK_ID },
       { query: affiliateParamKey, cookie: AFFILIATE_COOKIE },
@@ -68,7 +64,7 @@
     keys.forEach((key) => {
       const param = searchParams.get(key.query);
       if (param && !getCookie(key.cookie)) {
-        setCookie(key.cookie, param);
+        setCookie(key.cookie, param, expires);
       }
     });
   }
@@ -83,83 +79,10 @@
 
   function trackClick(url) {
     // API endpoint where the tracking data is sent
-    const dubApiTrackEndpoint = getTrackEndpoint(script);
-    if (!dubApiTrackEndpoint) {
-      console.error('[Dub Web Analytics] API endpoint not found.');
-      return;
-    }
-
-    const clickId = getCookie(CLICK_ID);
-    if (clickId) {
-      // If click id was found, return because we don't want to track the same click twice
-      return;
-    }
-
-    // Make the API request
-    fetch(`${dubApiTrackEndpoint}/click`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        url: url,
-        affiliateParamKey: affiliateParamKey,
-        sdkVersion: getSDKVersion(script),
-        timestamp: new Date().getTime(),
-      }),
-    })
-      .then((response) => {
-        const body = response.json();
-        if (response.status === 200) {
-          setCookie(CLICK_ID, body.clickId);
-        }
-      })
-      .catch((error) =>
-        console.error(
-          '[Dub Web Analytics] Error sending tracking data:',
-          error,
-        ),
-      );
   }
 
   function trackConversion(eventName, properties = {}) {
     // API endpoint where the tracking data is sent
-    const dubApiTrackEndpoint = getTrackEndpoint(script);
-    if (!dubApiTrackEndpoint) {
-      console.error('[Dub Web Analytics] API endpoint not found.');
-      return;
-    }
-
-    const clickId = getCookie(CLICK_ID);
-    if (!clickId) {
-      // If click id was not found, return because we can't track without it
-      return;
-    }
-
-    // Make the API request
-    fetch(`${dubApiTrackEndpoint}/conversion`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        eventName: eventName,
-        properties: properties,
-        clickId: clickId,
-        affiliateUsername: getCookie(AFFILIATE_COOKIE),
-        sdkVersion: getSDKVersion(script),
-        timestamp: new Date().getTime(),
-      }),
-    })
-      .then((response) => response.json())
-      .catch((error) =>
-        console.error(
-          '[Dub Web Analytics] Error sending tracking data:',
-          error,
-        ),
-      );
   }
 
   // Inject the .da object into window with the .track function
