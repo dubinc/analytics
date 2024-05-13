@@ -1,4 +1,4 @@
-import { version } from '../package.json';
+import { name, version } from '../package.json';
 import type { AnalyticsProps } from './types';
 import { getScriptSrc, isBrowser } from './utils';
 
@@ -15,6 +15,7 @@ function inject(props: AnalyticsProps): void {
   const script = document.createElement('script');
   script.src = src;
   script.defer = true;
+  script.setAttribute('data-sdkn', name);
   script.setAttribute('data-sdkv', version);
   script.setAttribute(
     'data-cookie-options',

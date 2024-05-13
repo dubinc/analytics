@@ -43,7 +43,7 @@
   // Utility function to set a cookie
   function setCookie(key, value, options) {
     // options: domain, expires, httpOnly, maxAge, path, sameSite, secure
-    document.cookie = `${key}=${value}; ${options.domain ? `domain=${options.domain}; ` : ''}${`expires=${new Date(options.expires || Date.now() + COOKIE_EXPIRES).toUTCString()}; `}${options.httpOnly ? 'httpOnly; ' : ''}${options.maxAge ? `max-age=${options.maxAge}; ` : ''}${options.path ? `path=${options.path}; ` : ''}${options.sameSite ? `sameSite=${options.sameSite}; ` : ''}${options.secure ? 'secure;' : ''}`;
+    document.cookie = `${key}=${value}; ${options.domain ? `domain=${options.domain}; ` : ''}${`expires=${new Date(options.expires || Date.now() + COOKIE_EXPIRES).toUTCString()}; `}${options.httpOnly ? 'httpOnly; ' : ''}${options.maxAge ? `max-age=${options.maxAge}; ` : ''}${`path=${options.path || '/'}`}${options.sameSite ? `sameSite=${options.sameSite}; ` : ''}${options.secure ? 'secure;' : ''}`;
   }
 
   // Function to check for {keys} in the URL and update cookie if necessary
