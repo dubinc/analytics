@@ -18,10 +18,10 @@ import type { AnalyticsProps } from './types';
  * }
  * ```
  */
-function Analytics(): null {
+function Analytics(props: AnalyticsProps): null {
   useEffect(() => {
-    inject();
-  }, []);
+    inject(props);
+  }, [props]);
 
   return null;
 }

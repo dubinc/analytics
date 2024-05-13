@@ -1,6 +1,6 @@
 (function () {
   const CLICK_ID = 'dclid';
-  const COOKIE_EXPIRES = 60 * 24 * 60 * 60 * 1000; // 60 days
+  const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
 
   function getScript() {
     const scripts = document.querySelectorAll('script');
@@ -15,6 +15,11 @@
     }
 
     return null;
+  }
+
+  function getCookieOptions(script) {
+    const v = script.getAttribute('data-cookie-options');
+    return v ? JSON.parse(v) : null;
   }
 
   const script = getScript();
@@ -36,20 +41,20 @@
   }
 
   // Utility function to set a cookie
-  function setCookie(key, value, expires) {
-    document.cookie =
-      key + '=' + (value || '') + '; path=/; expires=' + expires;
+  function setCookie(key, value, options) {
+    // options: domain, expires, httpOnly, maxAge, path, sameSite, secure
+    document.cookie = `${key}=${value}; ${options.domain ? `domain=${options.domain}; ` : ''}${`expires=${new Date(options.expires || Date.now() + COOKIE_EXPIRES).toUTCString()}; `}${options.httpOnly ? 'httpOnly; ' : ''}${options.maxAge ? `max-age=${options.maxAge}; ` : ''}${options.path ? `path=${options.path}; ` : ''}${options.sameSite ? `sameSite=${options.sameSite}; ` : ''}${options.secure ? 'secure;' : ''}`;
   }
 
   // Function to check for {keys} in the URL and update cookie if necessary
   function watchForQueryParam() {
     const keys = [{ query: CLICK_ID, cookie: CLICK_ID }];
     const searchParams = new URLSearchParams(window.location.search);
-    const expires = new Date(Date.now() + COOKIE_EXPIRES).toUTCString();
+    const cookieOptions = getCookieOptions(script);
     keys.forEach((key) => {
       const param = searchParams.get(key.query);
       if (param && !getCookie(key.cookie)) {
-        setCookie(key.cookie, param, expires);
+        setCookie(key.cookie, param, cookieOptions);
       }
     });
   }
