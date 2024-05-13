@@ -5,7 +5,7 @@ import { getScriptSrc, isBrowser } from './utils';
 /**
  * Injects the Dub Web Analytics script into the page head.
  */
-function inject(): void {
+function inject(props: AnalyticsProps): void {
   if (!isBrowser()) return;
 
   const src = getScriptSrc();
@@ -16,6 +16,10 @@ function inject(): void {
   script.src = src;
   script.defer = true;
   script.setAttribute('data-sdkv', version);
+  script.setAttribute(
+    'data-cookie-options',
+    JSON.stringify(props.cookieOptions),
+  );
 
   script.onerror = (): void => {
     // eslint-disable-next-line no-console -- Logging to console is intentional
