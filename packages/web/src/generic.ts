@@ -17,10 +17,12 @@ function inject(props: AnalyticsProps): void {
   script.defer = true;
   script.setAttribute('data-sdkn', name);
   script.setAttribute('data-sdkv', version);
-  script.setAttribute(
-    'data-cookie-options',
-    JSON.stringify(props.cookieOptions),
-  );
+  if (props.cookieOptions) {
+    script.setAttribute(
+      'data-cookie-options',
+      JSON.stringify(props.cookieOptions),
+    );
+  }
 
   script.onerror = (): void => {
     // eslint-disable-next-line no-console -- Logging to console is intentional
