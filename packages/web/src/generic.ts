@@ -17,7 +17,7 @@ function inject(props: AnalyticsProps): void {
   script.defer = true;
   script.setAttribute('data-sdkn', name);
   script.setAttribute('data-sdkv', version);
-  if (props.cookieOptions) {
+  if (props.cookieOptions && Object.keys(props.cookieOptions).length > 0) {
     script.setAttribute(
       'data-cookie-options',
       JSON.stringify(props.cookieOptions),
