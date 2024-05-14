@@ -18,7 +18,7 @@
   }
 
   function getCookieOptions(script) {
-    const v = script.getAttribute('data-cookie-options');
+    const v = script?.getAttribute('data-cookie-options');
     return v ? JSON.parse(v) : null;
   }
 
