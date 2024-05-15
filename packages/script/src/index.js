@@ -6,7 +6,10 @@
     const scripts = document.querySelectorAll('script');
 
     for (let i = 0; i < scripts.length; i++) {
-      if (scripts[i].src && scripts[i].src.includes('index.js')) {
+      if (
+        scripts[i].src &&
+        scripts[i].src.includes('dubcdn.com/analytics/script.js')
+      ) {
         return scripts[i];
       }
     }
