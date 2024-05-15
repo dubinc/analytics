@@ -20,6 +20,7 @@ export interface AnalyticsProps {
      * point to the same date and time.
      */
     expires?: Date | undefined;
+
     /**
      * Specifies the boolean value for the {@link https://tools.ietf.org/html/rfc6265#section-5.2.6|`HttpOnly` `Set-Cookie` attribute}.
      * When truthy, the `HttpOnly` attribute is set, otherwise it is not. By
@@ -29,6 +30,7 @@ export interface AnalyticsProps {
      * not allow client-side JavaScript to see the cookie in `document.cookie`.
      */
     httpOnly?: boolean | undefined;
+
     /**
      * Specifies the number (in seconds) to be the value for the `Max-Age`
      * `Set-Cookie` attribute. The given number will be converted to an integer
@@ -40,11 +42,13 @@ export interface AnalyticsProps {
      * point to the same date and time.
      */
     maxAge?: number | undefined;
+
     /**
      * Specifies the value for the {@link https://tools.ietf.org/html/rfc6265#section-5.2.4|`Path` `Set-Cookie` attribute}.
      * By default, the path is considered the "default path".
      */
     path?: string | undefined;
+
     /**
      * Specifies the boolean or string to be the value for the {@link https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.2.7|`SameSite` `Set-Cookie` attribute}.
      *
@@ -63,6 +67,7 @@ export interface AnalyticsProps {
      * *note* This is an attribute that has not yet been fully standardized, and may change in the future. This also means many clients may ignore this attribute until they understand it.
      */
     sameSite?: true | false | 'lax' | 'strict' | 'none' | undefined;
+
     /**
      * Specifies the boolean value for the {@link https://tools.ietf.org/html/rfc6265#section-5.2.5|`Secure` `Set-Cookie` attribute}. When truthy, the
      * `Secure` attribute is set, otherwise it is not. By default, the `Secure` attribute is not set.

@@ -6,11 +6,8 @@
     const scripts = document.querySelectorAll('script');
 
     for (let i = 0; i < scripts.length; i++) {
-      if (
-        scripts[i].src &&
-        scripts[i].src.includes('dubcdn.com/analytics/script.js')
-      ) {
-        return true;
+      if (scripts[i].src && scripts[i].src.includes('index.js')) {
+        return scripts[i];
       }
     }
 
@@ -18,7 +15,11 @@
   }
 
   function getCookieOptions(script) {
-    const v = script?.getAttribute('data-cookie-options');
+    if (!script) {
+      return null;
+    }
+
+    const v = script.getAttribute('data-cookie-options');
     return v ? JSON.parse(v) : null;
   }
 
@@ -42,6 +43,10 @@
 
   // Utility function to set a cookie
   function setCookie(key, value, options) {
+    console.log(
+      `${key}=${value}; ${options.domain ? `domain=${options.domain}; ` : ''}${`expires=${new Date(options.expires || Date.now() + COOKIE_EXPIRES).toUTCString()}; `}${options.httpOnly ? 'httpOnly; ' : ''}${options.maxAge ? `max-age=${options.maxAge}; ` : ''}${`path=${options.path || '/'}`}${options.sameSite ? `sameSite=${options.sameSite}; ` : ''}${options.secure ? 'secure;' : ''}`,
+    );
+
     // options: domain, expires, httpOnly, maxAge, path, sameSite, secure
     document.cookie = `${key}=${value}; ${options.domain ? `domain=${options.domain}; ` : ''}${`expires=${new Date(options.expires || Date.now() + COOKIE_EXPIRES).toUTCString()}; `}${options.httpOnly ? 'httpOnly; ' : ''}${options.maxAge ? `max-age=${options.maxAge}; ` : ''}${`path=${options.path || '/'}`}${options.sameSite ? `sameSite=${options.sameSite}; ` : ''}${options.secure ? 'secure;' : ''}`;
   }
