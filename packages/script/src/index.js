@@ -10,7 +10,7 @@
         scripts[i].src &&
         scripts[i].src.includes('dubcdn.com/analytics/script.js')
       ) {
-        return true;
+        return scripts[i];
       }
     }
 
@@ -18,7 +18,11 @@
   }
 
   function getCookieOptions(script) {
-    const v = script?.getAttribute('data-cookie-options');
+    if (!script) {
+      return null;
+    }
+
+    const v = script.getAttribute('data-cookie-options');
     return v ? JSON.parse(v) : null;
   }
 
@@ -42,8 +46,35 @@
 
   // Utility function to set a cookie
   function setCookie(key, value, options) {
-    // options: domain, expires, httpOnly, maxAge, path, sameSite, secure
-    document.cookie = `${key}=${value}; ${options.domain ? `domain=${options.domain}; ` : ''}${`expires=${new Date(options.expires || Date.now() + COOKIE_EXPIRES).toUTCString()}; `}${options.httpOnly ? 'httpOnly; ' : ''}${options.maxAge ? `max-age=${options.maxAge}; ` : ''}${`path=${options.path || '/'}`}${options.sameSite ? `sameSite=${options.sameSite}; ` : ''}${options.secure ? 'secure;' : ''}`;
+    const defaultOptions = {
+      domain: null,
+      httpOnly: false,
+      path: '/',
+      sameSite: 'Lax',
+      secure: false,
+      maxAge: COOKIE_EXPIRES,
+      expires: new Date(Date.now() + COOKIE_EXPIRES),
+    };
+
+    const { domain, expires, httpOnly, maxAge, path, sameSite, secure } = {
+      ...defaultOptions,
+      ...options,
+    };
+
+    const cookieString = Object.entries({
+      domain,
+      expires: new Date(expires).toUTCString(),
+      httpOnly,
+      maxAge,
+      path,
+      sameSite,
+      secure,
+    })
+      .filter(([, value]) => value)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('; ');
+
+    document.cookie = `${key}=${value}; ${cookieString}`;
   }
 
   // Function to check for {keys} in the URL and update cookie if necessary
