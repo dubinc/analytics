@@ -103,11 +103,11 @@
 
   history.pushState = function () {
     originalPushState.apply(this, arguments);
-    watchForId();
+    watchForQueryParam();
   };
 
   history.replaceState = function () {
     originalReplaceState.apply(this, arguments);
-    watchForId();
+    watchForQueryParam();
   };
 })();
