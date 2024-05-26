@@ -1,5 +1,3 @@
-<div align="center"><strong>Dub Web Analytics</strong></div>
-
 ## Overview
 
 `@dub/analytics` allows you to track leads and sales conversions for Dub.
