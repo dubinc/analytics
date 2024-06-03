@@ -42,3 +42,16 @@ You can pass the following props to the `Analytics` component to customize the t
 | `path` | `/` | Specifies the value for the `Path` Set-Cookie attribute. By default, the path is considered the "default path". | `/` |
 | `sameSite` | `Lax` | Specifies the boolean or string to be the value for the `SameSite` Set-Cookie attribute. | `strict` |
 | `secure` | `false` | Specifies the boolean value for the `Secure` Set-Cookie attribute. | `true` |
+
+For example, to set the `domain` and `secure` options, you can use the following code:
+
+```tsx
+import { Analytics as DubAnalytics } from "@dub/analytics"
+
+<DubAnalytics
+   cookieOptions={{
+      domain: ".yourdomain.com" // for cross-domain tracking
+      secure: true
+   }}
+/>
+```
