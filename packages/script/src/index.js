@@ -1,6 +1,16 @@
 (function () {
   const CLICK_ID = 'dclid';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
+  const defaultOptions = {
+    domain: null,
+    httpOnly: false,
+    path: '/',
+    sameSite: 'Lax',
+    secure: false,
+    maxAge: COOKIE_EXPIRES,
+    expires: new Date(Date.now() + COOKIE_EXPIRES),
+    expiresInDays: 90,
+  };
 
   function getScript() {
     const scripts = document.querySelectorAll('script');
@@ -46,19 +56,17 @@
 
   // Utility function to set a cookie
   function setCookie(key, value, options) {
-    const defaultOptions = {
-      domain: null,
-      httpOnly: false,
-      path: '/',
-      sameSite: 'Lax',
-      secure: false,
-      maxAge: COOKIE_EXPIRES,
-      expires: new Date(Date.now() + COOKIE_EXPIRES),
-    };
-
     const { domain, expires, httpOnly, maxAge, path, sameSite, secure } = {
       ...defaultOptions,
       ...options,
+
+      ...(options &&
+        // If expiresInDays is set, calculate the expires date
+        options.expiresInDays && {
+          expires: new Date(
+            Date.now() + options.expiresInDays * 24 * 60 * 60 * 1000,
+          ),
+        }),
     };
 
     const cookieString = Object.entries({

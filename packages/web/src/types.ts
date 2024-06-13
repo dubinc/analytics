@@ -22,6 +22,13 @@ export interface AnalyticsProps {
     expires?: Date | undefined;
 
     /**
+     * Specifies the number of days until the cookie expires.
+     *
+     * @default 90
+     */
+    expiresInDays?: number | undefined;
+
+    /**
      * Specifies the boolean value for the {@link https://tools.ietf.org/html/rfc6265#section-5.2.6|`HttpOnly` `Set-Cookie` attribute}.
      * When truthy, the `HttpOnly` attribute is set, otherwise it is not. By
      * default, the `HttpOnly` attribute is not set.
