@@ -9,7 +9,6 @@
     secure: false,
     maxAge: COOKIE_EXPIRES,
     expires: new Date(Date.now() + COOKIE_EXPIRES),
-    expiresInDays: 90,
   };
 
   function getScript() {
