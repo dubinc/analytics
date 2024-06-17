@@ -8,7 +8,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>{children}</body>
-      <DubAnalytics />
+      <DubAnalytics cookieOptions={{ expiresInDays: 30 }} />
     </html>
   );
 }

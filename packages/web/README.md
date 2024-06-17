@@ -40,6 +40,7 @@ The `cookieOptions` prop accepts the following keys:
 |----------|---------|-------------|---------|
 | `domain` | `null` | Specifies the value for the `Domain` Set-Cookie attribute. | `example.com` |
 | `expires` | 90 days from now | Specifies the `Date` object to be the value for the `Expires` Set-Cookie attribute. | `new Date('2024-12-31')` |
+| `expiresInDays` | `90` | Specifies the number (in days) to be the value for the `Expires` Set-Cookie attribute. | `90` |
 | `httpOnly` | `false` | Specifies the boolean value for the `HttpOnly` Set-Cookie attribute. Be careful when setting this to true, as compliant clients will not allow client-side JavaScript to see the cookie in `document.cookie`. | `true` |
 | `maxAge` | `null` | Specifies the number (in seconds) to be the value for the `Max-Age` Set-Cookie attribute. | `3600` |
 | `path` | `/` | Specifies the value for the `Path` Set-Cookie attribute. By default, the path is considered the "default path". | `/` |
