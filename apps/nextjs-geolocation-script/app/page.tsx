@@ -1,5 +1,5 @@
 'use client';
 
 export default function Home() {
-  return <main>nextjs-geolocation-script</main>;
+  return <main>Dub Analytics with Geolocation</main>;
 }
