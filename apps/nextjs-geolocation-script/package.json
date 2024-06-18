@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "pnpm --filter @dub/analytics... build && next build",
     "dev": "next dev",
     "start": "next start"
   },

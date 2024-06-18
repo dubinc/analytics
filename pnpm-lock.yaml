@@ -24,43 +24,6 @@ importers:
         specifier: ^5.1.6
         version: 5.3.3
 
-  apps/nextjs:
-    dependencies:
-      '@dub/analytics':
-        specifier: workspace:*
-        version: link:../../packages/web
-      cookie:
-        specifier: ^0.6.0
-        version: 0.6.0
-      next:
-        specifier: 14.1.0
-        version: 14.1.0(@babel/core@7.23.9)(react-dom@18.2.0)(react@18.2.0)
-      react:
-        specifier: ^18
-        version: 18.2.0
-      react-dom:
-        specifier: ^18
-        version: 18.2.0(react@18.2.0)
-    devDependencies:
-      '@types/cookie':
-        specifier: ^0.6.0
-        version: 0.6.0
-      '@types/node':
-        specifier: ^20
-        version: 20.11.16
-      '@types/react':
-        specifier: ^18
-        version: 18.2.51
-      '@types/react-dom':
-        specifier: ^18
-        version: 18.2.18
-      eslint-config-next:
-        specifier: 14.1.0
-        version: 14.1.0(eslint@8.43.0)(typescript@5.3.3)
-      typescript:
-        specifier: ^5
-        version: 5.3.3
-
   apps/nextjs-geolocation-script:
     dependencies:
       '@dub/analytics':
