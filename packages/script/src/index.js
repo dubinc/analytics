@@ -26,13 +26,18 @@
     return null;
   }
 
-  function getCookieOptions(script) {
+  function getOptions(script) {
     if (!script) {
       return null;
     }
 
-    const v = script.getAttribute('data-cookie-options');
-    return v ? JSON.parse(v) : null;
+    const cv = script.getAttribute('data-cookie-options');
+    const av = script.getAttribute('data-attribution-model');
+
+    return {
+      cookieOptions: cv ? JSON.parse(cv) : null,
+      attributionModel: av || 'first-click',
+    };
   }
 
   const script = getScript();
@@ -86,15 +91,22 @@
 
   // Function to check for {keys} in the URL and update cookie if necessary
   function watchForQueryParam() {
-    const keys = [{ query: CLICK_ID, cookie: CLICK_ID }];
     const searchParams = new URLSearchParams(window.location.search);
-    const cookieOptions = getCookieOptions(script);
-    keys.forEach((key) => {
-      const param = searchParams.get(key.query);
-      if (param && !getCookie(key.cookie)) {
-        setCookie(key.cookie, param, cookieOptions);
+    const { cookieOptions, attributionModel } = getOptions(script);
+
+    const clickId = searchParams.get(CLICK_ID);
+
+    if (!clickId) {
+      return;
+    }
+
+    const cookie = getCookie(CLICK_ID);
+
+    if (!cookie || attributionModel === 'last-click') {
+      if (cookie !== clickId) {
+        setCookie(CLICK_ID, clickId, cookieOptions);
       }
-    });
+    }
   }
 
   watchForQueryParam();
