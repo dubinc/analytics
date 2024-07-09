@@ -85,6 +85,16 @@ export interface AnalyticsProps {
      */
     secure?: boolean | undefined;
   };
+
+  /**
+   * The Attribution Model to use for the analytics event.
+   *
+   * @default 'first-click'
+   *
+   * - `first-click` - The first click model gives all the credit to the first touchpoint in the customer journey.
+   * - `last-click` - The last click model gives all the credit to the last touchpoint in the customer journey.
+   */
+  attributionModel?: 'first-click' | 'last-click';
 }
 
 export interface ClickApiResponse {

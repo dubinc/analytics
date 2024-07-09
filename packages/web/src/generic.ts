@@ -17,11 +17,19 @@ function inject(props: AnalyticsProps): void {
   script.defer = true;
   script.setAttribute('data-sdkn', name);
   script.setAttribute('data-sdkv', version);
+
+  // TODO:
+  // Merge the cookieOptions and attributionModel into options
+
   if (props.cookieOptions && Object.keys(props.cookieOptions).length > 0) {
     script.setAttribute(
       'data-cookie-options',
       JSON.stringify(props.cookieOptions),
     );
+  }
+
+  if (props.attributionModel) {
+    script.setAttribute('data-attribution-model', props.attributionModel);
   }
 
   script.onerror = (): void => {
