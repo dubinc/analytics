@@ -4,10 +4,14 @@
 
 ## Quick start
 
-  1. Enable Dub conversion tracking in your [Dub Dashboard](https://dub.co).
-  2. Get your API key from the Dub Dashboard
-  3. Add the `@dub/analytics` package to your project
-  4. Inject the Analytics script to your app
+  1. Enable conversion tracking for your Dub link.
+  2. Install the `@dub/analytics` package to your project
+
+  ```bash
+  npm install @dub/analytics
+  ```
+
+  3. Inject the Analytics script to your app
 
   ```tsx
   import { Analytics as DubAnalytics } from '@dub/analytics/react';
