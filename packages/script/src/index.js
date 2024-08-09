@@ -36,7 +36,7 @@
 
     return {
       cookieOptions: cv ? JSON.parse(cv) : null,
-      attributionModel: av || 'first-click',
+      attributionModel: av || 'last-click',
     };
   }
 

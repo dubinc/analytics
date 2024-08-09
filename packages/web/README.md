@@ -67,7 +67,7 @@ import { Analytics as DubAnalytics } from "@dub/analytics"
 
 ### `attributionModel`
 
-Decide the attribution model to use for tracking. The default is `first-click`.
+Decide the attribution model to use for tracking. The default is `last-click`.
 
 - `first-click` - The first click model gives all the credit to the first touchpoint in the customer journey.
 - `last-click` - The last click model gives all the credit to the last touchpoint in the customer journey.
