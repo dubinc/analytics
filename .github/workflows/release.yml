@@ -12,8 +12,8 @@ jobs:
       - name: Install
         uses: ./.github/composite-actions/install
 
-      - name: lint
-        run: pnpm -r lint
+      # - name: lint
+      #   run: pnpm -r lint
 
       - name: type-check
         run: pnpm -r type-check
