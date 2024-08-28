@@ -23,7 +23,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_KEY }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy ./packages/script/dist --project-name=dub-cdn --commit-dirty=true
+          command: pages deploy dist --project-name=dub-cdn --commit-dirty=true
           workingDirectory: packages/script
           packageManager: pnpm
           # projectName: 'dub-cdn'
