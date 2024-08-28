@@ -1,5 +1,3 @@
-// Test script changes
-
 (function () {
   const CLICK_ID = 'dclid';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
