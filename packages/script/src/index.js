@@ -1,5 +1,3 @@
-// Just some changes
-
 (function () {
   const CLICK_ID = 'dclid';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
@@ -12,6 +10,10 @@
     maxAge: COOKIE_EXPIRES,
     expires: new Date(Date.now() + COOKIE_EXPIRES),
   };
+
+  function demo() {
+    console.log('This is just a demo method');
+  }
 
   function getScript() {
     const scripts = document.querySelectorAll('script');
