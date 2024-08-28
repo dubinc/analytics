@@ -15,6 +15,8 @@
     console.log('This is just a demo method');
   }
 
+  demo();
+
   function getScript() {
     const scripts = document.querySelectorAll('script');
 
