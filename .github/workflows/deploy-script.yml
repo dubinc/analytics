@@ -24,5 +24,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_KEY }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy packages/script/dist --project-name=dub-cdn
+          workingDirectory: ./packages/script
+          packageManager: pnpm
           # projectName: 'dub-cdn'
           # wranglerVersion: '3'
