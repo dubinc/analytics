@@ -26,5 +26,3 @@ jobs:
           command: pages deploy dist --project-name=dub-cdn --commit-dirty=true
           workingDirectory: packages/script
           packageManager: pnpm
-          # projectName: 'dub-cdn'
-          # wranglerVersion: '3'

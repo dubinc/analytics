@@ -11,12 +11,6 @@
     expires: new Date(Date.now() + COOKIE_EXPIRES),
   };
 
-  function demo() {
-    console.log('This is just a demo method');
-  }
-
-  demo();
-
   function getScript() {
     const scripts = document.querySelectorAll('script');
 
