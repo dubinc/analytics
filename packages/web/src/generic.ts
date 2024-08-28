@@ -1,14 +1,14 @@
 import { name, version } from '../package.json';
 import type { AnalyticsProps } from './types';
-import { getScriptSrc, isBrowser } from './utils';
+import { isBrowser } from './utils';
+
+const src = 'https://www.dubcdn.com/analytics/script.js';
 
 /**
  * Injects the Dub Web Analytics script into the page head.
  */
 function inject(props: AnalyticsProps): void {
   if (!isBrowser()) return;
-
-  const src = getScriptSrc();
 
   if (document.head.querySelector(`script[src*="${src}"]`)) return;
 
