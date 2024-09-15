@@ -98,11 +98,15 @@
     const clickId =
       searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
 
+    console.log('detecting clickId', clickId);
+
     if (!clickId) {
       return;
     }
 
     const cookie = getCookie(CLICK_ID) || getCookie(OLD_CLICK_ID);
+
+    console.log('detecting cookie', cookie);
 
     if (!cookie || attributionModel === 'last-click') {
       if (cookie !== clickId) {
