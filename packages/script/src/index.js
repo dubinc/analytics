@@ -1,5 +1,6 @@
 (function () {
-  const CLICK_ID = 'dclid';
+  const CLICK_ID = 'dubId';
+  const OLD_CLICK_ID = 'dclid';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const defaultOptions = {
     domain: null,
@@ -94,13 +95,14 @@
     const searchParams = new URLSearchParams(window.location.search);
     const { cookieOptions, attributionModel } = getOptions(script);
 
-    const clickId = searchParams.get(CLICK_ID);
+    const clickId =
+      searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
 
     if (!clickId) {
       return;
     }
 
-    const cookie = getCookie(CLICK_ID);
+    const cookie = getCookie(CLICK_ID) || getCookie(OLD_CLICK_ID);
 
     if (!cookie || attributionModel === 'last-click') {
       if (cookie !== clickId) {
