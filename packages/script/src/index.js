@@ -108,6 +108,7 @@
     if (!cookie || attributionModel === 'last-click') {
       if (cookie !== clickId) {
         setCookie(CLICK_ID, clickId, cookieOptions);
+        setCookie(OLD_CLICK_ID, clickId, cookieOptions);
       }
     }
   }
