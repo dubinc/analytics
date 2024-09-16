@@ -1,5 +1,6 @@
 (function () {
-  const CLICK_ID = 'dclid';
+  const CLICK_ID = 'dub_id';
+  const OLD_CLICK_ID = 'dclid';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const defaultOptions = {
     domain: null,
@@ -17,7 +18,8 @@
     for (let i = 0; i < scripts.length; i++) {
       if (
         scripts[i].src &&
-        scripts[i].src.includes('dubcdn.com/analytics/script.js')
+        (scripts[i].src.includes('dubcdn.com/analytics/script.js') || // production script
+          scripts[i].src.includes('.dub-cdn.pages.dev/analytics/script.js')) // staging script
       ) {
         return scripts[i];
       }
@@ -42,7 +44,7 @@
 
   const script = getScript();
   if (!script) {
-    console.error('[Dub Web Analytics] Script not found.');
+    console.error('[Dub Analytics] Script not found.');
     return;
   }
 
@@ -94,17 +96,19 @@
     const searchParams = new URLSearchParams(window.location.search);
     const { cookieOptions, attributionModel } = getOptions(script);
 
-    const clickId = searchParams.get(CLICK_ID);
+    const clickId =
+      searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
 
     if (!clickId) {
       return;
     }
 
-    const cookie = getCookie(CLICK_ID);
+    const cookie = getCookie(CLICK_ID) || getCookie(OLD_CLICK_ID);
 
     if (!cookie || attributionModel === 'last-click') {
       if (cookie !== clickId) {
         setCookie(CLICK_ID, clickId, cookieOptions);
+        setCookie(OLD_CLICK_ID, clickId, cookieOptions);
       }
     }
   }
