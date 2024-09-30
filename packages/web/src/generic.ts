@@ -2,19 +2,20 @@ import { name, version } from '../package.json';
 import type { AnalyticsProps } from './types';
 import { isBrowser } from './utils';
 
-const src = 'https://www.dubcdn.com/analytics/script.js';
-
 /**
  * Injects the Dub Web Analytics script into the page head.
  */
 function inject(props: AnalyticsProps): void {
   if (!isBrowser()) return;
 
+  const src =
+    props.scriptProps?.src || 'https://www.dubcdn.com/analytics/script.js';
+
   if (document.head.querySelector(`script[src*="${src}"]`)) return;
 
   const script = document.createElement('script');
   script.src = src;
-  script.defer = true;
+  script.defer = props.scriptProps?.defer || true;
   script.setAttribute('data-sdkn', name);
   script.setAttribute('data-sdkv', version);
 
