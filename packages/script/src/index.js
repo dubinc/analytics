@@ -2,8 +2,10 @@
   const CLICK_ID = 'dub_id';
   const OLD_CLICK_ID = 'dclid';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
+  const HOSTNAME = window.location.hostname;
+
   const defaultOptions = {
-    domain: null,
+    domain: HOSTNAME === 'localhost' ? undefined : `.${HOSTNAME}`,
     httpOnly: false,
     path: '/',
     sameSite: 'Lax',
@@ -33,12 +35,16 @@
       return null;
     }
 
-    const cv = script.getAttribute('data-cookie-options');
-    const av = script.getAttribute('data-attribution-model');
+    const api = script.getAttribute('data-api');
+    const am = script.getAttribute('data-attribution-model');
+    const co = script.getAttribute('data-cookie-options');
+    const sp = script.getAttribute('data-search-param');
 
     return {
-      cookieOptions: cv ? JSON.parse(cv) : null,
-      attributionModel: av || 'last-click',
+      api: api || 'https://api.dub.co/track/click',
+      attributionModel: am || 'last-click',
+      cookieOptions: co ? JSON.parse(co) : null,
+      searchParam: sp || 'ref',
     };
   }
 
@@ -91,16 +97,37 @@
     document.cookie = `${key}=${value}; ${cookieString}`;
   }
 
-  // Function to check for {keys} in the URL and update cookie if necessary
-  function watchForQueryParam() {
+  // Function to check for { keys } in the URL and update cookie if necessary
+  function watchForQueryParams() {
     const searchParams = new URLSearchParams(window.location.search);
-    const { cookieOptions, attributionModel } = getOptions(script);
+    const { api, cookieOptions, attributionModel, searchParam } =
+      getOptions(script);
 
-    const clickId =
-      searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
+    let clickId = searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
 
     if (!clickId) {
-      return;
+      const identifier = searchParams.get(searchParam);
+
+      if (identifier) {
+        fetch(api, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            domain: window.location.hostname,
+            identifier,
+          }),
+        }).then((res) => {
+          const data = res.json(); // Response: { clickId: string }
+
+          clickId = data.clickId;
+        });
+      }
+
+      if (!clickId) {
+        return;
+      }
     }
 
     const cookie = getCookie(CLICK_ID) || getCookie(OLD_CLICK_ID);
@@ -113,12 +140,12 @@
     }
   }
 
-  watchForQueryParam();
+  watchForQueryParams();
 
   // Listen for URL changes in case of SPA where the page doesn't reload
-  window.addEventListener('popstate', watchForQueryParam);
-  window.addEventListener('pushState', watchForQueryParam);
-  window.addEventListener('replaceState', watchForQueryParam);
+  window.addEventListener('popstate', watchForQueryParams);
+  window.addEventListener('pushState', watchForQueryParams);
+  window.addEventListener('replaceState', watchForQueryParams);
 
   // For single page applications, also observe for pushState and replaceState
   const originalPushState = history.pushState;
@@ -126,11 +153,11 @@
 
   history.pushState = function () {
     originalPushState.apply(this, arguments);
-    watchForQueryParam();
+    watchForQueryParams();
   };
 
   history.replaceState = function () {
     originalReplaceState.apply(this, arguments);
-    watchForQueryParam();
+    watchForQueryParams();
   };
 })();

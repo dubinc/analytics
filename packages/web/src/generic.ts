@@ -18,8 +18,13 @@ function inject(props: AnalyticsProps): void {
   script.setAttribute('data-sdkn', name);
   script.setAttribute('data-sdkv', version);
 
-  // TODO:
-  // Merge the cookieOptions and attributionModel into options
+  if (props.api) {
+    script.setAttribute('data-api', props.api);
+  }
+
+  if (props.attributionModel) {
+    script.setAttribute('data-attribution-model', props.attributionModel);
+  }
 
   if (props.cookieOptions && Object.keys(props.cookieOptions).length > 0) {
     script.setAttribute(
@@ -28,8 +33,12 @@ function inject(props: AnalyticsProps): void {
     );
   }
 
-  if (props.attributionModel) {
-    script.setAttribute('data-attribution-model', props.attributionModel);
+  if (props.searchParam) {
+    script.setAttribute('data-search-param', props.searchParam);
+  }
+
+  if (props.scriptProps) {
+    Object.assign(script, props.scriptProps);
   }
 
   script.onerror = (): void => {

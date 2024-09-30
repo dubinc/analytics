@@ -1,11 +1,32 @@
 export type AllowedPropertyValues = string | number | boolean | null;
 
 export interface AnalyticsProps {
+  /**
+   * The API endpoint to send analytics data to.
+   * @default 'https://api.dub.co/track/click'
+   */
+  api?: string;
+
+  /**
+   * The Attribution Model to use for the analytics event.
+   *
+   * @default 'last-click'
+   *
+   * - `first-click` - The first click model gives all the credit to the first touchpoint in the customer journey.
+   * - `last-click` - The last click model gives all the credit to the last touchpoint in the customer journey.
+   */
+  attributionModel?: 'first-click' | 'last-click';
+
+  /**
+   * The cookie options to use for the analytics event.
+   */
   cookieOptions?: {
     /**
      * Specifies the value for the {@link https://tools.ietf.org/html/rfc6265#section-5.2.3|Domain Set-Cookie attribute}. By default, no
-     * domain is set, and most clients will consider the cookie to apply to only
-     * the current domain.
+     * domain is set, and most clients will consider the cookie to apply to only the current domain.
+     * By default, the domain is set to the current hostname (including all subdomains).
+     *
+     * @default `.` + window.location.hostname
      */
     domain?: string | undefined;
 
@@ -87,14 +108,20 @@ export interface AnalyticsProps {
   };
 
   /**
-   * The Attribution Model to use for the analytics event.
+   * The search parameter to listen to for client-side click-tracking (e.g. `?ref=abc123`)
    *
-   * @default 'last-click'
-   *
-   * - `first-click` - The first click model gives all the credit to the first touchpoint in the customer journey.
-   * - `last-click` - The last click model gives all the credit to the last touchpoint in the customer journey.
+   * @default 'ref'
    */
-  attributionModel?: 'first-click' | 'last-click';
+  searchParam?: string;
+
+  /**
+   * Custom properties to pass to the script.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
+   */
+  scriptProps?: React.DetailedHTMLProps<
+    React.ScriptHTMLAttributes<HTMLScriptElement>,
+    HTMLScriptElement
+  >;
 }
 
 export interface ClickApiResponse {
