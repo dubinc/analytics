@@ -108,11 +108,11 @@ export interface AnalyticsProps {
   };
 
   /**
-   * The search parameter to listen to for client-side click-tracking (e.g. `?ref=abc123`)
+   * The query parameter to listen to for client-side click-tracking (e.g. `?ref=abc123`)
    *
    * @default 'ref'
    */
-  searchParam?: string;
+  queryParam?: string;
 
   /**
    * Custom properties to pass to the script.

@@ -38,13 +38,13 @@
     const api = script.getAttribute('data-api');
     const am = script.getAttribute('data-attribution-model');
     const co = script.getAttribute('data-cookie-options');
-    const sp = script.getAttribute('data-search-param');
+    const qp = script.getAttribute('data-query-param');
 
     return {
       api: api || 'https://api.dub.co/track/click',
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
-      searchParam: sp || 'ref',
+      queryParam: qp || 'ref',
     };
   }
 
@@ -100,13 +100,13 @@
   // Function to check for { keys } in the URL and update cookie if necessary
   function watchForQueryParams() {
     const searchParams = new URLSearchParams(window.location.search);
-    const { api, cookieOptions, attributionModel, searchParam } =
+    const { api, cookieOptions, attributionModel, queryParam } =
       getOptions(script);
 
     let clickId = searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
 
     if (!clickId) {
-      const identifier = searchParams.get(searchParam);
+      const identifier = searchParams.get(queryParam);
 
       if (identifier) {
         fetch(api, {

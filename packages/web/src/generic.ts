@@ -33,8 +33,8 @@ function inject(props: AnalyticsProps): void {
     );
   }
 
-  if (props.searchParam) {
-    script.setAttribute('data-search-param', props.searchParam);
+  if (props.queryParam) {
+    script.setAttribute('data-query-param', props.queryParam);
   }
 
   if (props.scriptProps) {
