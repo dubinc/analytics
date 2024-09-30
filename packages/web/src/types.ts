@@ -3,9 +3,9 @@ export type AllowedPropertyValues = string | number | boolean | null;
 export interface AnalyticsProps {
   /**
    * The API endpoint to send analytics data to.
-   * @default 'https://api.dub.co/track/click'
+   * @default 'https://api.dub.co'
    */
-  api?: string;
+  apiHost?: string;
 
   /**
    * The Attribution Model to use for the analytics event.

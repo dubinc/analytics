@@ -18,8 +18,8 @@ function inject(props: AnalyticsProps): void {
   script.setAttribute('data-sdkn', name);
   script.setAttribute('data-sdkv', version);
 
-  if (props.api) {
-    script.setAttribute('data-api', props.api);
+  if (props.apiHost) {
+    script.setAttribute('data-api-host', props.apiHost);
   }
 
   if (props.attributionModel) {
