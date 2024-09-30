@@ -115,7 +115,6 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            domain: window.location.hostname,
             identifier,
           }),
         }).then((res) => {
