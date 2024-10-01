@@ -117,8 +117,16 @@
           body: JSON.stringify({
             identifier,
           }),
-        }).then((res) => {
-          const data = res.json(); // Response: { clickId: string }
+        }).then(async (res) => {
+          if (!res.ok) {
+            const { error } = await res.json();
+            console.error(
+              `[Dub Analytics] Failed to track click: ${error.message}`,
+            );
+            return;
+          }
+
+          const data = await res.json(); // Response: { clickId: string }
 
           clickId = data.clickId;
         });
