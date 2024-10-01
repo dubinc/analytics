@@ -23,6 +23,10 @@ function inject(props: AnalyticsProps): void {
     script.setAttribute('data-api-host', props.apiHost);
   }
 
+  if (props.apiKey) {
+    script.setAttribute('data-api-key', props.apiKey);
+  }
+
   if (props.attributionModel) {
     script.setAttribute('data-attribution-model', props.attributionModel);
   }

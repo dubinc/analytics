@@ -36,12 +36,14 @@
     }
 
     const ah = script.getAttribute('data-api-host');
+    const ak = script.getAttribute('data-api-key');
     const am = script.getAttribute('data-attribution-model');
     const co = script.getAttribute('data-cookie-options');
     const qp = script.getAttribute('data-query-param');
 
     return {
       apiHost: ah || 'https://api.dub.co',
+      apiKey: ak,
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
       queryParam: qp || 'ref',
@@ -100,7 +102,7 @@
   // Function to check for { keys } in the URL and update cookie if necessary
   function watchForQueryParams() {
     const searchParams = new URLSearchParams(window.location.search);
-    const { apiHost, cookieOptions, attributionModel, queryParam } =
+    const { apiHost, apiKey, cookieOptions, attributionModel, queryParam } =
       getOptions(script);
 
     let clickId = searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
@@ -109,9 +111,17 @@
       const identifier = searchParams.get(queryParam);
 
       if (identifier) {
+        if (!apiKey) {
+          console.error(
+            '[Dub Analytics] Publishable API key not specified, which is required for tracking clicks. Please set the `apiKey` option.',
+          );
+          return;
+        }
+
         fetch(`${apiHost}/track/click`, {
           method: 'POST',
           headers: {
+            Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({

@@ -8,6 +8,12 @@ export interface AnalyticsProps {
   apiHost?: string;
 
   /**
+   * The publishable API key to use for tracking click events.
+   * @example 'dub_publishable_xxxxxxxxxx'
+   */
+  apiKey?: string;
+
+  /**
    * The Attribution Model to use for the analytics event.
    *
    * @default 'last-click'
