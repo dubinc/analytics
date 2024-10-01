@@ -118,44 +118,49 @@
     const searchParams = new URLSearchParams(window.location.search);
     const { apiHost, apiKey, queryParam } = getOptions(script);
 
+    // When the clickId is present in the URL, set the cookie (?dub_id=...)
     let clickId = searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
 
     if (clickId) {
       checkCookieAndSet(clickId);
-    } else {
-      const identifier = searchParams.get(queryParam);
-
-      if (identifier) {
-        if (!apiKey) {
-          console.error(
-            '[Dub Analytics] Publishable API key not specified, which is required for tracking clicks. Please set the `apiKey` option.',
-          );
-          return;
-        }
-
-        fetch(`${apiHost}/track/click`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            identifier,
-          }),
-        }).then(async (res) => {
-          if (!res.ok) {
-            const { error } = await res.json();
-            console.error(
-              `[Dub Analytics] Failed to track click: ${error.message}`,
-            );
-            return;
-          }
-
-          const { clickId } = await res.json(); // Response: { clickId: string }
-          checkCookieAndSet(clickId);
-        });
-      }
+      return;
     }
+
+    // When the identifier is present in the URL, track the click and set the cookie (?ref=...)
+    const identifier = searchParams.get(queryParam);
+
+    if (!identifier) {
+      return;
+    }
+
+    if (!apiKey) {
+      console.error(
+        '[Dub Analytics] Publishable API key not specified, which is required for tracking clicks. Please set the `apiKey` option.',
+      );
+      return;
+    }
+
+    fetch(`${apiHost}/track/click`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        identifier,
+      }),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const { error } = await res.json();
+        console.error(
+          `[Dub Analytics] Failed to track click: ${error.message}`,
+        );
+        return;
+      }
+
+      const { clickId } = await res.json(); // Response: { clickId: string }
+      checkCookieAndSet(clickId);
+    });
   }
 
   watchForQueryParams();
