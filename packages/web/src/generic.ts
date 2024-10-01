@@ -2,24 +2,34 @@ import { name, version } from '../package.json';
 import type { AnalyticsProps } from './types';
 import { isBrowser } from './utils';
 
-const src = 'https://www.dubcdn.com/analytics/script.js';
-
 /**
  * Injects the Dub Web Analytics script into the page head.
  */
 function inject(props: AnalyticsProps): void {
   if (!isBrowser()) return;
 
+  const src =
+    props.scriptProps?.src || 'https://www.dubcdn.com/analytics/script.js';
+
   if (document.head.querySelector(`script[src*="${src}"]`)) return;
 
   const script = document.createElement('script');
   script.src = src;
-  script.defer = true;
+  script.defer = props.scriptProps?.defer || true;
   script.setAttribute('data-sdkn', name);
   script.setAttribute('data-sdkv', version);
 
-  // TODO:
-  // Merge the cookieOptions and attributionModel into options
+  if (props.apiHost) {
+    script.setAttribute('data-api-host', props.apiHost);
+  }
+
+  if (props.apiKey) {
+    script.setAttribute('data-api-key', props.apiKey);
+  }
+
+  if (props.attributionModel) {
+    script.setAttribute('data-attribution-model', props.attributionModel);
+  }
 
   if (props.cookieOptions && Object.keys(props.cookieOptions).length > 0) {
     script.setAttribute(
@@ -28,8 +38,12 @@ function inject(props: AnalyticsProps): void {
     );
   }
 
-  if (props.attributionModel) {
-    script.setAttribute('data-attribution-model', props.attributionModel);
+  if (props.queryParam) {
+    script.setAttribute('data-query-param', props.queryParam);
+  }
+
+  if (props.scriptProps) {
+    Object.assign(script, props.scriptProps);
   }
 
   script.onerror = (): void => {

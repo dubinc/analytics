@@ -2,8 +2,10 @@
   const CLICK_ID = 'dub_id';
   const OLD_CLICK_ID = 'dclid';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
+  const HOSTNAME = window.location.hostname;
+
   const defaultOptions = {
-    domain: null,
+    domain: HOSTNAME === 'localhost' ? undefined : `.${HOSTNAME}`,
     httpOnly: false,
     path: '/',
     sameSite: 'Lax',
@@ -33,12 +35,18 @@
       return null;
     }
 
-    const cv = script.getAttribute('data-cookie-options');
-    const av = script.getAttribute('data-attribution-model');
+    const ah = script.getAttribute('data-api-host');
+    const ak = script.getAttribute('data-api-key');
+    const am = script.getAttribute('data-attribution-model');
+    const co = script.getAttribute('data-cookie-options');
+    const qp = script.getAttribute('data-query-param');
 
     return {
-      cookieOptions: cv ? JSON.parse(cv) : null,
-      attributionModel: av || 'last-click',
+      apiHost: ah || 'https://api.dub.co',
+      apiKey: ak,
+      attributionModel: am || 'last-click',
+      cookieOptions: co ? JSON.parse(co) : null,
+      queryParam: qp || 'ref',
     };
   }
 
@@ -91,34 +99,83 @@
     document.cookie = `${key}=${value}; ${cookieString}`;
   }
 
-  // Function to check for {keys} in the URL and update cookie if necessary
-  function watchForQueryParam() {
-    const searchParams = new URLSearchParams(window.location.search);
+  function checkCookieAndSet(clickId) {
     const { cookieOptions, attributionModel } = getOptions(script);
-
-    const clickId =
-      searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
-
-    if (!clickId) {
-      return;
-    }
 
     const cookie = getCookie(CLICK_ID) || getCookie(OLD_CLICK_ID);
 
-    if (!cookie || attributionModel === 'last-click') {
-      if (cookie !== clickId) {
-        setCookie(CLICK_ID, clickId, cookieOptions);
-        setCookie(OLD_CLICK_ID, clickId, cookieOptions);
-      }
+    // If the cookie is not set
+    // or the cookie is set and is not the same as the clickId + attribution model is 'last-click'
+    // then set the cookie
+    if (!cookie || (cookie !== clickId && attributionModel === 'last-click')) {
+      setCookie(CLICK_ID, clickId, cookieOptions);
+      setCookie(OLD_CLICK_ID, clickId, cookieOptions);
     }
   }
 
-  watchForQueryParam();
+  // Function to check for { keys } in the URL and update cookie if necessary
+  function watchForQueryParams() {
+    const searchParams = new URLSearchParams(window.location.search);
+    const { apiHost, apiKey, queryParam } = getOptions(script);
+
+    // When the clickId is present in the URL, set the cookie (?dub_id=...)
+    let clickId = searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
+
+    if (clickId) {
+      checkCookieAndSet(clickId);
+      return;
+    }
+
+    // When the identifier is present in the URL, track the click and set the cookie (?ref=...)
+    const identifier = searchParams.get(queryParam);
+
+    if (!identifier) {
+      return;
+    }
+
+    if (!apiKey) {
+      console.warn(
+        '[Dub Analytics] Matching identifier detected but publishable API key not specified, which is required for tracking clicks. Please set the `apiKey` option, or clicks will not be tracked.',
+      );
+      return;
+    }
+
+    fetch(`${apiHost}/track/click`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        identifier,
+      }),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const { error } = await res.json();
+        console.error(
+          `[Dub Analytics] Failed to track click: ${error.message}`,
+        );
+        return;
+      }
+
+      if (res.status === 204) {
+        console.warn(
+          `[Dub Analytics] Link does not exist for identifier: ${identifier}. Click not tracked.`,
+        );
+        return;
+      }
+
+      const { clickId } = await res.json(); // Response: { clickId: string }
+      checkCookieAndSet(clickId);
+    });
+  }
+
+  watchForQueryParams();
 
   // Listen for URL changes in case of SPA where the page doesn't reload
-  window.addEventListener('popstate', watchForQueryParam);
-  window.addEventListener('pushState', watchForQueryParam);
-  window.addEventListener('replaceState', watchForQueryParam);
+  window.addEventListener('popstate', watchForQueryParams);
+  window.addEventListener('pushState', watchForQueryParams);
+  window.addEventListener('replaceState', watchForQueryParams);
 
   // For single page applications, also observe for pushState and replaceState
   const originalPushState = history.pushState;
@@ -126,11 +183,11 @@
 
   history.pushState = function () {
     originalPushState.apply(this, arguments);
-    watchForQueryParam();
+    watchForQueryParams();
   };
 
   history.replaceState = function () {
     originalReplaceState.apply(this, arguments);
-    watchForQueryParam();
+    watchForQueryParams();
   };
 })();
