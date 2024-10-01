@@ -134,8 +134,8 @@
     }
 
     if (!apiKey) {
-      console.error(
-        '[Dub Analytics] Publishable API key not specified, which is required for tracking clicks. Please set the `apiKey` option.',
+      console.warn(
+        '[Dub Analytics] Matching identifier detected but publishable API key not specified, which is required for tracking clicks. Please set the `apiKey` option, or clicks will not be tracked.',
       );
       return;
     }

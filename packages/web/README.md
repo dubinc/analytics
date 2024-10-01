@@ -36,6 +36,22 @@
 
 You can pass the following props to the `Analytics` component to customize the tracking script.
 
+### `apiHost`
+
+The API host to use for tracking. The default is `https://api.dub.co`.
+
+### `apiKey`
+
+The publishable API key to use for tracking. Get your publishable API key from your [Dub workspace's token settings page](https://app.dub.co/settings/tokens).
+
+### `attributionModel`
+
+Decide the attribution model to use for tracking. The default is `last-click`.
+
+- `first-click` - The first click model gives all the credit to the first touchpoint in the customer journey.
+- `last-click` - The last click model gives all the credit to the last touchpoint in the customer journey.
+
+
 ### `cookieOptions`
 
 The `cookieOptions` prop accepts the following keys:
@@ -61,9 +77,10 @@ import { Analytics as DubAnalytics } from "@dub/analytics"
 />
 ```
 
-### `attributionModel`
+### `queryParam`
 
-Decide the attribution model to use for tracking. The default is `last-click`.
+The query parameter to listen to for client-side click-tracking (e.g. `?ref=abc123`). The default is `ref`.
 
-- `first-click` - The first click model gives all the credit to the first touchpoint in the customer journey.
-- `last-click` - The last click model gives all the credit to the last touchpoint in the customer journey.
+### `scriptProps`
+
+Custom properties to pass to the script tag. Refer to [MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement) for all available options.
