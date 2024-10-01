@@ -99,15 +99,30 @@
     document.cookie = `${key}=${value}; ${cookieString}`;
   }
 
+  function checkCookieAndSet(clickId) {
+    const { cookieOptions, attributionModel } = getOptions(script);
+
+    const cookie = getCookie(CLICK_ID) || getCookie(OLD_CLICK_ID);
+
+    // If the cookie is not set
+    // or the cookie is set and is not the same as the clickId + attribution model is 'last-click'
+    // then set the cookie
+    if (!cookie || (cookie !== clickId && attributionModel === 'last-click')) {
+      setCookie(CLICK_ID, clickId, cookieOptions);
+      setCookie(OLD_CLICK_ID, clickId, cookieOptions);
+    }
+  }
+
   // Function to check for { keys } in the URL and update cookie if necessary
   function watchForQueryParams() {
     const searchParams = new URLSearchParams(window.location.search);
-    const { apiHost, apiKey, cookieOptions, attributionModel, queryParam } =
-      getOptions(script);
+    const { apiHost, apiKey, queryParam } = getOptions(script);
 
     let clickId = searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
 
-    if (!clickId) {
+    if (clickId) {
+      checkCookieAndSet(clickId);
+    } else {
       const identifier = searchParams.get(queryParam);
 
       if (identifier) {
@@ -136,23 +151,9 @@
             return;
           }
 
-          const data = await res.json(); // Response: { clickId: string }
-
-          clickId = data.clickId;
+          const { clickId } = await res.json(); // Response: { clickId: string }
+          checkCookieAndSet(clickId);
         });
-      }
-
-      if (!clickId) {
-        return;
-      }
-    }
-
-    const cookie = getCookie(CLICK_ID) || getCookie(OLD_CLICK_ID);
-
-    if (!cookie || attributionModel === 'last-click') {
-      if (cookie !== clickId) {
-        setCookie(CLICK_ID, clickId, cookieOptions);
-        setCookie(OLD_CLICK_ID, clickId, cookieOptions);
       }
     }
   }
