@@ -38,11 +38,11 @@ You can pass the following props to the `Analytics` component to customize the t
 
 ### `apiHost`
 
-The API host to use for tracking. The default is `https://api.dub.co`.
+The API host to use for tracking. This is useful for setting up reverse proxies to avoid adblockers. The default is `https://api.dub.co`.
 
 ### `apiKey`
 
-The publishable API key to use for tracking. Get your publishable API key from your [Dub workspace's token settings page](https://app.dub.co/settings/tokens).
+The publishable API key to use for client-side click tracking. Get your publishable API key from your [Dub workspace's token settings page](https://app.dub.co/settings/tokens).
 
 ### `attributionModel`
 
