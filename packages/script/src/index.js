@@ -46,7 +46,7 @@
       apiKey: ak,
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
-      queryParam: qp || 'ref',
+      queryParam: qp || 'via',
     };
   }
 
@@ -126,7 +126,7 @@
       return;
     }
 
-    // When the identifier is present in the URL, track the click and set the cookie (?ref=...)
+    // When the identifier is present in the URL, track the click and set the cookie
     const identifier = searchParams.get(queryParam);
 
     if (!identifier) {

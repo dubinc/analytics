@@ -79,7 +79,7 @@ import { Analytics as DubAnalytics } from "@dub/analytics"
 
 ### `queryParam`
 
-The query parameter to listen to for client-side click-tracking (e.g. `?ref=abc123`). The default is `ref`.
+The query parameter to listen to for client-side click-tracking (e.g. `?via=john`, `?ref=jane`). The default is `via`.
 
 ### `scriptProps`
 
