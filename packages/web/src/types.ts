@@ -114,9 +114,9 @@ export interface AnalyticsProps {
   };
 
   /**
-   * The query parameter to listen to for client-side click-tracking (e.g. `?ref=abc123`)
+   * The query parameter to listen to for client-side click-tracking (e.g. `?via=john`, `?ref=jane`).
    *
-   * @default 'ref'
+   * @default 'via'
    */
   queryParam?: string;
 
