@@ -5,7 +5,10 @@
   const HOSTNAME = window.location.hostname;
 
   const defaultOptions = {
-    domain: HOSTNAME === 'localhost' ? undefined : `.${HOSTNAME}`,
+    domain:
+      HOSTNAME === 'localhost'
+        ? undefined
+        : `.${HOSTNAME.replace(/^www\./, '')}`,
     httpOnly: false,
     path: '/',
     sameSite: 'Lax',
