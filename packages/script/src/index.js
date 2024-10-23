@@ -8,7 +8,8 @@
     domain:
       HOSTNAME === 'localhost'
         ? undefined
-        : `.${HOSTNAME.replace(/^www\./, '')}`,
+        : // Remove 'www.' from the hostname (because we want to set the cookie on the root domain)
+          `.${HOSTNAME.replace(/^www\./, '')}`,
     httpOnly: false,
     path: '/',
     sameSite: 'Lax',
