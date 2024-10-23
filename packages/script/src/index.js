@@ -5,7 +5,11 @@
   const HOSTNAME = window.location.hostname;
 
   const defaultOptions = {
-    domain: HOSTNAME === 'localhost' ? undefined : `.${HOSTNAME}`,
+    domain:
+      HOSTNAME === 'localhost'
+        ? undefined
+        : // Remove 'www.' from the hostname (because we want to set the cookie on the root domain)
+          `.${HOSTNAME.replace(/^www\./, '')}`,
     httpOnly: false,
     path: '/',
     sameSite: 'Lax',
