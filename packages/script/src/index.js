@@ -40,14 +40,14 @@
     }
 
     const ah = script.getAttribute('data-api-host');
-    const ak = script.getAttribute('data-api-key');
     const am = script.getAttribute('data-attribution-model');
     const co = script.getAttribute('data-cookie-options');
     const qp = script.getAttribute('data-query-param');
+    const d = script.getAttribute('data-domain');
 
     return {
       apiHost: ah || 'https://api.dub.co',
-      apiKey: ak,
+      domain: d || undefined,
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
       queryParam: qp || 'via',
@@ -120,7 +120,7 @@
   // Function to check for { keys } in the URL and update cookie if necessary
   function watchForQueryParams() {
     const searchParams = new URLSearchParams(window.location.search);
-    const { apiHost, apiKey, queryParam } = getOptions(script);
+    const { apiHost, domain, queryParam } = getOptions(script);
 
     // When the clickId is present in the URL, set the cookie (?dub_id=...)
     let clickId = searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
@@ -137,9 +137,9 @@
       return;
     }
 
-    if (!apiKey) {
+    if (!domain) {
       console.warn(
-        '[Dub Analytics] Matching identifier detected but publishable API key not specified, which is required for tracking clicks. Please set the `apiKey` option, or clicks will not be tracked.',
+        '[Dub Analytics] Matching identifier detected but domain is not specified, which is required for tracking clicks. Please set the `domain` option, or clicks will not be tracked.',
       );
       return;
     }
@@ -147,11 +147,11 @@
     fetch(`${apiHost}/track/click`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        identifier,
+        domain,
+        key: identifier,
       }),
     }).then(async (res) => {
       if (!res.ok) {
