@@ -139,7 +139,7 @@
 
     if (!domain) {
       console.warn(
-        '[Dub Analytics] Matching identifier detected but domain is not specified, which is required for tracking clicks. Please set the `domain` option, or clicks will not be tracked.',
+        '[Dub Analytics] Matching queryParam identifier detected but domain is not specified, which is required for tracking clicks. Please set the `domain` option, or clicks will not be tracked.',
       );
       return;
     }
