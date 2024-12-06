@@ -144,6 +144,13 @@
       return;
     }
 
+    if (defaultOptions.domain && !domain.endsWith(defaultOptions.domain)) {
+      console.warn(
+        `[Dub Analytics] Specified domain ${domain} is not a subdomain of ${defaultOptions.domain.slice(1)}. Clicks will not be tracked.`,
+      );
+      return;
+    }
+
     fetch(`${apiHost}/track/click`, {
       method: 'POST',
       headers: {
