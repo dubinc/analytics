@@ -8,10 +8,10 @@ export interface AnalyticsProps {
   apiHost?: string;
 
   /**
-   * The publishable API key to use for tracking click events.
-   * @example 'dub_publishable_xxxxxxxxxx'
+   * The domain of the short link to track clicks for. This is required for client-side click-tracking.
+   * @example 'example.com'
    */
-  apiKey?: string;
+  domain?: string;
 
   /**
    * The Attribution Model to use for the analytics event.
