@@ -23,8 +23,8 @@ function inject(props: AnalyticsProps): void {
     script.setAttribute('data-api-host', props.apiHost);
   }
 
-  if (props.domain) {
-    script.setAttribute('data-domain', props.domain);
+  if (props.shortDomain) {
+    script.setAttribute('data-short-domain', props.shortDomain);
   }
 
   if (props.attributionModel) {
