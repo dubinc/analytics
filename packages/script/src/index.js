@@ -4,7 +4,7 @@
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
 
-  const defaultOptions = {
+  const defaultCookieOptions = {
     domain:
       HOSTNAME === 'localhost'
         ? undefined
@@ -43,11 +43,13 @@
     const am = script.getAttribute('data-attribution-model');
     const co = script.getAttribute('data-cookie-options');
     const qp = script.getAttribute('data-query-param');
-    const d = script.getAttribute('data-domain');
+    const sd =
+      script.getAttribute('data-short-domain') ||
+      script.getAttribute('data-domain');
 
     return {
       apiHost: ah || 'https://api.dub.co',
-      domain: d || undefined,
+      shortDomain: sd || undefined,
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
       queryParam: qp || 'via',
@@ -75,7 +77,7 @@
   // Utility function to set a cookie
   function setCookie(key, value, options) {
     const { domain, expires, httpOnly, maxAge, path, sameSite, secure } = {
-      ...defaultOptions,
+      ...defaultCookieOptions,
       ...options,
 
       ...(options &&
@@ -120,7 +122,7 @@
   // Function to check for { keys } in the URL and update cookie if necessary
   function watchForQueryParams() {
     const searchParams = new URLSearchParams(window.location.search);
-    const { apiHost, domain, queryParam } = getOptions(script);
+    const { apiHost, shortDomain, queryParam } = getOptions(script);
 
     // When the clickId is present in the URL, set the cookie (?dub_id=...)
     let clickId = searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
@@ -137,16 +139,19 @@
       return;
     }
 
-    if (!domain) {
+    if (!shortDomain) {
       console.warn(
-        '[Dub Analytics] Matching queryParam identifier detected but domain is not specified, which is required for tracking clicks. Please set the `domain` option, or clicks will not be tracked.',
+        '[Dub Analytics] Matching `queryParam` identifier detected but `shortDomain` is not specified, which is required for tracking clicks. Please set the `shortDomain` option, or clicks will not be tracked.',
       );
       return;
     }
 
-    if (defaultOptions.domain && !domain.endsWith(defaultOptions.domain)) {
+    if (
+      defaultCookieOptions.domain &&
+      !shortDomain.endsWith(defaultCookieOptions.domain)
+    ) {
       console.warn(
-        `[Dub Analytics] Specified domain ${domain} is not a subdomain of ${defaultOptions.domain.slice(1)}. Clicks will not be tracked.`,
+        `[Dub Analytics] Specified short domain ${shortDomain} is not a subdomain of ${defaultCookieOptions.domain.slice(1)}. Clicks will not be tracked.`,
       );
       return;
     }
@@ -157,7 +162,7 @@
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        domain,
+        domain: shortDomain,
         key: identifier,
       }),
     }).then(async (res) => {

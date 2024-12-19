@@ -40,9 +40,9 @@ You can pass the following props to the `Analytics` component to customize the t
 
 The API host to use for tracking. This is useful for setting up reverse proxies to avoid adblockers. The default is `https://api.dub.co`.
 
-### `domain`
+### `shortDomain`
 
-The domain of the short link to track clicks for. This is required for client-side click-tracking.
+The short domain you're using on Dub for your short links. This is required for client-side click-tracking.
 
 ### `attributionModel`
 

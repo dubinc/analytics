@@ -8,10 +8,10 @@ export interface AnalyticsProps {
   apiHost?: string;
 
   /**
-   * The domain of the short link to track clicks for. This is required for client-side click-tracking.
+   * The short domain you're using on Dub for your short links. This is required for client-side click-tracking.
    * @example 'example.com'
    */
-  domain?: string;
+  shortDomain?: string;
 
   /**
    * The Attribution Model to use for the analytics event.
