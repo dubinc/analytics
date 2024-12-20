@@ -164,6 +164,7 @@
       body: JSON.stringify({
         domain: shortDomain,
         key: identifier,
+        url: window.location.href,
       }),
     }).then(async (res) => {
       if (!res.ok) {
