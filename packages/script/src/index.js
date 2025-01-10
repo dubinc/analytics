@@ -1,6 +1,5 @@
 (function () {
   const CLICK_ID = 'dub_id';
-  const OLD_CLICK_ID = 'dclid';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
 
@@ -108,14 +107,13 @@
   function checkCookieAndSet(clickId) {
     const { cookieOptions, attributionModel } = getOptions(script);
 
-    const cookie = getCookie(CLICK_ID) || getCookie(OLD_CLICK_ID);
+    const cookie = getCookie(CLICK_ID);
 
     // If the cookie is not set
     // or the cookie is set and is not the same as the clickId + attribution model is 'last-click'
     // then set the cookie
     if (!cookie || (cookie !== clickId && attributionModel === 'last-click')) {
       setCookie(CLICK_ID, clickId, cookieOptions);
-      setCookie(OLD_CLICK_ID, clickId, cookieOptions);
     }
   }
 
@@ -125,7 +123,7 @@
     const { apiHost, shortDomain, queryParam } = getOptions(script);
 
     // When the clickId is present in the URL, set the cookie (?dub_id=...)
-    let clickId = searchParams.get(CLICK_ID) || searchParams.get(OLD_CLICK_ID);
+    const clickId = searchParams.get(CLICK_ID);
 
     if (clickId) {
       checkCookieAndSet(clickId);
