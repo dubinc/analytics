@@ -14,11 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>{children}</body>
-      <DubAnalytics
-        cookieOptions={{
-          domain: '.example.com', // Cross-domain cookie sharing
-        }}
-      />
+      <DubAnalytics />
     </html>
   );
 }

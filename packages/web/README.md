@@ -63,16 +63,14 @@ The `cookieOptions` prop accepts the following keys:
 | `expiresInDays` | `90` | Specifies the number (in days) to be the value for the `Expires` Set-Cookie attribute. | `90` |
 | `path` | `/` | Specifies the value for the `Path` Set-Cookie attribute. By default, the path is considered the "default path". | `/` |
 
-For example, to set a cross domain cookie, you can use the following code:
+For example, to set a 60-day cookie window, you can use the following code:
 
 ```tsx
 import { Analytics as DubAnalytics } from "@dub/analytics"
 
 <DubAnalytics
    cookieOptions={{
-      domain: process.env.IS_PRODUCTION_ENV
-        ? ".yourdomain.com" // for cross-domain tracking
-        : undefined,
+      expiresInDays: 60,
    }}
 />
 ```
