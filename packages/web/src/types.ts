@@ -8,8 +8,8 @@ export interface AnalyticsProps {
   apiHost?: string;
 
   /**
-   * The short domain you're using on Dub for your short links. For security purposes, this must be a subdomain of your website's domain. This is required for client-side click-tracking.
-   * @example 'example.com'
+   * The custom domain you're using on Dub for your short links.
+   * @example 'go.example.com'
    */
   shortDomain?: string;
 
