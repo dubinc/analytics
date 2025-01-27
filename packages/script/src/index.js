@@ -144,16 +144,6 @@
       return;
     }
 
-    if (
-      defaultCookieOptions.domain &&
-      !shortDomain.endsWith(defaultCookieOptions.domain)
-    ) {
-      console.warn(
-        `[Dub Analytics] Specified short domain ${shortDomain} is not a subdomain of ${defaultCookieOptions.domain.slice(1)}. Clicks will not be tracked.`,
-      );
-      return;
-    }
-
     fetch(`${apiHost}/track/click`, {
       method: 'POST',
       headers: {
