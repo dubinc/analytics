@@ -163,10 +163,8 @@
 
   // Listen for URL changes in case of SPA where the page doesn't reload
   window.addEventListener('popstate', watchForQueryParams);
-  window.addEventListener('pushState', watchForQueryParams);
-  window.addEventListener('replaceState', watchForQueryParams);
 
-  // For single page applications, also observe for pushState and replaceState
+  // For single page applications, monkey-patch History API methods
   const originalPushState = history.pushState;
   const originalReplaceState = history.replaceState;
 
