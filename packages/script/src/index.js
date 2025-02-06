@@ -17,22 +17,6 @@
     expires: new Date(Date.now() + COOKIE_EXPIRES),
   };
 
-  function getScript() {
-    const scripts = document.querySelectorAll('script');
-
-    for (let i = 0; i < scripts.length; i++) {
-      if (
-        scripts[i].src &&
-        (scripts[i].src.includes('dubcdn.com/analytics/script.js') || // production script
-          scripts[i].src.includes('.dub-cdn.pages.dev/analytics/script.js')) // staging script
-      ) {
-        return scripts[i];
-      }
-    }
-
-    return null;
-  }
-
   function getOptions(script) {
     if (!script) {
       return null;
@@ -55,7 +39,7 @@
     };
   }
 
-  const script = getScript();
+  const script = document.currentScript;
   if (!script) {
     console.error('[Dub Analytics] Script not found.');
     return;
