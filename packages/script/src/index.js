@@ -146,14 +146,6 @@
         );
         return;
       }
-
-      if (res.status === 204) {
-        console.warn(
-          `[Dub Analytics] Link does not exist for identifier: ${identifier}. Click not tracked.`,
-        );
-        return;
-      }
-
       const { clickId } = await res.json(); // Response: { clickId: string }
       checkCookieAndSet(clickId);
     });
