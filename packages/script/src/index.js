@@ -105,15 +105,15 @@
 
   // Support cross-domain tracking
   function appendCrossDomainClickId(clickId) {
-    const cookie = clickId || getCookie(CLICK_ID);
-
-    if (!cookie) {
-      return;
-    }
-
     let { domains } = getOptions(script);
 
     if (!domains || domains.length === 0) {
+      return;
+    }
+
+    const cookie = clickId || getCookie(CLICK_ID);
+
+    if (!cookie) {
       return;
     }
 
