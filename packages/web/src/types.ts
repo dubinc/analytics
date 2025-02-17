@@ -14,6 +14,14 @@ export interface AnalyticsProps {
   shortDomain?: string;
 
   /**
+   * An array of domains for cross-domain tracking. When configured, a `dub_id` query parameter
+   * will be automatically appended to all outbound links targeting these domains to enable
+   * cross-domain tracking across different domains.
+   * @example ['example.com', 'app.example.io']
+   */
+  domains?: string[];
+
+  /**
    * The Attribution Model to use for the analytics event.
    *
    * @default 'last-click'

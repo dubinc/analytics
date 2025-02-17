@@ -27,6 +27,10 @@ function inject(props: AnalyticsProps): void {
     script.setAttribute('data-short-domain', props.shortDomain);
   }
 
+  if (props.domains) {
+    script.setAttribute('data-domains', props.domains.join(','));
+  }
+
   if (props.attributionModel) {
     script.setAttribute('data-attribution-model', props.attributionModel);
   }

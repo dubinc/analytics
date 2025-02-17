@@ -29,10 +29,12 @@
     const sd =
       script.getAttribute('data-short-domain') ||
       script.getAttribute('data-domain');
+    const domains = script.getAttribute('data-domains');
 
     return {
       apiHost: ah || 'https://api.dub.co',
       shortDomain: sd || undefined,
+      domains: domains ? domains.split(',') : undefined,
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
       queryParam: qp || 'via',
@@ -101,6 +103,43 @@
     }
   }
 
+  // Support cross-domain tracking
+  function appendCrossDomainClickId(clickId) {
+    const cookie = clickId || getCookie(CLICK_ID);
+
+    if (!cookie) {
+      return;
+    }
+
+    let { domains } = getOptions(script);
+
+    if (!domains || domains.length === 0) {
+      return;
+    }
+
+    const currentDomain = window.location.hostname.replace(/^www\./, '');
+
+    domains = domains.filter((domain) => domain !== currentDomain);
+
+    const selector = domains.map((domain) => `a[href*="${domain}"]`).join(',');
+
+    if (!selector || selector.length === 0) {
+      return;
+    }
+
+    const links = document.querySelectorAll(selector);
+
+    if (!links || links.length === 0) {
+      return;
+    }
+
+    links.forEach((link) => {
+      const url = new URL(link.href);
+      url.searchParams.set(CLICK_ID, cookie);
+      link.href = url.toString();
+    });
+  }
+
   // Function to check for { keys } in the URL and update cookie if necessary
   function watchForQueryParams() {
     const searchParams = new URLSearchParams(window.location.search);
@@ -111,6 +150,7 @@
 
     if (clickId) {
       checkCookieAndSet(clickId);
+      appendCrossDomainClickId(clickId);
       return;
     }
 
@@ -148,10 +188,12 @@
       }
       const { clickId } = await res.json(); // Response: { clickId: string }
       checkCookieAndSet(clickId);
+      appendCrossDomainClickId(clickId);
     });
   }
 
   watchForQueryParams();
+  appendCrossDomainClickId();
 
   // Listen for URL changes in case of SPA where the page doesn't reload
   window.addEventListener('popstate', watchForQueryParams);
