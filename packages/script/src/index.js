@@ -104,7 +104,7 @@
     }
   }
 
-  // Support cross-domain tracking
+  // Add click tracking to cross-domain links
   function addClickTrackingToLinks(clickId) {
     if (crossDomainLinksUpdated) {
       return;
