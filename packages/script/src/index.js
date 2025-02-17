@@ -104,7 +104,7 @@
   }
 
   // Support cross-domain tracking
-  function appendCrossDomainClickId(clickId) {
+  function addClickTrackingToLinks(clickId) {
     let { domains } = getOptions(script);
 
     if (!domains || domains.length === 0) {
@@ -150,7 +150,7 @@
 
     if (clickId) {
       checkCookieAndSet(clickId);
-      appendCrossDomainClickId(clickId);
+      addClickTrackingToLinks(clickId);
       return;
     }
 
@@ -188,12 +188,12 @@
       }
       const { clickId } = await res.json(); // Response: { clickId: string }
       checkCookieAndSet(clickId);
-      appendCrossDomainClickId(clickId);
+      addClickTrackingToLinks(clickId);
     });
   }
 
   watchForQueryParams();
-  appendCrossDomainClickId();
+  addClickTrackingToLinks();
 
   // Listen for URL changes in case of SPA where the page doesn't reload
   window.addEventListener('popstate', watchForQueryParams);
