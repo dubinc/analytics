@@ -2,6 +2,7 @@
   const CLICK_ID = 'dub_id';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
+  let crossDomainLinksUpdated = false;
 
   const defaultCookieOptions = {
     domain:
@@ -105,6 +106,10 @@
 
   // Support cross-domain tracking
   function addClickTrackingToLinks(clickId) {
+    if (crossDomainLinksUpdated) {
+      return;
+    }
+
     let { domains } = getOptions(script);
 
     if (!domains || domains.length === 0) {
@@ -138,6 +143,8 @@
       url.searchParams.set(CLICK_ID, cookie);
       link.href = url.toString();
     });
+
+    crossDomainLinksUpdated = true;
   }
 
   // Function to check for { keys } in the URL and update cookie if necessary
