@@ -30,12 +30,12 @@
     const sd =
       script.getAttribute('data-short-domain') ||
       script.getAttribute('data-domain');
-    const domains = script.getAttribute('data-domains');
+    const od = script.getAttribute('data-outbound-domains');
 
     return {
       apiHost: ah || 'https://api.dub.co',
       shortDomain: sd || undefined,
-      domains: domains ? domains.split(',') : undefined,
+      outboundDomains: od ? od.split(',').map((d) => d.trim()) : undefined,
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
       queryParam: qp || 'via',
@@ -110,9 +110,9 @@
       return;
     }
 
-    let { domains } = getOptions(script);
+    let { outboundDomains } = getOptions(script);
 
-    if (!domains || domains.length === 0) {
+    if (!outboundDomains || outboundDomains.length === 0) {
       return;
     }
 
@@ -122,11 +122,13 @@
       return;
     }
 
-    const currentDomain = window.location.hostname.replace(/^www\./, '');
+    const currentDomain = HOSTNAME.replace(/^www\./, '');
 
-    domains = domains.filter((domain) => domain !== currentDomain);
+    outboundDomains = outboundDomains.filter((d) => d !== currentDomain);
 
-    const selector = domains.map((domain) => `a[href*="${domain}"]`).join(',');
+    const selector = outboundDomains
+      .map((domain) => `a[href*="${domain}"]`)
+      .join(',');
 
     if (!selector || selector.length === 0) {
       return;
