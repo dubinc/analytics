@@ -2,6 +2,7 @@
   const CLICK_ID = 'dub_id';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
+  let crossDomainLinksUpdated = false;
 
   const defaultCookieOptions = {
     domain:
@@ -29,10 +30,12 @@
     const sd =
       script.getAttribute('data-short-domain') ||
       script.getAttribute('data-domain');
+    const od = script.getAttribute('data-outbound-domains');
 
     return {
       apiHost: ah || 'https://api.dub.co',
       shortDomain: sd || undefined,
+      outboundDomains: od ? od.split(',').map((d) => d.trim()) : undefined,
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
       queryParam: qp || 'via',
@@ -101,6 +104,51 @@
     }
   }
 
+  // Add click tracking to cross-domain links
+  function addClickTrackingToLinks(clickId) {
+    if (crossDomainLinksUpdated) {
+      return;
+    }
+
+    let { outboundDomains } = getOptions(script);
+
+    if (!outboundDomains || outboundDomains.length === 0) {
+      return;
+    }
+
+    const cookie = clickId || getCookie(CLICK_ID);
+
+    if (!cookie) {
+      return;
+    }
+
+    const currentDomain = HOSTNAME.replace(/^www\./, '');
+
+    outboundDomains = outboundDomains.filter((d) => d !== currentDomain);
+
+    const selector = outboundDomains
+      .map((domain) => `a[href*="${domain}"]`)
+      .join(',');
+
+    if (!selector || selector.length === 0) {
+      return;
+    }
+
+    const links = document.querySelectorAll(selector);
+
+    if (!links || links.length === 0) {
+      return;
+    }
+
+    links.forEach((link) => {
+      const url = new URL(link.href);
+      url.searchParams.set(CLICK_ID, cookie);
+      link.href = url.toString();
+    });
+
+    crossDomainLinksUpdated = true;
+  }
+
   // Function to check for { keys } in the URL and update cookie if necessary
   function watchForQueryParams() {
     const searchParams = new URLSearchParams(window.location.search);
@@ -111,6 +159,7 @@
 
     if (clickId) {
       checkCookieAndSet(clickId);
+      addClickTrackingToLinks(clickId);
       return;
     }
 
@@ -148,10 +197,12 @@
       }
       const { clickId } = await res.json(); // Response: { clickId: string }
       checkCookieAndSet(clickId);
+      addClickTrackingToLinks(clickId);
     });
   }
 
   watchForQueryParams();
+  addClickTrackingToLinks();
 
   // Listen for URL changes in case of SPA where the page doesn't reload
   window.addEventListener('popstate', watchForQueryParams);

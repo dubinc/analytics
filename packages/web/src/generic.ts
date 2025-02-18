@@ -27,6 +27,13 @@ function inject(props: AnalyticsProps): void {
     script.setAttribute('data-short-domain', props.shortDomain);
   }
 
+  if (props.outboundDomains) {
+    script.setAttribute(
+      'data-outbound-domains',
+      props.outboundDomains.join(','),
+    );
+  }
+
   if (props.attributionModel) {
     script.setAttribute('data-attribution-model', props.attributionModel);
   }

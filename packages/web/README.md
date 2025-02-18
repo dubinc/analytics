@@ -51,6 +51,11 @@ Decide the attribution model to use for tracking. The default is `last-click`.
 - `first-click` - The first click model gives all the credit to the first touchpoint in the customer journey.
 - `last-click` - The last click model gives all the credit to the last touchpoint in the customer journey.
 
+### `outboundDomains`
+
+An array of domains for cross-domain tracking. When configured, a `dub_id` query parameter
+will be automatically appended to all outbound links targeting these domains to enable
+cross-domain tracking across different applications.
 
 ### `cookieOptions`
 
