@@ -30,11 +30,13 @@
     const sd =
       script.getAttribute('data-short-domain') ||
       script.getAttribute('data-domain');
+    const td = script.getAttribute('data-site-domain');
     const od = script.getAttribute('data-outbound-domains');
 
     return {
       apiHost: ah || 'https://api.dub.co',
       shortDomain: sd || undefined,
+      siteDomain: td || undefined,
       outboundDomains: od ? od.split(',').map((d) => d.trim()) : undefined,
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
@@ -161,6 +163,8 @@
       checkCookieAndSet(clickId);
       addClickTrackingToLinks(clickId);
       return;
+    } else {
+      trackSiteVisit();
     }
 
     // When the identifier is present in the URL, track the click and set the cookie
@@ -199,6 +203,41 @@
       checkCookieAndSet(clickId);
       addClickTrackingToLinks(clickId);
     });
+  }
+
+  function trackSiteVisit() {
+    const { cookieOptions, siteDomain } = getOptions(script);
+
+    // no need to track site visit if `siteDomain` is not set
+    if (!siteDomain) {
+      return;
+    }
+
+    const cookie = getCookie(CLICK_ID);
+
+    // If the cookie is not set, we can track the site visit
+    if (!cookie) {
+      fetch(`${apiHost}/track/visit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          domain: siteDomain,
+          url: window.location.href,
+        }),
+      }).then(async (res) => {
+        if (!res.ok) {
+          const { error } = await res.json();
+          console.error(
+            `[Dub Analytics] Failed to track visit: ${error.message}`,
+          );
+          return;
+        }
+        const { clickId } = await res.json(); // Response: { clickId: string }
+        setCookie(CLICK_ID, clickId, cookieOptions);
+      });
+    }
   }
 
   watchForQueryParams();
