@@ -225,18 +225,23 @@
         body: JSON.stringify({
           domain: siteDomain,
           url: window.location.href,
+          referrer: document.referrer,
         }),
-      }).then(async (res) => {
-        if (!res.ok) {
-          const { error } = await res.json();
-          console.error(
-            `[Dub Analytics] Failed to track visit: ${error.message}`,
-          );
-          return;
-        }
-        const { clickId } = await res.json(); // Response: { clickId: string }
-        setCookie(CLICK_ID, clickId, cookieOptions);
-      });
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const { error } = await res.json();
+            console.error(
+              `[Dub Analytics] Failed to track visit: ${error.message}`,
+            );
+            return;
+          }
+          const { clickId } = await res.json(); // Response: { clickId: string }
+          setCookie(CLICK_ID, clickId, cookieOptions);
+        })
+        .catch((error) => {
+          console.error('[Dub Analytics] Failed to track visit:', error);
+        });
     }
   }
 
