@@ -206,7 +206,7 @@
   }
 
   function trackSiteVisit() {
-    const { cookieOptions, siteDomain } = getOptions(script);
+    const { apiHost, cookieOptions, siteDomain } = getOptions(script);
 
     // no need to track site visit if `siteDomain` is not set
     if (!siteDomain) {
