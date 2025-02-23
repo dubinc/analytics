@@ -1,11 +1,9 @@
 // Wait for base script to initialize
 const initOutboundDomains = () => {
   const { CLICK_ID, cookie, HOSTNAME, script } = window._dubAnalytics;
-  let outboundLinksUpdated = false;
+  let outboundLinksUpdated = new Set(); // Track processed links
 
   function addOutboundTracking(clickId) {
-    if (outboundLinksUpdated) return;
-
     const outboundDomainsAttr = script.getAttribute('data-outbound-domains');
     if (!outboundDomainsAttr) return;
 
@@ -21,22 +19,32 @@ const initOutboundDomains = () => {
     const selector = filteredDomains
       .map((domain) => `a[href*="${domain}"]`)
       .join(',');
-    const links = document.querySelectorAll(selector);
 
+    const links = document.querySelectorAll(selector);
     if (!links || links.length === 0) return;
 
     links.forEach((link) => {
+      // Skip already processed links
+      if (outboundLinksUpdated.has(link)) return;
+
       try {
         const url = new URL(link.href);
         url.searchParams.set(CLICK_ID, existingCookie);
         link.href = url.toString();
+        outboundLinksUpdated.add(link);
       } catch (e) {}
     });
-
-    outboundLinksUpdated = true;
   }
 
-  addOutboundTracking();
+  // Run on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => addOutboundTracking());
+  } else {
+    addOutboundTracking();
+  }
+
+  // Run periodically to catch dynamically added links
+  setInterval(addOutboundTracking, 2000);
 
   // Add SPA support
   window.addEventListener('popstate', () => addOutboundTracking());
