@@ -3,6 +3,7 @@
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
   let crossDomainLinksUpdated = false;
+  let siteVisitTracked = false;
 
   const defaultCookieOptions = {
     domain:
@@ -208,8 +209,8 @@
   function trackSiteVisit() {
     const { apiHost, cookieOptions, siteDomain } = getOptions(script);
 
-    // no need to track site visit if `siteDomain` is not set
-    if (!siteDomain) {
+    // Return early if already tracked or if siteDomain is not set
+    if (siteVisitTracked || !siteDomain) {
       return;
     }
 
@@ -217,6 +218,9 @@
 
     // If the cookie is not set, we can track the site visit
     if (!cookie) {
+      // Set the flag immediately to prevent concurrent calls
+      siteVisitTracked = true;
+
       fetch(`${apiHost}/track/visit`, {
         method: 'POST',
         headers: {
@@ -242,6 +246,9 @@
         .catch((error) => {
           console.error('[Dub Analytics] Failed to track visit:', error);
         });
+    } else {
+      // Mark as tracked if cookie exists
+      siteVisitTracked = true;
     }
   }
 
