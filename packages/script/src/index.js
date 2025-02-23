@@ -2,6 +2,7 @@
   const CLICK_ID = 'dub_id';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
+  const IS_DEV_ENV = HOSTNAME === 'localhost' || HOSTNAME === '127.0.0.1';
   let crossDomainLinksUpdated = false;
   let siteVisitTracked = false;
 
@@ -33,7 +34,6 @@
       script.getAttribute('data-domain');
     const td = script.getAttribute('data-site-domain');
     const od = script.getAttribute('data-outbound-domains');
-    const isDev = HOSTNAME === 'localhost' || HOSTNAME === '127.0.0.1';
 
     return {
       apiHost: ah || 'https://api.dub.co',
@@ -43,7 +43,6 @@
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
       queryParam: qp || 'via',
-      isDev,
     };
   }
 
@@ -181,7 +180,7 @@
       // if no shortDomain is present:
       // - warn the user if in dev mode
       // - track it as a site visit
-      if (isDev) {
+      if (IS_DEV_ENV) {
         console.warn(
           '[Dub Analytics] Matching `queryParam` identifier detected but `shortDomain` is not specified, which is required for tracking clicks. Please set the `shortDomain` option, or clicks will not be tracked.',
         );
