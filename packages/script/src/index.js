@@ -146,9 +146,13 @@
     }
 
     links.forEach((link) => {
-      const url = new URL(link.href);
-      url.searchParams.set(CLICK_ID, cookie);
-      link.href = url.toString();
+      try {
+        const url = new URL(link.href);
+        url.searchParams.set(CLICK_ID, cookie);
+        link.href = url.toString();
+      } catch (e) {
+        console.warn('[Dub Analytics] Invalid URL encountered:', link.href);
+      }
     });
 
     crossDomainLinksUpdated = true;
