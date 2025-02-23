@@ -1,46 +1,34 @@
 (function () {
-  const { getOptions, CLICK_ID, getCookie, HOSTNAME } = window._dubAnalytics;
+  const { CLICK_ID, cookie, HOSTNAME } = window._dubAnalytics;
   let outboundLinksUpdated = false;
 
   function addOutboundTracking(clickId) {
-    if (outboundLinksUpdated) {
-      return;
-    }
+    if (outboundLinksUpdated) return;
 
-    let { outboundDomains } = getOptions(document.currentScript);
+    const script = document.currentScript;
+    const outboundDomainsAttr = script.getAttribute('data-outbound-domains');
+    if (!outboundDomainsAttr) return;
 
-    if (!outboundDomains || outboundDomains.length === 0) {
-      return;
-    }
+    const outboundDomains = outboundDomainsAttr.split(',').map((d) => d.trim());
+    if (outboundDomains.length === 0) return;
 
-    const cookie = clickId || getCookie(CLICK_ID);
-
-    if (!cookie) {
-      return;
-    }
+    const existingCookie = clickId || cookie.get(CLICK_ID);
+    if (!existingCookie) return;
 
     const currentDomain = HOSTNAME.replace(/^www\./, '');
+    const filteredDomains = outboundDomains.filter((d) => d !== currentDomain);
 
-    outboundDomains = outboundDomains.filter((d) => d !== currentDomain);
-
-    const selector = outboundDomains
+    const selector = filteredDomains
       .map((domain) => `a[href*="${domain}"]`)
       .join(',');
-
-    if (!selector || selector.length === 0) {
-      return;
-    }
-
     const links = document.querySelectorAll(selector);
 
-    if (!links || links.length === 0) {
-      return;
-    }
+    if (!links || links.length === 0) return;
 
     links.forEach((link) => {
       try {
         const url = new URL(link.href);
-        url.searchParams.set(CLICK_ID, cookie);
+        url.searchParams.set(CLICK_ID, existingCookie);
         link.href = url.toString();
       } catch (e) {}
     });
@@ -51,9 +39,7 @@
   addOutboundTracking();
 
   // Add SPA support
-  window.addEventListener('popstate', () => {
-    addOutboundTracking();
-  });
+  window.addEventListener('popstate', () => addOutboundTracking());
 
   const originalPushState = history.pushState;
   const originalReplaceState = history.replaceState;

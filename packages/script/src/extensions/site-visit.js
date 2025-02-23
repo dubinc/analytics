@@ -1,40 +1,39 @@
 (function () {
-  const { getOptions, CLICK_ID, getCookie, setCookie } = window._dubAnalytics;
+  const { CLICK_ID, cookie } = window._dubAnalytics;
   let siteVisitTracked = false;
 
   function trackSiteVisit() {
-    const { apiHost, cookieOptions, siteShortDomain } = getOptions(
-      document.currentScript,
-    );
+    const script = document.currentScript;
+    const apiHost =
+      script.getAttribute('data-api-host') || 'https://api.dub.co';
+    const siteShortDomain = script.getAttribute('data-site-short-domain');
 
-    // Return early if siteShortDomain is not set
-    // or if the site visit has already been tracked
-    if (!siteShortDomain || siteVisitTracked) {
-      return;
-    }
-    // Set the flag immediately to prevent concurrent calls
+    // Return early if siteShortDomain is not set or if visit already tracked
+    if (!siteShortDomain || siteVisitTracked) return;
     siteVisitTracked = true;
 
-    const cookie = getCookie(CLICK_ID);
-    // If the cookie is not set, we can track the site visit
-    if (!cookie) {
+    // Only track if no existing cookie
+    if (!cookie.get(CLICK_ID)) {
       fetch(`${apiHost}/track/visit`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           domain: siteShortDomain,
           url: window.location.href,
           referrer: document.referrer,
         }),
-      }).then(async (res) => {
-        if (!res.ok) {
-          return;
-        }
-        const { clickId } = await res.json();
-        setCookie(CLICK_ID, clickId, cookieOptions);
-      });
+      })
+        .then((res) => res.ok && res.json())
+        .then((data) => {
+          if (data) {
+            const cookieOptions = script.getAttribute('data-cookie-options');
+            cookie.set(
+              CLICK_ID,
+              data.clickId,
+              cookieOptions ? JSON.parse(cookieOptions) : null,
+            );
+          }
+        });
     }
   }
 
