@@ -4,6 +4,7 @@
   const HOSTNAME = window.location.hostname;
   const IS_DEV_ENV = HOSTNAME === 'localhost' || HOSTNAME === '127.0.0.1';
   let crossDomainLinksUpdated = false;
+  let clientClickTracked = false;
   let siteVisitTracked = false;
 
   const defaultCookieOptions = {
@@ -189,6 +190,12 @@
       return;
     }
 
+    // Prevent duplicate click tracking requests
+    if (clientClickTracked) {
+      return;
+    }
+    clientClickTracked = true;
+
     fetch(`${apiHost}/track/click`, {
       method: 'POST',
       headers: {
@@ -216,18 +223,17 @@
   function trackSiteVisit() {
     const { apiHost, cookieOptions, siteDomain } = getOptions(script);
 
-    // Return early if already tracked or if siteDomain is not set
-    if (siteVisitTracked || !siteDomain) {
+    // Return early if siteDomain is not set
+    // or if the site visit has already been tracked
+    if (!siteDomain || siteVisitTracked) {
       return;
     }
+    // Set the flag immediately to prevent concurrent calls
+    siteVisitTracked = true;
 
     const cookie = getCookie(CLICK_ID);
-
     // If the cookie is not set, we can track the site visit
     if (!cookie) {
-      // Set the flag immediately to prevent concurrent calls
-      siteVisitTracked = true;
-
       fetch(`${apiHost}/track/visit`, {
         method: 'POST',
         headers: {
@@ -253,9 +259,6 @@
         .catch((error) => {
           console.error('[Dub Analytics] Failed to track visit:', error);
         });
-    } else {
-      // Mark as tracked if cookie exists
-      siteVisitTracked = true;
     }
   }
 
