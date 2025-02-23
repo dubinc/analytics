@@ -1,4 +1,5 @@
-(function () {
+// Wait for base script to initialize
+const initSiteVisit = () => {
   const { CLICK_ID, cookie, script } = window._dubAnalytics;
   let siteVisitTracked = false;
 
@@ -37,4 +38,11 @@
   }
 
   trackSiteVisit();
-})();
+};
+
+// Run when base script is ready
+if (window._dubAnalytics) {
+  initSiteVisit();
+} else {
+  window.addEventListener('load', initSiteVisit);
+}

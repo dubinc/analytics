@@ -11,6 +11,7 @@ const baseConfig = {
 
 // Helper to read and combine files
 const combineFiles = (files) => {
+  // Just concatenate the files, esbuild will handle the IIFE wrapping
   return files.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
 };
 

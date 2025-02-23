@@ -1,4 +1,5 @@
-(function () {
+// Wait for base script to initialize
+const initOutboundDomains = () => {
   const { CLICK_ID, cookie, HOSTNAME, script } = window._dubAnalytics;
   let outboundLinksUpdated = false;
 
@@ -52,4 +53,11 @@
     originalReplaceState.apply(this, arguments);
     addOutboundTracking();
   };
-})();
+};
+
+// Run when base script is ready
+if (window._dubAnalytics) {
+  initOutboundDomains();
+} else {
+  window.addEventListener('load', initOutboundDomains);
+}
