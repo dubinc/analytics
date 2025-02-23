@@ -157,7 +157,8 @@
   // Function to check for { keys } in the URL and update cookie if necessary
   function watchForQueryParams() {
     const searchParams = new URLSearchParams(window.location.search);
-    const { apiHost, shortDomain, queryParam } = getOptions(script);
+    const { apiHost, shortDomain, queryParam, attributionModel } =
+      getOptions(script);
 
     // When the clickId is present in the URL, set the cookie (?dub_id=...)
     const clickId = searchParams.get(CLICK_ID);
@@ -168,56 +169,53 @@
       return;
     }
 
-    // When the identifier is present in the URL, track the click and set the cookie
-    const identifier = searchParams.get(queryParam);
+    // When the query param identifier is present in the URL, track the click and set the cookie
+    const queryParamIdentifier = searchParams.get(queryParam);
 
-    if (!identifier) {
-      // if no identifier is present, track it as a site visit
-      trackSiteVisit();
-      return;
-    }
+    // if both identifier and shortDomain are present, then we proceed with tracking the click
+    if (queryParamIdentifier && shortDomain) {
+      // Prevent duplicate click tracking requests
+      if (clientClickTracked) {
+        return;
+      }
+      clientClickTracked = true;
 
-    if (!shortDomain) {
-      // if no shortDomain is present:
-      // - warn the user if in dev mode
-      // - track it as a site visit
-      if (IS_DEV_ENV) {
+      // no need to track the click if the cookie is already set and the attribution model is 'first-click'
+      if (cookie && attributionModel === 'first-click') {
+        return;
+      }
+
+      fetch(`${apiHost}/track/click`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          domain: shortDomain,
+          key: queryParamIdentifier,
+          url: window.location.href,
+        }),
+      }).then(async (res) => {
+        if (!res.ok) {
+          const { error } = await res.json();
+          console.error(
+            `[Dub Analytics] Failed to track click: ${error.message}`,
+          );
+          return;
+        }
+        const { clickId } = await res.json(); // Response: { clickId: string }
+        checkCookieAndSet(clickId);
+        addClickTrackingToLinks(clickId);
+      });
+    } else {
+      if (queryParamIdentifier && !shortDomain && IS_DEV_ENV) {
         console.warn(
           '[Dub Analytics] Matching `queryParam` identifier detected but `shortDomain` is not specified, which is required for tracking clicks. Please set the `shortDomain` option, or clicks will not be tracked.',
         );
       }
+      // if we're not tracking a click, then we proceed with tracking the site visit
       trackSiteVisit();
-      return;
     }
-
-    // Prevent duplicate click tracking requests
-    if (clientClickTracked) {
-      return;
-    }
-    clientClickTracked = true;
-
-    fetch(`${apiHost}/track/click`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        domain: shortDomain,
-        key: identifier,
-        url: window.location.href,
-      }),
-    }).then(async (res) => {
-      if (!res.ok) {
-        const { error } = await res.json();
-        console.error(
-          `[Dub Analytics] Failed to track click: ${error.message}`,
-        );
-        return;
-      }
-      const { clickId } = await res.json(); // Response: { clickId: string }
-      checkCookieAndSet(clickId);
-      addClickTrackingToLinks(clickId);
-    });
   }
 
   function trackSiteVisit() {

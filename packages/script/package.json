@@ -1,6 +1,6 @@
 {
   "name": "@dub/analytics-script",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "main": "src/index.js",
   "scripts": {
     "prebuild": "mkdir -p dist/analytics",
