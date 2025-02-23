@@ -33,6 +33,7 @@
       script.getAttribute('data-domain');
     const td = script.getAttribute('data-site-domain');
     const od = script.getAttribute('data-outbound-domains');
+    const isDev = HOSTNAME === 'localhost' || HOSTNAME === '127.0.0.1';
 
     return {
       apiHost: ah || 'https://api.dub.co',
@@ -42,6 +43,7 @@
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
       queryParam: qp || 'via',
+      isDev,
     };
   }
 
@@ -164,21 +166,27 @@
       checkCookieAndSet(clickId);
       addClickTrackingToLinks(clickId);
       return;
-    } else {
-      trackSiteVisit();
     }
 
     // When the identifier is present in the URL, track the click and set the cookie
     const identifier = searchParams.get(queryParam);
 
     if (!identifier) {
+      // if no identifier is present, track it as a site visit
+      trackSiteVisit();
       return;
     }
 
     if (!shortDomain) {
-      console.warn(
-        '[Dub Analytics] Matching `queryParam` identifier detected but `shortDomain` is not specified, which is required for tracking clicks. Please set the `shortDomain` option, or clicks will not be tracked.',
-      );
+      // if no shortDomain is present:
+      // - warn the user if in dev mode
+      // - track it as a site visit
+      if (isDev) {
+        console.warn(
+          '[Dub Analytics] Matching `queryParam` identifier detected but `shortDomain` is not specified, which is required for tracking clicks. Please set the `shortDomain` option, or clicks will not be tracked.',
+        );
+      }
+      trackSiteVisit();
       return;
     }
 
