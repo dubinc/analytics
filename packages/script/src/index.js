@@ -181,6 +181,7 @@
       clientClickTracked = true;
 
       // no need to track the click if the cookie is already set and the attribution model is 'first-click'
+      const cookie = getCookie(CLICK_ID);
       if (cookie && attributionModel === 'first-click') {
         return;
       }
