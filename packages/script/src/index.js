@@ -2,7 +2,6 @@
   const CLICK_ID = 'dub_id';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
-  const IS_DEV_ENV = HOSTNAME === 'localhost' || HOSTNAME === '127.0.0.1';
   let crossDomainLinksUpdated = false;
   let clientClickTracked = false;
   let siteVisitTracked = false;
@@ -49,7 +48,6 @@
 
   const script = document.currentScript;
   if (!script) {
-    console.error('[Dub Analytics] Script not found.');
     return;
   }
 
@@ -150,9 +148,7 @@
         const url = new URL(link.href);
         url.searchParams.set(CLICK_ID, cookie);
         link.href = url.toString();
-      } catch (e) {
-        console.warn('[Dub Analytics] Invalid URL encountered:', link.href);
-      }
+      } catch (e) {}
     });
 
     crossDomainLinksUpdated = true;
@@ -169,7 +165,6 @@
 
     if (clickId) {
       checkCookieAndSet(clickId);
-      addClickTrackingToLinks(clickId);
       return;
     }
 
@@ -202,22 +197,12 @@
         }),
       }).then(async (res) => {
         if (!res.ok) {
-          const { error } = await res.json();
-          console.error(
-            `[Dub Analytics] Failed to track click: ${error.message}`,
-          );
           return;
         }
         const { clickId } = await res.json(); // Response: { clickId: string }
         checkCookieAndSet(clickId);
-        addClickTrackingToLinks(clickId);
       });
     } else {
-      if (queryParamIdentifier && !shortDomain && IS_DEV_ENV) {
-        console.warn(
-          '[Dub Analytics] Matching `queryParam` identifier detected but `shortDomain` is not specified, which is required for tracking clicks. Please set the `shortDomain` option, or clicks will not be tracked.',
-        );
-      }
       // if we're not tracking a click, then we proceed with tracking the site visit
       trackSiteVisit();
     }
@@ -247,21 +232,13 @@
           url: window.location.href,
           referrer: document.referrer,
         }),
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const { error } = await res.json();
-            console.error(
-              `[Dub Analytics] Failed to track visit: ${error.message}`,
-            );
-            return;
-          }
-          const { clickId } = await res.json(); // Response: { clickId: string }
-          setCookie(CLICK_ID, clickId, cookieOptions);
-        })
-        .catch((error) => {
-          console.error('[Dub Analytics] Failed to track visit:', error);
-        });
+      }).then(async (res) => {
+        if (!res.ok) {
+          return;
+        }
+        const { clickId } = await res.json(); // Response: { clickId: string }
+        checkCookieAndSet(clickId);
+      });
     }
   }
 
@@ -269,7 +246,10 @@
   addClickTrackingToLinks();
 
   // Listen for URL changes in case of SPA where the page doesn't reload
-  window.addEventListener('popstate', watchForQueryParams);
+  window.addEventListener('popstate', () => {
+    watchForQueryParams();
+    addClickTrackingToLinks();
+  });
 
   // For single page applications, monkey-patch History API methods
   const originalPushState = history.pushState;
@@ -278,10 +258,12 @@
   history.pushState = function () {
     originalPushState.apply(this, arguments);
     watchForQueryParams();
+    addClickTrackingToLinks();
   };
 
   history.replaceState = function () {
     originalReplaceState.apply(this, arguments);
     watchForQueryParams();
+    addClickTrackingToLinks();
   };
 })();
