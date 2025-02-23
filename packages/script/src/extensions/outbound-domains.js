@@ -1,11 +1,10 @@
 (function () {
-  const { CLICK_ID, cookie, HOSTNAME } = window._dubAnalytics;
+  const { CLICK_ID, cookie, HOSTNAME, script } = window._dubAnalytics;
   let outboundLinksUpdated = false;
 
   function addOutboundTracking(clickId) {
     if (outboundLinksUpdated) return;
 
-    const script = document.currentScript;
     const outboundDomainsAttr = script.getAttribute('data-outbound-domains');
     if (!outboundDomainsAttr) return;
 

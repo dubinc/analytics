@@ -1,9 +1,8 @@
 (function () {
-  const { CLICK_ID, cookie } = window._dubAnalytics;
+  const { CLICK_ID, cookie, script } = window._dubAnalytics;
   let siteVisitTracked = false;
 
   function trackSiteVisit() {
-    const script = document.currentScript;
     const apiHost =
       script.getAttribute('data-api-host') || 'https://api.dub.co';
     const siteShortDomain = script.getAttribute('data-site-short-domain');

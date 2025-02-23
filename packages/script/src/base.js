@@ -4,6 +4,9 @@
   const HOSTNAME = window.location.hostname;
   let clientClickTracked = false;
 
+  // Store script reference for extensions
+  const script = document.currentScript;
+
   // Cookie management
   const cookie = {
     get(key) {
@@ -39,7 +42,6 @@
     if (clientClickTracked) return;
     clientClickTracked = true;
 
-    const script = document.currentScript;
     const apiHost =
       script.getAttribute('data-api-host') || 'https://api.dub.co';
     const shortDomain =
@@ -70,7 +72,6 @@
 
   // Initialize tracking
   function init() {
-    const script = document.currentScript;
     const params = new URLSearchParams(window.location.search);
     const shortDomain =
       script.getAttribute('data-short-domain') ||
@@ -106,6 +107,7 @@
     CLICK_ID,
     HOSTNAME,
     cookie,
+    script, // Export script reference
   };
 
   // Initialize
