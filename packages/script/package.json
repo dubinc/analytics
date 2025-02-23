@@ -3,10 +3,10 @@
   "version": "0.0.27",
   "main": "src/index.js",
   "files": [
-    "dist/script.js",
-    "dist/script.site-visit.js",
-    "dist/script.outbound-domains.js",
-    "dist/script.complete.js"
+    "dist/analytics/script.js",
+    "dist/analytics/script.site-visit.js",
+    "dist/analytics/script.outbound-domains.js",
+    "dist/analytics/script.complete.js"
   ],
   "scripts": {
     "prebuild": "mkdir -p dist/analytics",

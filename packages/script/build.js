@@ -14,6 +14,11 @@ const combineFiles = (files) => {
   return files.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
 };
 
+// Ensure analytics directory exists
+if (!fs.existsSync('dist/analytics')) {
+  fs.mkdirSync('dist/analytics', { recursive: true });
+}
+
 // Build all variants
 Promise.all([
   // Base script
@@ -24,7 +29,7 @@ Promise.all([
       resolveDir: __dirname,
       sourcefile: 'base.js',
     },
-    outfile: 'dist/script.js',
+    outfile: 'dist/analytics/script.js',
   }),
 
   // Site visit tracking
@@ -35,7 +40,7 @@ Promise.all([
       resolveDir: __dirname,
       sourcefile: 'combined.js',
     },
-    outfile: 'dist/script.site-visit.js',
+    outfile: 'dist/analytics/script.site-visit.js',
   }),
 
   // Outbound domains tracking
@@ -49,7 +54,7 @@ Promise.all([
       resolveDir: __dirname,
       sourcefile: 'combined.js',
     },
-    outfile: 'dist/script.outbound-domains.js',
+    outfile: 'dist/analytics/script.outbound-domains.js',
   }),
 
   // Complete script
@@ -64,6 +69,6 @@ Promise.all([
       resolveDir: __dirname,
       sourcefile: 'combined.js',
     },
-    outfile: 'dist/script.complete.js',
+    outfile: 'dist/analytics/script.complete.js',
   }),
 ]).catch(() => process.exit(1));
