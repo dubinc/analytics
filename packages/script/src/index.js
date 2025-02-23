@@ -33,13 +33,13 @@
     const sd =
       script.getAttribute('data-short-domain') ||
       script.getAttribute('data-domain');
-    const td = script.getAttribute('data-site-domain');
+    const ssd = script.getAttribute('data-site-short-domain');
     const od = script.getAttribute('data-outbound-domains');
 
     return {
       apiHost: ah || 'https://api.dub.co',
       shortDomain: sd || undefined,
-      siteDomain: td || undefined,
+      siteShortDomain: ssd || undefined,
       outboundDomains: od ? od.split(',').map((d) => d.trim()) : undefined,
       attributionModel: am || 'last-click',
       cookieOptions: co ? JSON.parse(co) : null,
@@ -224,11 +224,11 @@
   }
 
   function trackSiteVisit() {
-    const { apiHost, cookieOptions, siteDomain } = getOptions(script);
+    const { apiHost, cookieOptions, siteShortDomain } = getOptions(script);
 
-    // Return early if siteDomain is not set
+    // Return early if siteShortDomain is not set
     // or if the site visit has already been tracked
-    if (!siteDomain || siteVisitTracked) {
+    if (!siteShortDomain || siteVisitTracked) {
       return;
     }
     // Set the flag immediately to prevent concurrent calls
@@ -243,7 +243,7 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          domain: siteDomain,
+          domain: siteShortDomain,
           url: window.location.href,
           referrer: document.referrer,
         }),

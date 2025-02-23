@@ -14,10 +14,10 @@ export interface AnalyticsProps {
   shortDomain?: string;
 
   /**
-   * A special custom domain on Dub for tracking site visits.
+   * A special custom short domain on Dub for tracking site visits.
    * @example 'site.example.com'
    */
-  siteDomain?: string;
+  siteShortDomain?: string;
 
   /**
    * An array of domains for cross-domain tracking. When configured, a `dub_id` query parameter

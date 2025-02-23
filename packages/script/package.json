@@ -7,6 +7,6 @@
     "build": "pnpm run prebuild && terser src/index.js -o dist/analytics/script.js -c -m"
   },
   "devDependencies": {
-    "terser": "^5.7.0"
+    "terser": "^5.39.0"
   }
 }

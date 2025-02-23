@@ -42,11 +42,11 @@ The API host to use for tracking. This is useful for setting up reverse proxies 
 
 ### `shortDomain`
 
-The custom domain you're using on Dub for your short links (for client-side click tracking).
+The custom short domain you're using on Dub for your short links (for client-side click tracking).
 
-### `siteDomain`
+### `siteShortDomain`
 
-A special custom domain on Dub for tracking site visits.
+A special custom short domain on Dub for tracking site visits.
 
 ### `attributionModel`
 

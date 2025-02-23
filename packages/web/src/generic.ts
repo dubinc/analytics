@@ -26,8 +26,8 @@ function inject(props: AnalyticsProps): void {
   if (props.shortDomain) {
     script.setAttribute('data-short-domain', props.shortDomain);
   }
-  if (props.siteDomain) {
-    script.setAttribute('data-site-domain', props.siteDomain);
+  if (props.siteShortDomain) {
+    script.setAttribute('data-site-short-domain', props.siteShortDomain);
   }
 
   if (props.outboundDomains) {
