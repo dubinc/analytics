@@ -58,7 +58,7 @@ Promise.all([
     outfile: 'dist/analytics/script.outbound-domains.js',
   }),
 
-  // Complete script
+  // Complete script with concatenated feature names
   esbuild.build({
     ...baseConfig,
     stdin: {
@@ -70,6 +70,6 @@ Promise.all([
       resolveDir: __dirname,
       sourcefile: 'combined.js',
     },
-    outfile: 'dist/analytics/script.complete.js',
+    outfile: 'dist/analytics/script.site-visit.outbound-domains.js',
   }),
 ]).catch(() => process.exit(1));
