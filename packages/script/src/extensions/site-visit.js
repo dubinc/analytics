@@ -1,12 +1,12 @@
 // Wait for base script to initialize
 const initSiteVisit = () => {
   const {
-    script,
-    cookieManager,
-    DUB_ID_VAR,
-    API_HOST, // Use shared API_HOST
-    SHORT_DOMAIN, // reuse this
-    QUERY_PARAM_VALUE,
+    s: script,
+    c: cookieManager,
+    i: DUB_ID_VAR,
+    a: API_HOST,
+    d: SHORT_DOMAIN,
+    v: QUERY_PARAM_VALUE,
   } = window._dubAnalytics;
 
   let siteVisitTracked = false;

@@ -105,18 +105,18 @@
     }
   }
 
-  // Export core functionality
+  // Export minimal API with minified names
   window._dubAnalytics = {
-    script,
-    cookieManager,
-    DUB_ID_VAR,
-    HOSTNAME,
-    API_HOST,
-    COOKIE_OPTIONS,
-    SHORT_DOMAIN,
-    ATTRIBUTION_MODEL,
-    QUERY_PARAM,
-    QUERY_PARAM_VALUE,
+    s: script, // was script
+    c: cookieManager, // was cookieManager
+    i: DUB_ID_VAR, // was DUB_ID_VAR
+    h: HOSTNAME, // was HOSTNAME
+    a: API_HOST, // was API_HOST
+    o: COOKIE_OPTIONS, // was COOKIE_OPTIONS
+    d: SHORT_DOMAIN, // was SHORT_DOMAIN
+    m: ATTRIBUTION_MODEL, // was ATTRIBUTION_MODEL
+    p: QUERY_PARAM, // was QUERY_PARAM
+    v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
   };
 
   // Initialize
