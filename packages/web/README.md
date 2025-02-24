@@ -50,7 +50,7 @@ This is a JSON object that configures the domains that Dub will track.
 
 ### `shortDomain`
 
-[DEPRECATED] The custom short domain you're using on Dub for your short links (for client-side click tracking).
+[DEPRECATED: use `domainsConfig.refer` instead] The custom short domain you're using on Dub for your short links (for client-side click tracking).
 
 ### `attributionModel`
 

@@ -25,7 +25,7 @@ export interface AnalyticsProps {
   domainsConfig?: {
     refer?: string;
     site?: string;
-    outbound?: string;
+    outbound?: string | string[];
   };
 
   /**
