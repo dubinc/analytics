@@ -55,6 +55,7 @@
         domain: shortDomain,
         key: identifier,
         url: window.location.href,
+        referrer: document.referrer,
       }),
     })
       .then((res) => res.ok && res.json())
