@@ -40,13 +40,17 @@ You can pass the following props to the `Analytics` component to customize the t
 
 The API host to use for tracking. This is useful for setting up reverse proxies to avoid adblockers. The default is `https://api.dub.co`.
 
+### `domainsConfig`
+
+This is a JSON object that configures the domains that Dub will track.
+
+- `refer`: The short domain you're using on Dub for client-side click tracking (previously shortDomain).
+- `site`: A special custom short domain on Dub for tracking site visits.
+- `outbound`: An array of domains for cross-domain tracking. When configured, the existing `dub_id` cookie will be automatically appended to all outbound links targeting these domains to enable cross-domain tracking across different applications.
+
 ### `shortDomain`
 
-The custom short domain you're using on Dub for your short links (for client-side click tracking).
-
-### `siteShortDomain`
-
-A special custom short domain on Dub for tracking site visits.
+[DEPRECATED] The custom short domain you're using on Dub for your short links (for client-side click tracking).
 
 ### `attributionModel`
 
@@ -54,12 +58,6 @@ Decide the attribution model to use for tracking. The default is `last-click`.
 
 - `first-click` - The first click model gives all the credit to the first touchpoint in the customer journey.
 - `last-click` - The last click model gives all the credit to the last touchpoint in the customer journey.
-
-### `outboundDomains`
-
-An array of domains for cross-domain tracking. When configured, a `dub_id` query parameter
-will be automatically appended to all outbound links targeting these domains to enable
-cross-domain tracking across different applications.
 
 ### `cookieOptions`
 

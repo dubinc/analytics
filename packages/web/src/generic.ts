@@ -12,8 +12,8 @@ function inject(props: AnalyticsProps): void {
   const baseUrl = 'https://www.dubcdn.com/analytics/script';
   const features = [];
 
-  if (props.siteShortDomain) features.push('site-visit');
-  if (props.outboundDomains) features.push('outbound-domains');
+  if (props.domainsConfig?.site) features.push('site-visit');
+  if (props.domainsConfig?.outbound) features.push('outbound-domains');
 
   const src =
     props.scriptProps?.src ||
@@ -33,18 +33,12 @@ function inject(props: AnalyticsProps): void {
     script.setAttribute('data-api-host', props.apiHost);
   }
 
-  if (props.shortDomain) {
-    script.setAttribute('data-short-domain', props.shortDomain);
-  }
-  if (props.siteShortDomain) {
-    script.setAttribute('data-site-short-domain', props.siteShortDomain);
+  if (props.domainsConfig) {
+    script.setAttribute('data-domains', JSON.stringify(props.domainsConfig));
   }
 
-  if (props.outboundDomains) {
-    script.setAttribute(
-      'data-outbound-domains',
-      props.outboundDomains.join(','),
-    );
+  if (props.shortDomain) {
+    script.setAttribute('data-short-domain', props.shortDomain);
   }
 
   if (props.attributionModel) {

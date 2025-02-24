@@ -32,9 +32,24 @@
 
     return { ...defaultOptions, ...parsedOpts };
   })();
-  const SHORT_DOMAIN =
-    script.getAttribute('data-short-domain') ||
-    script.getAttribute('data-domain');
+
+  const DOMAINS_CONFIG = (() => {
+    // Try to get new JSON domains first
+    const domainsAttr = script.getAttribute('data-domains');
+    if (domainsAttr) {
+      try {
+        return JSON.parse(domainsAttr);
+      } catch (e) {
+        // Fall back to old format if JSON parse fails
+      }
+    }
+    // Backwards compatibility only for data-short-domain
+    return {
+      refer: script.getAttribute('data-short-domain'),
+    };
+  })();
+
+  const SHORT_DOMAIN = DOMAINS_CONFIG.refer;
   const ATTRIBUTION_MODEL =
     script.getAttribute('data-attribution-model') || 'last-click';
   const QUERY_PARAM = script.getAttribute('data-query-param') || 'via';
@@ -107,7 +122,6 @@
 
   // Export minimal API with minified names
   window._dubAnalytics = {
-    s: script, // was script
     c: cookieManager, // was cookieManager
     i: DUB_ID_VAR, // was DUB_ID_VAR
     h: HOSTNAME, // was HOSTNAME
@@ -117,6 +131,7 @@
     m: ATTRIBUTION_MODEL, // was ATTRIBUTION_MODEL
     p: QUERY_PARAM, // was QUERY_PARAM
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
+    n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
   };
 
   // Initialize

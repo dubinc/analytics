@@ -1,18 +1,18 @@
 // Wait for base script to initialize
 const initSiteVisit = () => {
   const {
-    s: script,
     c: cookieManager,
     i: DUB_ID_VAR,
     a: API_HOST,
     d: SHORT_DOMAIN,
     v: QUERY_PARAM_VALUE,
+    n: DOMAINS_CONFIG,
   } = window._dubAnalytics;
 
   let siteVisitTracked = false;
 
   function trackSiteVisit() {
-    const siteShortDomain = script.getAttribute('data-site-short-domain');
+    const siteShortDomain = DOMAINS_CONFIG.site;
     if (!siteShortDomain || siteVisitTracked) return;
     siteVisitTracked = true;
 
