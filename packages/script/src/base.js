@@ -1,14 +1,45 @@
 (function () {
-  const DUB_ID_VAR = 'dub_id';
-  const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
-  const HOSTNAME = window.location.hostname;
-  let clientClickTracked = false;
-
   // Store script reference for extensions
   const script = document.currentScript;
 
+  const DUB_ID_VAR = 'dub_id';
+  const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
+  const HOSTNAME = window.location.hostname;
+
+  // Common script attributes
+  const API_HOST = script.getAttribute('data-api-host') || 'https://api.dub.co';
+  const COOKIE_OPTIONS = (() => {
+    const defaultOptions = {
+      domain:
+        HOSTNAME === 'localhost'
+          ? undefined
+          : `.${HOSTNAME.replace(/^www\./, '')}`,
+      path: '/',
+      sameSite: 'Lax',
+      expires: new Date(Date.now() + COOKIE_EXPIRES).toUTCString(),
+    };
+
+    const opts = script.getAttribute('data-cookie-options');
+    if (!opts) return defaultOptions;
+
+    const parsedOpts = JSON.parse(opts);
+    if (parsedOpts.expiresInDays) {
+      parsedOpts.expires = new Date(
+        Date.now() + parsedOpts.expiresInDays * 24 * 60 * 60 * 1000,
+      ).toUTCString();
+      delete parsedOpts.expiresInDays;
+    }
+
+    return { ...defaultOptions, ...parsedOpts };
+  })();
+  const SHORT_DOMAIN =
+    script.getAttribute('data-short-domain') ||
+    script.getAttribute('data-domain');
+  const ATTRIBUTION_MODEL =
+    script.getAttribute('data-attribution-model') || 'last-click';
+
   // Cookie management
-  const cookie = {
+  const cookieManager = {
     get(key) {
       return document.cookie
         .split(';')
@@ -16,19 +47,8 @@
         .find(([k]) => k === key)?.[1];
     },
 
-    set(key, value, options = {}) {
-      const defaultOptions = {
-        domain:
-          HOSTNAME === 'localhost'
-            ? undefined
-            : `.${HOSTNAME.replace(/^www\./, '')}`,
-        path: '/',
-        sameSite: 'Lax',
-        expires: new Date(Date.now() + COOKIE_EXPIRES).toUTCString(),
-      };
-
-      const opts = { ...defaultOptions, ...options };
-      const cookieString = Object.entries(opts)
+    set(key, value) {
+      const cookieString = Object.entries(COOKIE_OPTIONS)
         .filter(([, v]) => v)
         .map(([k, v]) => `${k}=${v}`)
         .join('; ');
@@ -37,22 +57,17 @@
     },
   };
 
+  let clientClickTracked = false;
   // Track click and set cookie
   function trackClick(identifier) {
     if (clientClickTracked) return;
     clientClickTracked = true;
 
-    const apiHost =
-      script.getAttribute('data-api-host') || 'https://api.dub.co';
-    const shortDomain =
-      script.getAttribute('data-short-domain') ||
-      script.getAttribute('data-domain');
-
-    fetch(`${apiHost}/track/click`, {
+    fetch(`${API_HOST}/track/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        domain: shortDomain,
+        domain: SHORT_DOMAIN,
         key: identifier,
         url: window.location.href,
         referrer: document.referrer,
@@ -61,12 +76,7 @@
       .then((res) => res.ok && res.json())
       .then((data) => {
         if (data) {
-          const cookieOptions = script.getAttribute('data-cookie-options');
-          cookie.set(
-            DUB_ID_VAR,
-            data.clickId,
-            cookieOptions ? JSON.parse(cookieOptions) : null,
-          );
+          cookieManager.set(DUB_ID_VAR, data.clickId);
         }
       });
   }
@@ -74,30 +84,20 @@
   // Initialize tracking
   function init() {
     const params = new URLSearchParams(window.location.search);
-    const shortDomain =
-      script.getAttribute('data-short-domain') ||
-      script.getAttribute('data-domain');
     const queryParam = script.getAttribute('data-query-param') || 'via';
-    const attributionModel =
-      script.getAttribute('data-attribution-model') || 'last-click';
 
     // Direct click ID in URL
     const clickId = params.get(DUB_ID_VAR);
     if (clickId) {
-      const cookieOptions = script.getAttribute('data-cookie-options');
-      cookie.set(
-        DUB_ID_VAR,
-        clickId,
-        cookieOptions ? JSON.parse(cookieOptions) : null,
-      );
+      cookieManager.set(DUB_ID_VAR, clickId);
       return;
     }
 
     // Track via query param
     const identifier = params.get(queryParam);
-    if (identifier && shortDomain) {
-      const existingCookie = cookie.get(DUB_ID_VAR);
-      if (!existingCookie || attributionModel !== 'first-click') {
+    if (identifier && SHORT_DOMAIN) {
+      const existingCookie = cookieManager.get(DUB_ID_VAR);
+      if (!existingCookie || ATTRIBUTION_MODEL !== 'first-click') {
         trackClick(identifier);
       }
     }
@@ -105,10 +105,14 @@
 
   // Export core functionality
   window._dubAnalytics = {
+    script,
+    cookieManager,
     DUB_ID_VAR,
     HOSTNAME,
-    cookie,
-    script, // Export script reference
+    API_HOST,
+    COOKIE_OPTIONS,
+    SHORT_DOMAIN,
+    ATTRIBUTION_MODEL,
   };
 
   // Initialize

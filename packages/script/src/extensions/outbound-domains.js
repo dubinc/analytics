@@ -1,6 +1,6 @@
 // Wait for base script to initialize
 const initOutboundDomains = () => {
-  const { DUB_ID_VAR, cookie, HOSTNAME, script } = window._dubAnalytics;
+  const { script, cookieManager, DUB_ID_VAR, HOSTNAME } = window._dubAnalytics;
   let outboundLinksUpdated = new Set(); // Track processed links
 
   function addOutboundTracking(clickId) {
@@ -10,7 +10,7 @@ const initOutboundDomains = () => {
     const outboundDomains = outboundDomainsAttr.split(',').map((d) => d.trim());
     if (outboundDomains.length === 0) return;
 
-    const existingCookie = clickId || cookie.get(DUB_ID_VAR);
+    const existingCookie = clickId || cookieManager.get(DUB_ID_VAR);
     if (!existingCookie) return;
 
     const currentDomain = HOSTNAME.replace(/^www\./, '');
