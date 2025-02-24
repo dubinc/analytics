@@ -1,6 +1,6 @@
 // Wait for base script to initialize
 const initSiteVisit = () => {
-  const { CLICK_ID, cookie, script } = window._dubAnalytics;
+  const { DUB_ID_VAR, cookie, script } = window._dubAnalytics;
   let siteVisitTracked = false;
 
   function trackSiteVisit() {
@@ -13,7 +13,7 @@ const initSiteVisit = () => {
     siteVisitTracked = true;
 
     // Only track if no existing cookie
-    if (!cookie.get(CLICK_ID)) {
+    if (!cookie.get(DUB_ID_VAR)) {
       fetch(`${apiHost}/track/visit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -25,10 +25,10 @@ const initSiteVisit = () => {
       })
         .then((res) => res.ok && res.json())
         .then((data) => {
-          if (data) {
+          if (data.clickId) {
             const cookieOptions = script.getAttribute('data-cookie-options');
             cookie.set(
-              CLICK_ID,
+              DUB_ID_VAR,
               data.clickId,
               cookieOptions ? JSON.parse(cookieOptions) : null,
             );

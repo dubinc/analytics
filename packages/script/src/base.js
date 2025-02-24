@@ -1,5 +1,5 @@
 (function () {
-  const CLICK_ID = 'dub_id';
+  const DUB_ID_VAR = 'dub_id';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
   let clientClickTracked = false;
@@ -62,7 +62,7 @@
         if (data) {
           const cookieOptions = script.getAttribute('data-cookie-options');
           cookie.set(
-            CLICK_ID,
+            DUB_ID_VAR,
             data.clickId,
             cookieOptions ? JSON.parse(cookieOptions) : null,
           );
@@ -81,11 +81,11 @@
       script.getAttribute('data-attribution-model') || 'last-click';
 
     // Direct click ID in URL
-    const clickId = params.get(CLICK_ID);
+    const clickId = params.get(DUB_ID_VAR);
     if (clickId) {
       const cookieOptions = script.getAttribute('data-cookie-options');
       cookie.set(
-        CLICK_ID,
+        DUB_ID_VAR,
         clickId,
         cookieOptions ? JSON.parse(cookieOptions) : null,
       );
@@ -95,7 +95,7 @@
     // Track via query param
     const identifier = params.get(queryParam);
     if (identifier && shortDomain) {
-      const existingCookie = cookie.get(CLICK_ID);
+      const existingCookie = cookie.get(DUB_ID_VAR);
       if (!existingCookie || attributionModel !== 'first-click') {
         trackClick(identifier);
       }
@@ -104,7 +104,7 @@
 
   // Export core functionality
   window._dubAnalytics = {
-    CLICK_ID,
+    DUB_ID_VAR,
     HOSTNAME,
     cookie,
     script, // Export script reference
