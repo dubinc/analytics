@@ -1,12 +1,19 @@
 {
   "name": "@dub/analytics-script",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "main": "src/index.js",
+  "files": [
+    "dist/analytics/script.js",
+    "dist/analytics/script.site-visit.js",
+    "dist/analytics/script.outbound-domains.js",
+    "dist/analytics/script.site-visit.outbound-domains.js"
+  ],
   "scripts": {
     "prebuild": "mkdir -p dist/analytics",
-    "build": "pnpm run prebuild && terser src/index.js -o dist/analytics/script.js -c -m"
+    "build": "node build.js"
   },
   "devDependencies": {
-    "terser": "^5.7.0"
+    "esbuild": "^0.19.0",
+    "terser": "^5.39.0"
   }
 }

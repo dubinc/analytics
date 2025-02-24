@@ -8,18 +8,32 @@ export interface AnalyticsProps {
   apiHost?: string;
 
   /**
-   * The custom domain you're using on Dub for your short links.
-   * @example 'go.example.com'
+   * This is a JSON object that configures the domains that Dub will track.
+   *
+   * - `refer`: The Dub short domain for referral program client-side click tracking (previously `shortDomain`). @see: https://d.to/clicks/refer
+   * - `site`: The Dub short domain for tracking site visits. @see: https://d.to/clicks/site
+   * - `outbound`: An array of domains for cross-domain tracking. When configured, the existing `dub_id` cookie
+   *               will be automatically appended to all outbound links targeting these domains to enable
+   *               cross-domain tracking across different applications.
+   *
+   * @example {
+   *   refer: "refer.dub.co",
+   *   site: "site.dub.co",
+   *   outbound: "dub.sh, git.new"
+   * }
    */
-  shortDomain?: string;
+  domainsConfig?: {
+    refer?: string;
+    site?: string;
+    outbound?: string | string[];
+  };
 
   /**
-   * An array of domains for cross-domain tracking. When configured, a `dub_id` query parameter
-   * will be automatically appended to all outbound links targeting these domains to enable
-   * cross-domain tracking across different applications.
-   * @example ['example.co', "example.app", "example.dev"]
+   * The custom domain you're using on Dub for your short links (for client-side click tracking).
+   * @example 'go.example.com'
+   * @deprecated Use domainsConfig.refer instead
    */
-  outboundDomains?: string[];
+  shortDomain?: string;
 
   /**
    * The Attribution Model to use for the analytics event.
