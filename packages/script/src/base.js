@@ -37,6 +37,10 @@
     script.getAttribute('data-domain');
   const ATTRIBUTION_MODEL =
     script.getAttribute('data-attribution-model') || 'last-click';
+  const QUERY_PARAM = script.getAttribute('data-query-param') || 'via';
+  const QUERY_PARAM_VALUE = new URLSearchParams(location.search).get(
+    QUERY_PARAM,
+  );
 
   // Cookie management
   const cookieManager = {
@@ -83,8 +87,7 @@
 
   // Initialize tracking
   function init() {
-    const params = new URLSearchParams(window.location.search);
-    const queryParam = script.getAttribute('data-query-param') || 'via';
+    const params = new URLSearchParams(location.search);
 
     // Direct click ID in URL
     const clickId = params.get(DUB_ID_VAR);
@@ -94,11 +97,10 @@
     }
 
     // Track via query param
-    const identifier = params.get(queryParam);
-    if (identifier && SHORT_DOMAIN) {
+    if (QUERY_PARAM_VALUE && SHORT_DOMAIN) {
       const existingCookie = cookieManager.get(DUB_ID_VAR);
       if (!existingCookie || ATTRIBUTION_MODEL !== 'first-click') {
-        trackClick(identifier);
+        trackClick(QUERY_PARAM_VALUE);
       }
     }
   }
@@ -113,6 +115,8 @@
     COOKIE_OPTIONS,
     SHORT_DOMAIN,
     ATTRIBUTION_MODEL,
+    QUERY_PARAM,
+    QUERY_PARAM_VALUE,
   };
 
   // Initialize
