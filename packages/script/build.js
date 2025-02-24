@@ -15,10 +15,14 @@ const combineFiles = (files) => {
   return files.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
 };
 
-// Ensure analytics directory exists
-if (!fs.existsSync('dist/analytics')) {
-  fs.mkdirSync('dist/analytics', { recursive: true });
-}
+// Ensure dist/analytics exists
+fs.mkdirSync(path.join(__dirname, 'dist/analytics'), { recursive: true });
+
+// Copy _redirects to dist folder
+fs.copyFileSync(
+  path.join(__dirname, 'public/_redirects'),
+  path.join(__dirname, 'dist/_redirects'),
+);
 
 // Build all variants
 Promise.all([
