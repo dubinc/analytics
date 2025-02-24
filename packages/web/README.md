@@ -44,8 +44,8 @@ The API host to use for tracking. This is useful for setting up reverse proxies 
 
 This is a JSON object that configures the domains that Dub will track.
 
-- `refer`: The short domain you're using on Dub for client-side click tracking (previously shortDomain).
-- `site`: A special custom short domain on Dub for tracking site visits.
+- `refer`: The Dub short domain for [referral program client-side click tracking](https://d.to/clicks/refer) (previously `shortDomain`).
+- `site`: The Dub short domain for [tracking site visits](https://d.to/clicks/site).
 - `outbound`: An array of domains for cross-domain tracking. When configured, the existing `dub_id` cookie will be automatically appended to all outbound links targeting these domains to enable cross-domain tracking across different applications.
 
 ### `shortDomain`
