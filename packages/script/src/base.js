@@ -3,6 +3,7 @@
   const script = document.currentScript;
 
   const DUB_ID_VAR = 'dub_id';
+  const DUB_PARTNER_VAR = 'dub_partner_data';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
 
@@ -96,6 +97,20 @@
       .then((data) => {
         if (data) {
           cookieManager.set(DUB_ID_VAR, data.clickId);
+          setPartnerData(data.clickId);
+        }
+      });
+  }
+
+  // Fetch and set the partner & discount data for a partner link
+  function setPartnerData(clickId) {
+    if (!clickId) return;
+
+    fetch(`${API_HOST}/clicks/${clickId}`)
+      .then((res) => res.ok && res.json())
+      .then((data) => {
+        if (data.partner) {
+          cookieManager.set(DUB_PARTNER_VAR, JSON.stringify(data));
         }
       });
   }
@@ -108,6 +123,7 @@
     const clickId = params.get(DUB_ID_VAR);
     if (clickId) {
       cookieManager.set(DUB_ID_VAR, clickId);
+      setPartnerData(clickId);
       return;
     }
 
