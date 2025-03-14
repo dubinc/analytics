@@ -104,17 +104,22 @@
   function init() {
     const params = new URLSearchParams(location.search);
 
+    const shouldSetCookie = () => {
+      return (
+        !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
+      );
+    };
+
     // Direct click ID in URL
     const clickId = params.get(DUB_ID_VAR);
-    if (clickId) {
+    if (clickId && shouldSetCookie()) {
       cookieManager.set(DUB_ID_VAR, clickId);
       return;
     }
 
     // Track via query param
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN) {
-      const existingCookie = cookieManager.get(DUB_ID_VAR);
-      if (!existingCookie || ATTRIBUTION_MODEL !== 'first-click') {
+      if (shouldSetCookie()) {
         trackClick(QUERY_PARAM_VALUE);
       }
     }
