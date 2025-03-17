@@ -77,6 +77,19 @@
     },
   };
 
+  // Fetch and set the partner & discount data for a partner link
+  function fetchPartnerData(clickId) {
+    if (!clickId) return;
+
+    return fetch(`${API_HOST}/clicks/${clickId}`)
+      .then((res) => res.ok && res.json())
+      .then((data) => data);
+  }
+
+  // if (data.partner) {
+  //   cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
+  // }
+
   let clientClickTracked = false;
   // Track click and set cookie
   function trackClick(identifier) {
@@ -97,20 +110,10 @@
       .then((data) => {
         if (data) {
           cookieManager.set(DUB_ID_VAR, data.clickId);
-          setPartnerData(data.clickId);
-        }
-      });
-  }
 
-  // Fetch and set the partner & discount data for a partner link
-  function setPartnerData(clickId) {
-    if (!clickId) return;
-
-    fetch(`${API_HOST}/clicks/${clickId}`)
-      .then((res) => res.ok && res.json())
-      .then((data) => {
-        if (data.partner) {
-          cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
+          if (data.partner) {
+            cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
+          }
         }
       });
   }
@@ -129,7 +132,13 @@
     const clickId = params.get(DUB_ID_VAR);
     if (clickId && shouldSetCookie()) {
       cookieManager.set(DUB_ID_VAR, clickId);
-      setPartnerData(clickId);
+
+      const partnerData = fetchPartnerData(clickId);
+      console.log('partnerData', partnerData);
+      if (partnerData.partner) {
+        cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(partnerData));
+      }
+
       return;
     }
 
