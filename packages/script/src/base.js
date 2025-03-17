@@ -78,17 +78,17 @@
   };
 
   // Fetch and set the partner & discount data for a partner link
-  function fetchPartnerData(clickId) {
+  function setPartnerData(clickId) {
     if (!clickId) return;
 
     return fetch(`${API_HOST}/clicks/${clickId}`)
       .then((res) => res.ok && res.json())
-      .then((data) => data);
+      .then((data) => {
+        if (data.partner) {
+          cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
+        }
+      });
   }
-
-  // if (data.partner) {
-  //   cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
-  // }
 
   let clientClickTracked = false;
   // Track click and set cookie
@@ -132,13 +132,7 @@
     const clickId = params.get(DUB_ID_VAR);
     if (clickId && shouldSetCookie()) {
       cookieManager.set(DUB_ID_VAR, clickId);
-
-      const partnerData = fetchPartnerData(clickId);
-      console.log('partnerData', partnerData);
-      if (partnerData.partner) {
-        cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(partnerData));
-      }
-
+      setPartnerData(clickId);
       return;
     }
 
