@@ -81,7 +81,7 @@
   function setPartnerData(clickId) {
     if (!clickId) return;
 
-    return fetch(`${API_HOST}/clicks/${clickId}`)
+    fetch(`${API_HOST}/clicks/${clickId}`)
       .then((res) => res.ok && res.json())
       .then((data) => {
         if (data.partner) {
