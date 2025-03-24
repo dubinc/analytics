@@ -100,15 +100,23 @@
       });
   }
 
+  const shouldSetCookie = () => {
+    return (
+      !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
+    );
+  };
+
+  // Track clicks for dynamic pages (Eg: example.com/profile/[username])
+  // WIP
+  function captureClick(identifier) {
+    if (shouldSetCookie()) {
+      trackClick(identifier);
+    }
+  }
+
   // Initialize tracking
   function init() {
     const params = new URLSearchParams(location.search);
-
-    const shouldSetCookie = () => {
-      return (
-        !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
-      );
-    };
 
     // Direct click ID in URL
     const clickId = params.get(DUB_ID_VAR);
@@ -137,6 +145,10 @@
     p: QUERY_PARAM, // was QUERY_PARAM
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
     n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
+  };
+
+  window.dubAnalytics = {
+    trackClick: captureClick,
   };
 
   // Initialize
