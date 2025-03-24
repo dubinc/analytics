@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { inject } from './generic';
 import type { AnalyticsProps, TrackClickInput } from './types';
+import { trackClick } from './track-click';
 
 /**
  * Injects the Dub Web Analytics script into the page head.
@@ -49,12 +50,12 @@ function Analytics(props: AnalyticsProps): null {
  * ```
  */
 function useAnalytics() {
-  const trackClick = useCallback((event: TrackClickInput) => {
-    console.log('trackClick', event);
+  const trackClickFn = useCallback((event: TrackClickInput) => {
+    trackClick(event);
   }, []);
 
   return {
-    trackClick,
+    trackClick: trackClickFn,
   };
 }
 
