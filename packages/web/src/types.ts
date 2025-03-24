@@ -155,3 +155,19 @@ export interface AnalyticsProps {
 export interface ClickApiResponse {
   clickId: string;
 }
+
+export type TrackClickInput =
+  | {
+      domain: string;
+      key: string;
+      tenantId?: never;
+      url?: string | null;
+      referrer?: string | null;
+    }
+  | {
+      key?: never;
+      domain?: never;
+      tenantId: string;
+      url?: string | null;
+      referrer?: string | null;
+    };
