@@ -77,17 +77,21 @@
   };
 
   let clientClickTracked = false;
+
   // Track click and set cookie
-  function trackClick(identifier) {
-    if (clientClickTracked) return;
+  function trackClick({ domain, key }) {
+    if (clientClickTracked) {
+      return;
+    }
+
     clientClickTracked = true;
 
     fetch(`${API_HOST}/track/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        domain: SHORT_DOMAIN,
-        key: identifier,
+        domain,
+        key,
         url: window.location.href,
         referrer: document.referrer,
       }),
@@ -120,7 +124,10 @@
     // Track via query param
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN) {
       if (shouldSetCookie()) {
-        trackClick(QUERY_PARAM_VALUE);
+        trackClick({
+          domain: SHORT_DOMAIN,
+          key: QUERY_PARAM_VALUE,
+        });
       }
     }
   }
@@ -129,9 +136,9 @@
   const existingQueue = window._dubAnalyticsQueue || [];
   window._dubAnalyticsQueue = [];
 
-  function handleClick(identifier) {
+  function handleClick(event) {
     if (shouldSetCookie()) {
-      trackClick(identifier);
+      trackClick(event);
     }
   }
 
