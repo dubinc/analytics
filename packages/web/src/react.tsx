@@ -40,8 +40,6 @@ function Analytics(props: AnalyticsProps): null {
  *     trackClick({
  *       domain: 'example.com',
  *       key: 'hello',
- *       url: 'https://example.com/hello',
- *       referrer: 'https://example.com',
  *     });
  *   }, [trackClick]);
  *
