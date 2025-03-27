@@ -106,14 +106,6 @@
     );
   };
 
-  // Track clicks for dynamic pages (Eg: example.com/profile/[username])
-  // WIP
-  function captureClick(identifier) {
-    if (shouldSetCookie()) {
-      trackClick(identifier);
-    }
-  }
-
   // Initialize tracking
   function init() {
     const params = new URLSearchParams(location.search);
@@ -133,6 +125,34 @@
     }
   }
 
+  // Track click
+  const existingQueue = window._dubAnalyticsQueue || [];
+  window._dubAnalyticsQueue = [];
+
+  function handleClick(identifier) {
+    if (shouldSetCookie()) {
+      trackClick(identifier);
+    }
+  }
+
+  // Process any events (eg: trackClick) queued before script loaded
+  function processQueue() {
+    const combinedQueue = [...existingQueue, ...window._dubAnalyticsQueue];
+
+    existingQueue.length = 0;
+    window._dubAnalyticsQueue.length = 0;
+
+    if (combinedQueue.length === 0) {
+      return;
+    }
+
+    for (const item of combinedQueue) {
+      if (item && item.method === 'trackClick' && item.args) {
+        handleClick.apply(null, item.args);
+      }
+    }
+  }
+
   // Export minimal API with minified names
   window._dubAnalytics = {
     c: cookieManager, // was cookieManager
@@ -145,12 +165,10 @@
     p: QUERY_PARAM, // was QUERY_PARAM
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
     n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
-  };
-
-  window.dubAnalytics = {
-    trackClick: captureClick,
+    trackClick: handleClick,
   };
 
   // Initialize
   init();
+  processQueue();
 })();

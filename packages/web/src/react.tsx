@@ -48,12 +48,12 @@ function Analytics(props: AnalyticsProps): null {
  * ```
  */
 function useAnalytics() {
-  const trackClickFn = useCallback((event: TrackClickInput) => {
+  const handleTrackClick = useCallback((event: TrackClickInput) => {
     trackClick(event);
   }, []);
 
   return {
-    trackClick: trackClickFn,
+    trackClick: handleTrackClick,
   };
 }
 
