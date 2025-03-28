@@ -14,9 +14,18 @@ export default function PageClient() {
     }
 
     trackClick({
-      domain: 'example.com',
+      domain: 'dub.sh',
       key: username,
     });
+
+    // trackClick({
+    //   linkId: 'link_1JQDZZCW3VF4DHMR3F7KF81CD',
+    // });
+
+    // trackClick({
+    //   externalId: 'Q0weDNCOyt41fRdt',
+    //   workspaceId: 'ws_cl7pj5kq4006835rbjlt2ofka',
+    // });
   }, [trackClick, username]);
 
   return <div>{username}</div>;

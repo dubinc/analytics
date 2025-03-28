@@ -79,7 +79,7 @@
   let clientClickTracked = false;
 
   // Track click and set cookie
-  function trackClick({ domain, key }) {
+  function trackClick(event) {
     if (clientClickTracked) {
       return;
     }
@@ -90,10 +90,9 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        domain,
-        key,
         url: window.location.href,
         referrer: document.referrer,
+        ...event,
       }),
     })
       .then((res) => res.ok && res.json())
@@ -132,7 +131,7 @@
     }
   }
 
-  // Track click
+  // Events queue
   const existingQueue = window._dubAnalyticsQueue || [];
   window._dubAnalyticsQueue = [];
 
@@ -142,7 +141,6 @@
     }
   }
 
-  // Process any events (eg: trackClick) queued before script loaded
   function processQueue() {
     const combinedQueue = [...existingQueue, ...window._dubAnalyticsQueue];
 
@@ -179,3 +177,6 @@
   init();
   processQueue();
 })();
+
+// TODO:
+// Replace `_dubAnalytics` with `dubAnalytics` (TBD)
