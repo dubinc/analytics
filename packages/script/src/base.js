@@ -3,6 +3,7 @@
   const script = document.currentScript;
 
   const DUB_ID_VAR = 'dub_id';
+  const DUB_PARTNER_COOKIE = 'dub_partner_data';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
 
@@ -84,6 +85,19 @@
     },
   };
 
+  // Fetch and set the partner & discount data for a partner link
+  function setPartnerData(clickId) {
+    if (!clickId) return;
+
+    fetch(`${API_HOST}/clicks/${clickId}`)
+      .then((res) => res.ok && res.json())
+      .then((data) => {
+        if (data.partner) {
+          cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
+        }
+      });
+  }
+
   let clientClickTracked = false;
   // Track click and set cookie
   function trackClick(identifier) {
@@ -104,6 +118,10 @@
       .then((data) => {
         if (data) {
           cookieManager.set(DUB_ID_VAR, data.clickId);
+
+          if (data.partner) {
+            cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
+          }
         }
       });
   }
@@ -112,22 +130,27 @@
   function init() {
     const params = new URLSearchParams(location.search);
 
-    const shouldSetCookie = () => {
+    const shouldSetCookie = (clickId) => {
+      const existingClickId = cookieManager.get(DUB_ID_VAR);
+      // only set cookie if there's no existing click id
+      // or if the attribution model is last-click and the new click id is different from the existing one
       return (
-        !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
+        !existingClickId ||
+        (ATTRIBUTION_MODEL === 'last-click' && clickId !== existingClickId)
       );
     };
 
     // Direct click ID in URL
     const clickId = params.get(DUB_ID_VAR);
-    if (clickId && shouldSetCookie()) {
+    if (clickId && shouldSetCookie(clickId)) {
       cookieManager.set(DUB_ID_VAR, clickId);
+      setPartnerData(clickId);
       return;
     }
 
     // Track via query param
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN) {
-      if (shouldSetCookie()) {
+      if (shouldSetCookie(clickId)) {
         trackClick(QUERY_PARAM_VALUE);
       }
     }
