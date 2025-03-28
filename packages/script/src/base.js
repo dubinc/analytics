@@ -34,18 +34,26 @@
   })();
 
   const DOMAINS_CONFIG = (() => {
-    // Try to get new JSON domains first
+    // here, we fetch the old data-short-domain in case it's needed
+    const oldReferDomain = script.getAttribute('data-short-domain');
+    // latest format with data-domains
     const domainsAttr = script.getAttribute('data-domains');
     if (domainsAttr) {
       try {
-        return JSON.parse(domainsAttr);
+        const domainsConfig = JSON.parse(domainsAttr);
+        return {
+          ...domainsConfig,
+          // we should use the domainsConfig.refer if it exists,
+          // otherwise we fallback to the old data-short-domain if it exists
+          refer: domainsConfig.refer || oldReferDomain,
+        };
       } catch (e) {
         // Fall back to old format if JSON parse fails
       }
     }
     // Backwards compatibility only for data-short-domain
     return {
-      refer: script.getAttribute('data-short-domain'),
+      refer: oldReferDomain,
     };
   })();
 
