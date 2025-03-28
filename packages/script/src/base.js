@@ -43,6 +43,8 @@
         const domainsConfig = JSON.parse(domainsAttr);
         return {
           ...domainsConfig,
+          // we should use the domainsConfig.refer if it exists,
+          // otherwise we fallback to the old data-short-domain if it exists
           refer: domainsConfig.refer || oldReferDomain,
         };
       } catch (e) {
