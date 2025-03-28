@@ -34,8 +34,9 @@
   })();
 
   const DOMAINS_CONFIG = (() => {
+    // here, we fetch the old data-short-domain in case it's needed
     const oldReferDomain = script.getAttribute('data-short-domain');
-    // Try to get new JSON domains first
+    // latest format with data-domains
     const domainsAttr = script.getAttribute('data-domains');
     if (domainsAttr) {
       try {
