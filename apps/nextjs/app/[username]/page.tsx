@@ -1,5 +1,5 @@
-import PageClient from './page-client';
+import { WithDomainKey } from './with-domain-key';
 
 export default function Page() {
-  return <PageClient />;
+  return <WithDomainKey />;
 }

@@ -4,7 +4,7 @@ import { useAnalytics } from '@dub/analytics/react';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
 
-export default function PageClient() {
+export function WithDomainKey() {
   const { username } = useParams<{ username: string }>();
   const { trackClick } = useAnalytics();
 
