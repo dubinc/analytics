@@ -7,7 +7,7 @@ const initSiteVisit = () => {
     d: SHORT_DOMAIN,
     v: QUERY_PARAM_VALUE,
     n: DOMAINS_CONFIG,
-  } = window._dubAnalytics;
+  } = window.dubAnalytics;
 
   let siteVisitTracked = false;
 
@@ -43,7 +43,7 @@ const initSiteVisit = () => {
 };
 
 // Run when base script is ready
-if (window._dubAnalytics) {
+if (window.dubAnalytics) {
   initSiteVisit();
 } else {
   window.addEventListener('load', initSiteVisit);

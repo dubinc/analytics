@@ -156,21 +156,7 @@ export interface ClickApiResponse {
   clickId: string;
 }
 
-/**
- * Three different ways to track a click
- * 1. domain + key
- * 2. linkId
- * 3. externalId + workspaceId
- */
-export type TrackClickInput =
-  | {
-      domain: string;
-      key: string;
-    }
-  | {
-      linkId: string;
-    }
-  | {
-      externalId: string;
-      workspaceId: string;
-    };
+export interface TrackClickInput {
+  domain: string;
+  key: string;
+}

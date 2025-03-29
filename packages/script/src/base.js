@@ -159,7 +159,7 @@
   }
 
   // Export minimal API with minified names
-  window._dubAnalytics = {
+  window.dubAnalytics = {
     c: cookieManager, // was cookieManager
     i: DUB_ID_VAR, // was DUB_ID_VAR
     h: HOSTNAME, // was HOSTNAME
@@ -177,6 +177,3 @@
   init();
   processQueue();
 })();
-
-// TODO:
-// Replace `_dubAnalytics` with `dubAnalytics` (TBD)

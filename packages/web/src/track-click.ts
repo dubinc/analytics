@@ -2,7 +2,7 @@ import { TrackClickInput } from './types';
 
 declare global {
   interface Window {
-    _dubAnalytics?: {
+    dubAnalytics?: {
       trackClick: (event: TrackClickInput) => void;
     };
 
@@ -18,8 +18,8 @@ export const trackClick = (event: TrackClickInput) => {
     return;
   }
 
-  if (window._dubAnalytics?.trackClick) {
-    window._dubAnalytics.trackClick(event);
+  if (window.dubAnalytics?.trackClick) {
+    window.dubAnalytics.trackClick(event);
     return;
   }
 
