@@ -5,7 +5,7 @@ const initOutboundDomains = () => {
     i: DUB_ID_VAR,
     h: HOSTNAME,
     n: DOMAINS_CONFIG,
-  } = window._dubAnalytics;
+  } = window.dubAnalytics;
   let outboundLinksUpdated = new Set(); // Track processed links
 
   function addOutboundTracking(clickId) {
@@ -69,7 +69,7 @@ const initOutboundDomains = () => {
 };
 
 // Run when base script is ready
-if (window._dubAnalytics) {
+if (window.dubAnalytics) {
   initOutboundDomains();
 } else {
   window.addEventListener('load', initOutboundDomains);
