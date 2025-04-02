@@ -75,20 +75,19 @@
 
       document.cookie = `${key}=${value}; ${cookieString}`;
     },
+
+    delete(key) {
+      const deleteOptions = { ...COOKIE_OPTIONS };
+      deleteOptions.expires = 'Thu, 01 Jan 1970 00:00:00 GMT';
+
+      const cookieString = Object.entries(deleteOptions)
+        .filter(([, v]) => v)
+        .map(([k, v]) => `${k}=${v}`)
+        .join('; ');
+
+      document.cookie = `${key}=; ${cookieString}`;
+    },
   };
-
-  // Fetch and set the partner & discount data for a partner link
-  function setPartnerData(clickId) {
-    if (!clickId) return;
-
-    fetch(`${API_HOST}/clicks/${clickId}`)
-      .then((res) => res.ok && res.json())
-      .then((data) => {
-        if (data.partner) {
-          cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
-        }
-      });
-  }
 
   let clientClickTracked = false;
   // Track click and set cookie
@@ -111,9 +110,9 @@
         if (data) {
           cookieManager.set(DUB_ID_VAR, data.clickId);
 
-          if (data.partner) {
-            cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
-          }
+          // TODO:
+          // Set this only for partner links
+          cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
         }
       });
   }
@@ -124,6 +123,7 @@
 
     const shouldSetCookie = (clickId) => {
       const existingClickId = cookieManager.get(DUB_ID_VAR);
+
       // only set cookie if there's no existing click id
       // or if the attribution model is last-click and the new click id is different from the existing one
       return (
