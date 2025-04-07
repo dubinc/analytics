@@ -3,6 +3,7 @@
   const script = document.currentScript;
 
   const DUB_ID_VAR = 'dub_id';
+  const DUB_PARTNER_COOKIE = 'dub_partner_data';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
 
@@ -74,6 +75,50 @@
 
       document.cookie = `${key}=${value}; ${cookieString}`;
     },
+
+    delete(key) {
+      const deleteOptions = { ...COOKIE_OPTIONS };
+      deleteOptions.expires = 'Thu, 01 Jan 1970 00:00:00 GMT';
+
+      const cookieString = Object.entries(deleteOptions)
+        .filter(([, v]) => v)
+        .map(([k, v]) => `${k}=${v}`)
+        .join('; ');
+
+      document.cookie = `${key}=; ${cookieString}`;
+    },
+  };
+
+  const setPartnerData = (data) => {
+    const existingPartnerData = cookieManager.get(DUB_PARTNER_COOKIE);
+
+    if (existingPartnerData) {
+      try {
+        const partnerData = JSON.parse(existingPartnerData);
+
+        if (data.clickId === partnerData.clickId) {
+          return;
+        }
+
+        cookieManager.delete(DUB_PARTNER_COOKIE);
+      } catch (error) {
+        cookieManager.delete(DUB_PARTNER_COOKIE);
+      }
+    }
+
+    if (data.partner) {
+      // Encode only the image URL and name to handle special characters
+      const encodedData = {
+        ...data,
+        partner: {
+          ...data.partner,
+          name: encodeURIComponent(data.partner.name),
+          image: encodeURIComponent(data.partner.image),
+        },
+      };
+
+      cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
+    }
   };
 
   let clientClickTracked = false;
@@ -99,13 +144,19 @@
       .then((data) => {
         if (data) {
           cookieManager.set(DUB_ID_VAR, data.clickId);
+          setPartnerData(data);
         }
       });
   }
 
-  const shouldSetCookie = () => {
+  const shouldSetCookie = (clickId) => {
+    const existingClickId = cookieManager.get(DUB_ID_VAR);
+
+    // only set cookie if there's no existing click id
+    // or if the attribution model is last-click and the new click id is different from the existing one
     return (
-      !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
+      !existingClickId ||
+      (ATTRIBUTION_MODEL === 'last-click' && clickId !== existingClickId)
     );
   };
 
@@ -115,45 +166,15 @@
 
     // Direct click ID in URL
     const clickId = params.get(DUB_ID_VAR);
-    if (clickId && shouldSetCookie()) {
+    if (clickId && shouldSetCookie(clickId)) {
       cookieManager.set(DUB_ID_VAR, clickId);
       return;
     }
 
     // Track via query param
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN) {
-      if (shouldSetCookie()) {
-        trackClick({
-          domain: SHORT_DOMAIN,
-          key: QUERY_PARAM_VALUE,
-        });
-      }
-    }
-  }
-
-  // Events queue
-  const existingQueue = window._dubAnalyticsQueue || [];
-  window._dubAnalyticsQueue = [];
-
-  function handleClick(event) {
-    if (shouldSetCookie()) {
-      trackClick(event);
-    }
-  }
-
-  function processQueue() {
-    const combinedQueue = [...existingQueue, ...window._dubAnalyticsQueue];
-
-    existingQueue.length = 0;
-    window._dubAnalyticsQueue.length = 0;
-
-    if (combinedQueue.length === 0) {
-      return;
-    }
-
-    for (const item of combinedQueue) {
-      if (item && item.method === 'trackClick' && item.args) {
-        handleClick.apply(null, item.args);
+      if (shouldSetCookie(clickId)) {
+        trackClick(QUERY_PARAM_VALUE);
       }
     }
   }
