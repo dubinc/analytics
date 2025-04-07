@@ -89,6 +89,38 @@
     },
   };
 
+  const setPartnerData = (data) => {
+    const existingPartnerData = cookieManager.get(DUB_PARTNER_COOKIE);
+
+    if (existingPartnerData) {
+      try {
+        const partnerData = JSON.parse(existingPartnerData);
+
+        if (data.clickId === partnerData.clickId) {
+          return;
+        }
+
+        cookieManager.delete(DUB_PARTNER_COOKIE);
+      } catch (error) {
+        cookieManager.delete(DUB_PARTNER_COOKIE);
+      }
+    }
+
+    if (data.partner) {
+      // Encode only the image URL and name to handle special characters
+      const encodedData = {
+        ...data,
+        partner: {
+          ...data.partner,
+          name: encodeURIComponent(data.partner.name),
+          image: encodeURIComponent(data.partner.image),
+        },
+      };
+
+      cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
+    }
+  };
+
   let clientClickTracked = false;
   // Track click and set cookie
   function trackClick(identifier) {
@@ -109,10 +141,7 @@
       .then((data) => {
         if (data) {
           cookieManager.set(DUB_ID_VAR, data.clickId);
-
-          // TODO:
-          // Set this only for partner links
-          cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(data));
+          setPartnerData(data);
         }
       });
   }
