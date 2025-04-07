@@ -122,19 +122,22 @@
   };
 
   let clientClickTracked = false;
+
   // Track click and set cookie
-  function trackClick(identifier) {
-    if (clientClickTracked) return;
+  function trackClick(event) {
+    if (clientClickTracked) {
+      return;
+    }
+
     clientClickTracked = true;
 
     fetch(`${API_HOST}/track/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        domain: SHORT_DOMAIN,
-        key: identifier,
         url: window.location.href,
         referrer: document.referrer,
+        ...event,
       }),
     })
       .then((res) => res.ok && res.json())
@@ -146,20 +149,20 @@
       });
   }
 
+  const shouldSetCookie = (clickId) => {
+    const existingClickId = cookieManager.get(DUB_ID_VAR);
+
+    // only set cookie if there's no existing click id
+    // or if the attribution model is last-click and the new click id is different from the existing one
+    return (
+      !existingClickId ||
+      (ATTRIBUTION_MODEL === 'last-click' && clickId !== existingClickId)
+    );
+  };
+
   // Initialize tracking
   function init() {
     const params = new URLSearchParams(location.search);
-
-    const shouldSetCookie = (clickId) => {
-      const existingClickId = cookieManager.get(DUB_ID_VAR);
-
-      // only set cookie if there's no existing click id
-      // or if the attribution model is last-click and the new click id is different from the existing one
-      return (
-        !existingClickId ||
-        (ATTRIBUTION_MODEL === 'last-click' && clickId !== existingClickId)
-      );
-    };
 
     // Direct click ID in URL
     const clickId = params.get(DUB_ID_VAR);
@@ -177,7 +180,7 @@
   }
 
   // Export minimal API with minified names
-  window._dubAnalytics = {
+  window.dubAnalytics = {
     c: cookieManager, // was cookieManager
     i: DUB_ID_VAR, // was DUB_ID_VAR
     h: HOSTNAME, // was HOSTNAME
@@ -188,8 +191,10 @@
     p: QUERY_PARAM, // was QUERY_PARAM
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
     n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
+    trackClick: handleClick,
   };
 
   // Initialize
   init();
+  processQueue();
 })();
