@@ -165,7 +165,6 @@
     const clickId = params.get(DUB_ID_VAR);
     if (clickId && shouldSetCookie(clickId)) {
       cookieManager.set(DUB_ID_VAR, clickId);
-      return;
     }
 
     // Track via query param
