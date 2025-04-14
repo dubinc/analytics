@@ -122,6 +122,15 @@
     const clickId = params.get(DUB_ID_VAR);
     if (clickId && shouldSetCookie()) {
       cookieManager.set(DUB_ID_VAR, clickId);
+
+      // Remove dub_id from URL after setting cookie
+      params.delete(DUB_ID_VAR);
+      const newUrl =
+        window.location.pathname +
+        (params.toString() ? `?${params.toString()}` : '') +
+        window.location.hash;
+      window.history.replaceState({}, document.title, newUrl);
+
       return;
     }
 
