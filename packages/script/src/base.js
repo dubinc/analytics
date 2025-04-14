@@ -160,18 +160,16 @@
         (ATTRIBUTION_MODEL === 'last-click' && clickId !== existingClickId)
       );
     };
-
-    // Direct click ID in URL
     const clickId = params.get(DUB_ID_VAR);
-    if (clickId && shouldSetCookie(clickId)) {
-      cookieManager.set(DUB_ID_VAR, clickId);
+
+    // Dub Partners tracking (via query param e.g. ?via=partner_id)
+    if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie(clickId)) {
+      trackClick(QUERY_PARAM_VALUE);
     }
 
-    // Track via query param
-    if (QUERY_PARAM_VALUE && SHORT_DOMAIN) {
-      if (shouldSetCookie(clickId)) {
-        trackClick(QUERY_PARAM_VALUE);
-      }
+    // Dub Conversions tracking (via direct click ID in URL)
+    if (clickId && shouldSetCookie(clickId)) {
+      cookieManager.set(DUB_ID_VAR, clickId);
     }
   }
 
