@@ -3,6 +3,7 @@
   const script = document.currentScript;
 
   const DUB_ID_VAR = 'dub_id';
+  const DUB_PARTNER_COOKIE = 'dub_partner_data';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
 
@@ -104,6 +105,20 @@
       .then((data) => {
         if (data) {
           cookieManager.set(DUB_ID_VAR, data.clickId);
+          // if partner data is present, set it as dub_partner_data cookie
+          if (data.partner) {
+            // Encode only the image URL and name to handle special characters
+            const encodedData = {
+              ...data,
+              partner: {
+                ...data.partner,
+                name: encodeURIComponent(data.partner.name),
+                image: encodeURIComponent(data.partner.image),
+              },
+            };
+
+            cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
+          }
         }
       });
   }
@@ -113,23 +128,22 @@
     const params = new URLSearchParams(location.search);
 
     const shouldSetCookie = () => {
+      // only set cookie if there's no existing click id
+      // or if the attribution model is last-click
       return (
         !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
       );
     };
 
-    // Direct click ID in URL
+    // Dub Conversions tracking (via direct click ID in URL)
     const clickId = params.get(DUB_ID_VAR);
     if (clickId && shouldSetCookie()) {
       cookieManager.set(DUB_ID_VAR, clickId);
-      return;
     }
 
-    // Track via query param
-    if (QUERY_PARAM_VALUE && SHORT_DOMAIN) {
-      if (shouldSetCookie()) {
-        trackClick(QUERY_PARAM_VALUE);
-      }
+    // Dub Partners tracking (via query param e.g. ?via=partner_id)
+    if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
+      trackClick(QUERY_PARAM_VALUE);
     }
   }
 
