@@ -75,50 +75,6 @@
 
       document.cookie = `${key}=${value}; ${cookieString}`;
     },
-
-    delete(key) {
-      const deleteOptions = { ...COOKIE_OPTIONS };
-      deleteOptions.expires = 'Thu, 01 Jan 1970 00:00:00 GMT';
-
-      const cookieString = Object.entries(deleteOptions)
-        .filter(([, v]) => v)
-        .map(([k, v]) => `${k}=${v}`)
-        .join('; ');
-
-      document.cookie = `${key}=; ${cookieString}`;
-    },
-  };
-
-  const setPartnerData = (data) => {
-    const existingPartnerData = cookieManager.get(DUB_PARTNER_COOKIE);
-
-    if (existingPartnerData) {
-      try {
-        const partnerData = JSON.parse(existingPartnerData);
-
-        if (data.clickId === partnerData.clickId) {
-          return;
-        }
-
-        cookieManager.delete(DUB_PARTNER_COOKIE);
-      } catch (error) {
-        cookieManager.delete(DUB_PARTNER_COOKIE);
-      }
-    }
-
-    if (data.partner) {
-      // Encode only the image URL and name to handle special characters
-      const encodedData = {
-        ...data,
-        partner: {
-          ...data.partner,
-          name: encodeURIComponent(data.partner.name),
-          image: encodeURIComponent(data.partner.image),
-        },
-      };
-
-      cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
-    }
   };
 
   let clientClickTracked = false;
@@ -141,7 +97,20 @@
       .then((data) => {
         if (data) {
           cookieManager.set(DUB_ID_VAR, data.clickId);
-          setPartnerData(data);
+          // if partner data is present, set it as dub_partner_data cookie
+          if (data.partner) {
+            // Encode only the image URL and name to handle special characters
+            const encodedData = {
+              ...data,
+              partner: {
+                ...data.partner,
+                name: encodeURIComponent(data.partner.name),
+                image: encodeURIComponent(data.partner.image),
+              },
+            };
+
+            cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
+          }
         }
       });
   }
