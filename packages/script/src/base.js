@@ -119,26 +119,23 @@
   function init() {
     const params = new URLSearchParams(location.search);
 
-    const shouldSetCookie = (clickId) => {
-      const existingClickId = cookieManager.get(DUB_ID_VAR);
-
+    const shouldSetCookie = () => {
       // only set cookie if there's no existing click id
-      // or if the attribution model is last-click and the new click id is different from the existing one
+      // or if the attribution model is last-click
       return (
-        !existingClickId ||
-        (ATTRIBUTION_MODEL === 'last-click' && clickId !== existingClickId)
+        !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
       );
     };
-    const clickId = params.get(DUB_ID_VAR);
-
-    // Dub Partners tracking (via query param e.g. ?via=partner_id)
-    if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie(clickId)) {
-      trackClick(QUERY_PARAM_VALUE);
-    }
 
     // Dub Conversions tracking (via direct click ID in URL)
-    if (clickId && shouldSetCookie(clickId)) {
+    const clickId = params.get(DUB_ID_VAR);
+    if (clickId && shouldSetCookie()) {
       cookieManager.set(DUB_ID_VAR, clickId);
+    }
+
+    // Dub Partners tracking (via query param e.g. ?via=partner_id)
+    if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
+      trackClick(QUERY_PARAM_VALUE);
     }
   }
 
