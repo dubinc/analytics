@@ -35,18 +35,26 @@
   })();
 
   const DOMAINS_CONFIG = (() => {
-    // Try to get new JSON domains first
+    // here, we fetch the old data-short-domain in case it's needed
+    const oldReferDomain = script.getAttribute('data-short-domain');
+    // latest format with data-domains
     const domainsAttr = script.getAttribute('data-domains');
     if (domainsAttr) {
       try {
-        return JSON.parse(domainsAttr);
+        const domainsConfig = JSON.parse(domainsAttr);
+        return {
+          ...domainsConfig,
+          // we should use the domainsConfig.refer if it exists,
+          // otherwise we fallback to the old data-short-domain if it exists
+          refer: domainsConfig.refer || oldReferDomain,
+        };
       } catch (e) {
         // Fall back to old format if JSON parse fails
       }
     }
     // Backwards compatibility only for data-short-domain
     return {
-      refer: script.getAttribute('data-short-domain'),
+      refer: oldReferDomain,
     };
   })();
 
@@ -75,50 +83,6 @@
 
       document.cookie = `${key}=${value}; ${cookieString}`;
     },
-
-    delete(key) {
-      const deleteOptions = { ...COOKIE_OPTIONS };
-      deleteOptions.expires = 'Thu, 01 Jan 1970 00:00:00 GMT';
-
-      const cookieString = Object.entries(deleteOptions)
-        .filter(([, v]) => v)
-        .map(([k, v]) => `${k}=${v}`)
-        .join('; ');
-
-      document.cookie = `${key}=; ${cookieString}`;
-    },
-  };
-
-  const setPartnerData = (data) => {
-    const existingPartnerData = cookieManager.get(DUB_PARTNER_COOKIE);
-
-    if (existingPartnerData) {
-      try {
-        const partnerData = JSON.parse(existingPartnerData);
-
-        if (data.clickId === partnerData.clickId) {
-          return;
-        }
-
-        cookieManager.delete(DUB_PARTNER_COOKIE);
-      } catch (error) {
-        cookieManager.delete(DUB_PARTNER_COOKIE);
-      }
-    }
-
-    if (data.partner) {
-      // Encode only the image URL and name to handle special characters
-      const encodedData = {
-        ...data,
-        partner: {
-          ...data.partner,
-          name: encodeURIComponent(data.partner.name),
-          image: encodeURIComponent(data.partner.image),
-        },
-      };
-
-      cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
-    }
   };
 
   let clientClickTracked = false;
@@ -144,38 +108,45 @@
       .then((data) => {
         if (data) {
           cookieManager.set(DUB_ID_VAR, data.clickId);
-          setPartnerData(data);
+          // if partner data is present, set it as dub_partner_data cookie
+          if (data.partner) {
+            // Encode only the image URL and name to handle special characters
+            const encodedData = {
+              ...data,
+              partner: {
+                ...data.partner,
+                name: encodeURIComponent(data.partner.name),
+                image: encodeURIComponent(data.partner.image),
+              },
+            };
+
+            cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
+          }
         }
       });
   }
-
-  const shouldSetCookie = (clickId) => {
-    const existingClickId = cookieManager.get(DUB_ID_VAR);
-
-    // only set cookie if there's no existing click id
-    // or if the attribution model is last-click and the new click id is different from the existing one
-    return (
-      !existingClickId ||
-      (ATTRIBUTION_MODEL === 'last-click' && clickId !== existingClickId)
-    );
-  };
 
   // Initialize tracking
   function init() {
     const params = new URLSearchParams(location.search);
 
-    // Direct click ID in URL
+    const shouldSetCookie = () => {
+      // only set cookie if there's no existing click id
+      // or if the attribution model is last-click
+      return (
+        !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
+      );
+    };
+
+    // Dub Conversions tracking (via direct click ID in URL)
     const clickId = params.get(DUB_ID_VAR);
-    if (clickId && shouldSetCookie(clickId)) {
+    if (clickId && shouldSetCookie()) {
       cookieManager.set(DUB_ID_VAR, clickId);
-      return;
     }
 
-    // Track via query param
-    if (QUERY_PARAM_VALUE && SHORT_DOMAIN) {
-      if (shouldSetCookie(clickId)) {
-        trackClick(QUERY_PARAM_VALUE);
-      }
+    // Dub Partners tracking (via query param e.g. ?via=partner_id)
+    if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
+      trackClick(QUERY_PARAM_VALUE);
     }
   }
 
