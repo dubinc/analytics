@@ -126,17 +126,17 @@
       });
   }
 
+  const shouldSetCookie = () => {
+    // only set cookie if there's no existing click id
+    // or if the attribution model is last-click
+    return (
+      !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
+    );
+  };
+
   // Initialize tracking
   function init() {
     const params = new URLSearchParams(location.search);
-
-    const shouldSetCookie = () => {
-      // only set cookie if there's no existing click id
-      // or if the attribution model is last-click
-      return (
-        !cookieManager.get(DUB_ID_VAR) || ATTRIBUTION_MODEL !== 'first-click'
-      );
-    };
 
     // Dub Conversions tracking (via direct click ID in URL)
     const clickId = params.get(DUB_ID_VAR);
@@ -147,6 +147,35 @@
     // Dub Partners tracking (via query param e.g. ?via=partner_id)
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
       trackClick(QUERY_PARAM_VALUE);
+    }
+  }
+
+  // Expose trackClick to the outside world
+  function handleClickEvent(event) {
+    if (shouldSetCookie()) {
+      trackClick(event);
+    }
+  }
+
+  // Process any events (eg: trackClick) queued before script loaded
+  const existingQueue = window.dubAnalyticsQueue || [];
+  window.dubAnalyticsQueue = [];
+
+  function processQueue() {
+    const combinedQueue = [...existingQueue, ...window.dubAnalyticsQueue];
+
+    existingQueue.length = 0;
+    window.dubAnalyticsQueue.length = 0;
+
+    if (combinedQueue.length === 0) {
+      return;
+    }
+
+    for (const item of combinedQueue) {
+      if (item && item.method === 'trackClick' && item.args) {
+        console.log('processing queue item', item);
+        handleClickEvent.apply(null, item.args);
+      }
     }
   }
 
@@ -162,10 +191,12 @@
     p: QUERY_PARAM, // was QUERY_PARAM
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
     n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
-    trackClick: handleClick,
+    trackClick: handleClickEvent,
   };
 
   // Initialize
   init();
+
+  // Process any events (eg: trackClick) queued before script loaded
   processQueue();
 })();
