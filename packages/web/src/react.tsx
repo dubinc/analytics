@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { inject } from './generic';
-import type { AnalyticsProps } from './types';
+import type { AnalyticsProps, TrackClickInput } from './types';
+import { trackClick } from './track-click';
 
 /**
  * Injects the Dub Web Analytics script into the page head.
@@ -26,5 +27,35 @@ function Analytics(props: AnalyticsProps): null {
   return null;
 }
 
-export { Analytics };
+/**
+ * React hook for tracking analytics events.
+ * @returns Analytics tracking methods.
+ * ```js
+ * import { useAnalytics as useDubAnalytics } from '@dub/analytics/react';
+ *
+ * export default function MyComponent() {
+ *   const { trackClick } = useDubAnalytics();
+ *
+ *   useEffect(() => {
+ *     trackClick({
+ *       domain: 'example.com',
+ *       key: 'hello',
+ *     });
+ *   }, [trackClick]);
+ *
+ *   return <div>My Component</div>;
+ * }
+ * ```
+ */
+function useAnalytics() {
+  const handleTrackClick = useCallback((event: TrackClickInput) => {
+    trackClick(event);
+  }, []);
+
+  return {
+    trackClick: handleTrackClick,
+  };
+}
+
+export { Analytics, useAnalytics };
 export type { AnalyticsProps };
