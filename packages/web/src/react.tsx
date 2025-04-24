@@ -18,7 +18,7 @@ interface PartnerData {
 }
 
 /**
- * Injects the Dub Web Analytics script into the page head.
+ * Injects the Dub Analytics script into the page head.
  * @param props - Analytics options.
  * ```js
  * import { Analytics as DubAnalytics } from '@dub/analytics/react';

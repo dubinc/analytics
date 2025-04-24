@@ -3,7 +3,7 @@ import type { AnalyticsProps } from './types';
 import { isBrowser } from './utils';
 
 /**
- * Injects the Dub Web Analytics script into the page head.
+ * Injects the Dub Analytics script into the page head.
  */
 function inject(props: AnalyticsProps): void {
   if (!isBrowser()) return;
@@ -63,7 +63,7 @@ function inject(props: AnalyticsProps): void {
 
   script.onerror = (): void => {
     // eslint-disable-next-line no-console -- Logging to console is intentional
-    console.log(`[Dub Web Analytics] failed to load script from ${src}.`);
+    console.log(`[Dub Analytics] failed to load script from ${src}.`);
   };
 
   document.head.appendChild(script);
