@@ -119,12 +119,40 @@
 
             cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
           }
+
+          window.dispatchEvent(new CustomEvent('DubAnalytics:tracked'));
         }
       });
   }
 
+  function getPartnerData() {
+    const partnerData = cookieManager.get(DUB_PARTNER_COOKIE);
+
+    if (!partnerData) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(partnerData);
+
+      if (parsed.partner) {
+        parsed.partner.name = decodeURIComponent(parsed.partner.name);
+        parsed.partner.image = decodeURIComponent(parsed.partner.image);
+      }
+
+      return parsed;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // Initialize tracking
   function init() {
+    if (!window._dubAnalytics.initialized) {
+      window.dispatchEvent(new CustomEvent('DubAnalytics:ready'));
+      window._dubAnalytics.initialized = true;
+    }
+
     const params = new URLSearchParams(location.search);
 
     const shouldSetCookie = () => {
@@ -159,6 +187,8 @@
     p: QUERY_PARAM, // was QUERY_PARAM
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
     n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
+    getPartnerData,
+    initialized: false,
   };
 
   // Initialize
