@@ -17,22 +17,23 @@
       })(window, 'dubAnalytics');
 
       dubAnalytics('ready', function () {
-        console.log('Dub Analytics Ready 1');
+        console.log(DubAnalytics);
       });
 
-      dubAnalytics('ready', function () {
-        console.log('Dub Analytics Ready 2');
-      });
-
-      // Test delayed ready call
+      // delay 3 seconds
       setTimeout(() => {
         dubAnalytics('ready', function () {
-          console.log('Dub Analytics Ready 3 (Delayed)');
+          console.log(DubAnalytics);
         });
       }, 3000);
     </script>
 
-    <script async src="/src/base.js"></script>
+    <script
+      async
+      src="/src/base.js"
+      data-api-host="http://localhost:8888/api"
+      data-short-domain="dub.sh"
+    ></script>
 
     <header>
       <h1>Dub Analytics</h1>

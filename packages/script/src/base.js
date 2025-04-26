@@ -66,6 +66,12 @@
     QUERY_PARAM,
   );
 
+  // Initialize global DubAnalytics object
+  window.DubAnalytics = window.DubAnalytics || {
+    partner: null,
+    discount: null,
+  };
+
   // Cookie management
   const cookieManager = {
     get(key) {
@@ -119,6 +125,9 @@
 
             cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
 
+            DubAnalytics.partner = encodedData.partner;
+            DubAnalytics.discount = encodedData.discount;
+
             window.dispatchEvent(new Event('DubAnalytics:ready'));
           }
         }
@@ -131,18 +140,18 @@
     flush() {
       while (this.queue.length) {
         const [method, ...args] = this.queue.shift();
-        this.handle({ method, args });
+        this.process({ method, args });
       }
 
       // After initialization, we replace the queue function with a direct execution function.
       // This optimization ensures that all subsequent calls are processed immediately
       window.dubAnalytics = function () {
-        const args = Array.prototype.slice.call(arguments);
-        queueManager.handle({ method: args[0], args: args.slice(1) });
+        const [method, ...args] = Array.prototype.slice.call(arguments);
+        queueManager.process({ method, args });
       };
     },
 
-    handle({ method, args }) {
+    process({ method, args }) {
       if (method === 'ready') {
         const callback = args[0];
 
@@ -159,15 +168,12 @@
     },
   };
 
-  // Event listener
   window.addEventListener('DubAnalytics:ready', () => {
     queueManager.flush();
   });
 
   // Initialize tracking
   function init() {
-    window.dispatchEvent(new Event('DubAnalytics:ready'));
-
     const params = new URLSearchParams(location.search);
 
     const shouldSetCookie = () => {
