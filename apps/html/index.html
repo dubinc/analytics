@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Your website description" />
+    <title>Dub Analytics</title>
+  </head>
+  <body>
+    <script>
+      !(function (w, da) {
+        w[da] =
+          w[da] ||
+          function () {
+            (w[da].q = w[da].q || []).push(arguments);
+          };
+      })(window, 'dubAnalytics');
+
+      dubAnalytics('ready', function () {
+        console.log('Dub Analytics Ready 1');
+      });
+
+      dubAnalytics('ready', function () {
+        console.log('Dub Analytics Ready 2');
+      });
+
+      // Test delayed ready call
+      setTimeout(() => {
+        dubAnalytics('ready', function () {
+          console.log('Dub Analytics Ready 3 (Delayed)');
+        });
+      }, 3000);
+    </script>
+
+    <script async src="/src/base.js"></script>
+
+    <header>
+      <h1>Dub Analytics</h1>
+    </header>
+
+    <main>
+      <p>Your content goes here</p>
+    </main>
+  </body>
+</html>
