@@ -118,13 +118,56 @@
             };
 
             cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
+
+            window.dispatchEvent(new Event('DubAnalytics:ready'));
           }
         }
       });
   }
 
+  const queueManager = {
+    queue: window.dubAnalytics.q || [],
+
+    flush() {
+      while (this.queue.length) {
+        const [method, ...args] = this.queue.shift();
+        this.handle({ method, args });
+      }
+
+      // After initialization, we replace the queue function with a direct execution function.
+      // This optimization ensures that all subsequent calls are processed immediately
+      window.dubAnalytics = function () {
+        const args = Array.prototype.slice.call(arguments);
+        queueManager.handle({ method: args[0], args: args.slice(1) });
+      };
+    },
+
+    handle({ method, args }) {
+      if (method === 'ready') {
+        const callback = args[0];
+
+        if (typeof callback === 'function') {
+          callback();
+        } else {
+          console.error(
+            '[DubAnalytics] `dubAnalytics.ready` expects a function but received type "' +
+              typeof callback +
+              '"',
+          );
+        }
+      }
+    },
+  };
+
+  // Event listener
+  window.addEventListener('DubAnalytics:ready', () => {
+    queueManager.flush();
+  });
+
   // Initialize tracking
   function init() {
+    window.dispatchEvent(new Event('DubAnalytics:ready'));
+
     const params = new URLSearchParams(location.search);
 
     const shouldSetCookie = () => {
