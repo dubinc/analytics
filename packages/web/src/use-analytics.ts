@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface Partner {
   id: string;
@@ -16,32 +16,56 @@ interface Discount {
 interface PartnerData {
   partner?: Partner | null;
   discount?: Discount | null;
+  error?: string | null;
 }
-
-type DubAnalyticsEvent = 'ready';
 
 declare global {
   interface Window {
-    dubAnalytics: (event: DubAnalyticsEvent, callback: () => void) => void;
+    dubAnalytics: (event: 'ready', callback: () => void) => void;
     DubAnalytics: PartnerData;
   }
 }
 
 export function useAnalytics() {
-  const [partner, setPartner] = useState<Partner | null>(null);
-  const [discount, setDiscount] = useState<Discount | null>(null);
+  const [data, setData] = useState<PartnerData | null>({
+    partner: null,
+    discount: null,
+  });
 
-  useEffect(() => {
+  const initialize = useCallback(() => {
+    if (typeof window === 'undefined') {
+      setData((prev) => ({ ...prev, error: 'Window is undefined (SSR)' }));
+      return;
+    }
+
+    if (!window.dubAnalytics) {
+      setData((prev) => ({ ...prev, error: 'dubAnalytics not available' }));
+      return;
+    }
+
     window.dubAnalytics('ready', () => {
-      const { partner, discount } = window.DubAnalytics;
+      try {
+        const { partner = null, discount = null } = window.DubAnalytics || {};
 
-      setPartner(partner || null);
-      setDiscount(discount || null);
+        setData({
+          partner,
+          discount,
+          error: null,
+        });
+      } catch (err) {
+        setData((prev) => ({
+          ...prev,
+          error: 'Failed to load analytics data',
+        }));
+      }
     });
   }, []);
 
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
   return {
-    partner,
-    discount,
+    ...data,
   };
 }

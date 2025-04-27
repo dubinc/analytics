@@ -1,14 +1,18 @@
 'use client';
 
-import { Analytics as DubAnalytics, useAnalytics } from '@dub/analytics/react';
+import { useAnalytics } from '@dub/analytics/react';
+import { useEffect } from 'react';
 
 export function DiscountBanner() {
   const { partner, discount } = useAnalytics();
 
-  console.log('Analytics Data:', {
-    partner,
-    discount,
-  });
+  useEffect(() => {
+    if (partner && discount) {
+      alert(
+        `${partner.name} has gifted you ${discount.amount} ${discount.type === 'percentage' ? '%' : '$'} off for ${discount.maxDuration} months!`,
+      );
+    }
+  }, [partner, discount]);
 
   return null;
 }
