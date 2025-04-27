@@ -198,6 +198,20 @@
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
       trackClick(QUERY_PARAM_VALUE);
     }
+
+    // Initialize DubAnalytics from cookie if it exists
+    const partnerCookie = cookieManager.get(DUB_PARTNER_COOKIE);
+
+    if (partnerCookie) {
+      try {
+        const partnerData = JSON.parse(partnerCookie);
+
+        DubAnalytics.partner = partnerData.partner;
+        DubAnalytics.discount = partnerData.discount;
+      } catch (e) {
+        console.error('[DubAnalytics] Failed to parse partner cookie:', e);
+      }
+    }
   }
 
   // Export minimal API with minified names
