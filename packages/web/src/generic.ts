@@ -8,6 +8,15 @@ import { isBrowser } from './utils';
 function inject(props: AnalyticsProps): void {
   if (!isBrowser()) return;
 
+  // Initialize analytics queue
+  (function (w: Window & typeof globalThis, da: string) {
+    (w as any)[da] =
+      (w as any)[da] ||
+      function () {
+        ((w as any)[da].q = (w as any)[da].q || []).push(arguments);
+      };
+  })(window, 'dubAnalytics');
+
   // Determine script source based on enabled features
   const baseUrl = 'https://www.dubcdn.com/analytics/script';
   const features = [];
