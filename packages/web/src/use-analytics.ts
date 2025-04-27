@@ -26,6 +26,28 @@ declare global {
   }
 }
 
+/**
+ * Hook to access Dub Web Analytics data including partner and discount information.
+ * @returns Object containing partner data, discount information, and any potential errors.
+ * ```js
+ * import { useAnalytics } from '@dub/analytics/react';
+ *
+ * function MyComponent() {
+ *   const { partner, discount, error } = useAnalytics();
+ *
+ *   if (error) {
+ *     return <div>Error: {error}</div>;
+ *   }
+ *
+ *   return (
+ *     <div>
+ *       {partner && <img src={partner.image} alt={partner.name} />}
+ *       {discount && <p>Discount: {discount.amount}%</p>}
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export function useAnalytics() {
   const [data, setData] = useState<PartnerData | null>({
     partner: null,
