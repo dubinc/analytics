@@ -91,6 +91,46 @@
     },
   };
 
+  // Queue manager
+  const queueManager = {
+    queue: window.dubAnalytics.q || [],
+
+    flush() {
+      while (this.queue.length) {
+        const [method, ...args] = this.queue.shift();
+        this.process({ method, args });
+      }
+
+      // After initialization, we replace the queue function with a direct execution function.
+      // This optimization ensures that all subsequent calls are processed immediately
+      window.dubAnalytics = function () {
+        const [method, ...args] = Array.prototype.slice.call(arguments);
+        queueManager.process({ method, args });
+      };
+    },
+
+    process({ method, args }) {
+      if (method === 'ready') {
+        const callback = args[0];
+
+        if (typeof callback !== 'function') {
+          console.error(
+            '[DubAnalytics] `dubAnalytics.ready` expects a function but received type "' +
+              typeof callback +
+              '"',
+          );
+          return;
+        }
+
+        callback();
+      }
+    },
+  };
+
+  window.addEventListener('DubAnalytics:ready', () => {
+    queueManager.flush();
+  });
+
   let clientClickTracked = false;
   // Track click and set cookie
   function trackClick(identifier) {
@@ -119,7 +159,9 @@
               partner: {
                 ...data.partner,
                 name: encodeURIComponent(data.partner.name),
-                image: encodeURIComponent(data.partner.image),
+                image: data.partner.image
+                  ? encodeURIComponent(data.partner.image)
+                  : null,
               },
             };
 
@@ -133,44 +175,6 @@
         }
       });
   }
-
-  const queueManager = {
-    queue: window.dubAnalytics.q || [],
-
-    flush() {
-      while (this.queue.length) {
-        const [method, ...args] = this.queue.shift();
-        this.process({ method, args });
-      }
-
-      // After initialization, we replace the queue function with a direct execution function.
-      // This optimization ensures that all subsequent calls are processed immediately
-      window.dubAnalytics = function () {
-        const [method, ...args] = Array.prototype.slice.call(arguments);
-        queueManager.process({ method, args });
-      };
-    },
-
-    process({ method, args }) {
-      if (method === 'ready') {
-        const callback = args[0];
-
-        if (typeof callback === 'function') {
-          callback();
-        } else {
-          console.error(
-            '[DubAnalytics] `dubAnalytics.ready` expects a function but received type "' +
-              typeof callback +
-              '"',
-          );
-        }
-      }
-    },
-  };
-
-  window.addEventListener('DubAnalytics:ready', () => {
-    queueManager.flush();
-  });
 
   // Initialize tracking
   function init() {
