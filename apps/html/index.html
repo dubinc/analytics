@@ -17,15 +17,16 @@
       })(window, 'dubAnalytics');
 
       dubAnalytics('ready', function () {
-        console.log(DubAnalytics);
-      });
+        console.log('Dub Analytics Ready');
 
-      // delay 3 seconds
-      setTimeout(() => {
-        dubAnalytics('ready', function () {
-          console.log(DubAnalytics);
-        });
-      }, 3000);
+        if (DubAnalytics.partner) {
+          console.log(`Partner: ${JSON.stringify(DubAnalytics.partner)}`);
+        }
+
+        if (DubAnalytics.discount) {
+          console.log(`Discount: ${JSON.stringify(DubAnalytics.discount)}`);
+        }
+      });
     </script>
 
     <script
