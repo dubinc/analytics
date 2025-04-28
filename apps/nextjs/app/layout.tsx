@@ -23,10 +23,6 @@ export default function RootLayout({
           refer: 'getacme.link',
           site: 'getacme.link',
         }}
-        scriptProps={{
-          src: 'http://localhost:3000/analytics/script.js',
-          defer: true,
-        }}
       />
     </html>
   );
