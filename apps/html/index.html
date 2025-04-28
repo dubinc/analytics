@@ -14,7 +14,18 @@
           function () {
             (w[da].q = w[da].q || []).push(arguments);
           };
+
+        ['trackClick'].forEach(function (m) {
+          w[da][m] = function () {
+            w[da](m, ...arguments);
+          };
+        });
       })(window, 'dubAnalytics');
+
+      dubAnalytics.trackClick({
+        domain: 'getacme.link',
+        key: 'derek',
+      });
 
       dubAnalytics('ready', function () {
         console.log('DubAnalytics is ready!');
@@ -32,7 +43,7 @@
 
     <script
       async
-      src="https://partner-discount-dx.dub-cdn.pages.dev/analytics/script.js"
+      src="http://localhost:3000/src/base.js"
       data-short-domain="getacme.link"
     ></script>
 

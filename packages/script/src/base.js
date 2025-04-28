@@ -132,17 +132,21 @@
   });
 
   let clientClickTracked = false;
+
   // Track click and set cookie
-  function trackClick(identifier) {
-    if (clientClickTracked) return;
+  function trackClick({ domain, key }) {
+    if (clientClickTracked) {
+      return;
+    }
+
     clientClickTracked = true;
 
     fetch(`${API_HOST}/track/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        domain: SHORT_DOMAIN,
-        key: identifier,
+        domain,
+        key,
         url: window.location.href,
         referrer: document.referrer,
       }),
@@ -196,7 +200,10 @@
 
     // Dub Partners tracking (via query param e.g. ?via=partner_id)
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
-      trackClick(QUERY_PARAM_VALUE);
+      trackClick({
+        domain: SHORT_DOMAIN,
+        key: QUERY_PARAM_VALUE,
+      });
     }
 
     // Initialize DubAnalytics from cookie if it exists
@@ -212,6 +219,14 @@
         console.error('[DubAnalytics] Failed to parse partner cookie:', e);
       }
     }
+
+    // Add trackClick to dubAnalytics
+    if (window.dubAnalytics) {
+      window.dubAnalytics.trackClick = trackClick;
+    }
+
+    // TODO:
+    // Process the queued methods once it load
   }
 
   // Export minimal API with minified names
