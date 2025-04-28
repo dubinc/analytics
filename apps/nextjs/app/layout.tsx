@@ -20,7 +20,7 @@ export default function RootLayout({
       <body className={inter.className}>{children}</body>
       <DubAnalytics
         domainsConfig={{
-          refer: 'dub.sh', // your short domain
+          refer: 'getacme.link', // your short domain
         }}
       />
     </html>
