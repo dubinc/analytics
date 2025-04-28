@@ -17,10 +17,11 @@
       })(window, 'dubAnalytics');
 
       dubAnalytics('ready', function () {
-        console.log('DubAnalytics is ready');
+        console.log('DubAnalytics is ready!');
 
         if (DubAnalytics.partner) {
           console.log(`Partner: ${JSON.stringify(DubAnalytics.partner)}`);
+          alert(JSON.stringify(DubAnalytics.partner, null, 2));
         }
 
         if (DubAnalytics.discount) {
@@ -31,9 +32,8 @@
 
     <script
       async
-      src="/src/base.js"
-      data-api-host="http://localhost:8888/api"
-      data-short-domain="dub.sh"
+      src="https://partner-discount-dx.dub-cdn.pages.dev/analytics/script.js"
+      data-short-domain="getacme.link"
     ></script>
 
     <header>

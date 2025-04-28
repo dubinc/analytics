@@ -93,7 +93,7 @@
 
   // Queue manager
   const queueManager = {
-    queue: window.dubAnalytics.q || [],
+    queue: window.dubAnalytics ? window.dubAnalytics.q : [],
 
     flush() {
       while (this.queue.length) {
@@ -167,8 +167,8 @@
 
             cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
 
-            DubAnalytics.partner = encodedData.partner;
-            DubAnalytics.discount = encodedData.discount;
+            DubAnalytics.partner = data.partner;
+            DubAnalytics.discount = data.discount;
 
             window.dispatchEvent(new Event('DubAnalytics:ready'));
           }

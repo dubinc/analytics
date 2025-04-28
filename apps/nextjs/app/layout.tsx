@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Analytics as DubAnalytics } from '@dub/analytics/react';
 import './globals.css';
+import { DiscountBanner } from './discount-banner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,7 +19,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>{children}</body>
-      <DubAnalytics />
+      <DubAnalytics domainsConfig={{ refer: 'getacme.link' }} />
+      <DiscountBanner />
     </html>
   );
 }
