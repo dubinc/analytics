@@ -5,8 +5,8 @@ import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
 
 export function WithDomainKey() {
-  const { username } = useParams<{ username: string }>();
   const { trackClick } = useAnalytics();
+  const { username } = useParams<{ username: string }>();
 
   useEffect(() => {
     if (!username) {
@@ -14,8 +14,8 @@ export function WithDomainKey() {
     }
 
     trackClick({
-      domain: 'dub.sh',
-      key: username, // `dub.sh/username`
+      domain: 'getacme.link',
+      key: username, // `getacme.link/derek`
     });
   }, [trackClick, username]);
 
