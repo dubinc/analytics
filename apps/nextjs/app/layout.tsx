@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Analytics as DubAnalytics } from '@dub/analytics/react';
 import './globals.css';
+import { DUB_ANALYTICS_SCRIPT_URL } from './constants';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,6 +23,9 @@ export default function RootLayout({
         domainsConfig={{
           refer: 'getacme.link',
           site: 'getacme.link',
+        }}
+        scriptProps={{
+          src: DUB_ANALYTICS_SCRIPT_URL,
         }}
       />
     </html>
