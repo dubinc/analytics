@@ -32,7 +32,6 @@ test('should fire /track/click and set cookies when ?via= is present', async ({
     page.goto(`/?via=${via}`),
   ]);
 
-  // Inspect the API call payload
   const postData = JSON.parse(request.postData() || '{}');
   expect(postData).toMatchObject({
     domain: expect.any(String),
@@ -41,7 +40,6 @@ test('should fire /track/click and set cookies when ?via= is present', async ({
     referrer: expect.any(String),
   });
 
-  // Inspect the API response
   const responseData = await response.json();
 
   // Wait for the cookies to be set

@@ -17,7 +17,6 @@ test('should fire /track/visit and set dub_id cookie when data-domains.site is s
     page.goto('/'),
   ]);
 
-  // Inspect the API call payload
   const postData = JSON.parse(request.postData() || '{}');
   expect(postData).toMatchObject({
     domain: expect.any(String),
@@ -25,7 +24,6 @@ test('should fire /track/visit and set dub_id cookie when data-domains.site is s
     referrer: expect.any(String),
   });
 
-  // Inspect the API response
   const responseData = await response.json();
 
   // Wait for the dub_id cookie to be set
