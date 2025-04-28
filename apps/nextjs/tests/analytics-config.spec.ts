@@ -6,6 +6,9 @@ declare global {
   }
 }
 
+// TODO:
+// These tests needs some changes
+
 const scriptSrc = 'https://www.dubcdn.com/analytics/script.js';
 
 test.describe('Analytics configuration', () => {
