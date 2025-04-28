@@ -21,6 +21,7 @@ export default function RootLayout({
       <DubAnalytics
         domainsConfig={{
           refer: 'getacme.link', // your short domain
+          site: 'getacme.link',
         }}
       />
     </html>
