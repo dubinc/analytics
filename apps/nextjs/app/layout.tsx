@@ -20,8 +20,12 @@ export default function RootLayout({
       <body className={inter.className}>{children}</body>
       <DubAnalytics
         domainsConfig={{
-          refer: 'getacme.link', // your short domain
+          refer: 'getacme.link',
           site: 'getacme.link',
+        }}
+        scriptProps={{
+          src: 'http://localhost:3000/analytics/script.js',
+          defer: true,
         }}
       />
     </html>
