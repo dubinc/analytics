@@ -6,7 +6,7 @@ declare global {
   }
 }
 
-const scriptSrc = 'http://localhost:3000/analytics/script.js';
+const scriptSrc = 'https://www.dubcdn.com/analytics/script.js';
 
 test.describe('Analytics configuration', () => {
   test('should work with data-domains props', async ({ page }) => {
@@ -70,6 +70,8 @@ test.describe('Analytics configuration', () => {
   });
 
   test('should handle first-click attribution model', async ({ page }) => {
+    await page.context().clearCookies();
+
     // Set up test page with first-click attribution
     await page.setContent(`
       <script src="${scriptSrc}" defer
@@ -83,17 +85,19 @@ test.describe('Analytics configuration', () => {
     const analytics = await page.evaluate(() => window._dubAnalytics);
     expect(analytics.m).toBe('first-click');
 
-    // Set initial cookie using Playwright's cookie API
-    await page.context().addCookies([
-      {
-        name: 'dub_id',
-        value: 'first-click-id',
-        url: 'http://localhost:3000',
-      },
-    ]);
+    // First click
+    await page.goto('/?dub_id=first-click-id');
 
-    // Simulate another click with new ID
-    await page.waitForLoadState('networkidle');
+    // Wait for the cookie to be set (max 5 seconds)
+    await expect(async () => {
+      const cookies = await page.context().cookies();
+      const dubIdCookie = cookies.find((cookie) => cookie.name === 'dub_id');
+
+      expect(dubIdCookie).toBeDefined();
+      expect(dubIdCookie?.value).toBe('first-click-id');
+    }).toPass({ timeout: 2500 });
+
+    // Second click
     await page.goto('/?dub_id=second-click-id');
 
     // Wait for the cookie to be set (max 5 seconds)
@@ -101,16 +105,14 @@ test.describe('Analytics configuration', () => {
       const cookies = await page.context().cookies();
       const dubIdCookie = cookies.find((cookie) => cookie.name === 'dub_id');
 
-      console.log(cookies);
-
-      // expect(dubIdCookie).toBeDefined();
-      // expect(dubIdCookie?.value).toBe('initial-id');
-    }).toPass({ timeout: 5000 });
-
-    await page.context().clearCookies();
+      expect(dubIdCookie).toBeDefined();
+      expect(dubIdCookie?.value).toBe('first-click-id');
+    }).toPass({ timeout: 2500 });
   });
 
   test('should handle last-click attribution model', async ({ page }) => {
+    await page.context().clearCookies();
+
     // Set up test page with last-click attribution
     await page.setContent(`
       <script src="${scriptSrc}" defer
@@ -124,48 +126,28 @@ test.describe('Analytics configuration', () => {
     const analytics = await page.evaluate(() => window._dubAnalytics);
     expect(analytics.m).toBe('last-click');
 
-    // Set initial cookie using Playwright's cookie API
-    await page.context().addCookies([
-      {
-        name: 'dub_id',
-        value: 'initial-id',
-        path: '/',
-        domain: 'localhost',
-      },
-    ]);
+    // First click
+    await page.goto('/?dub_id=first-click-id');
 
-    // Visit ?via=derek
-    const [response1] = await Promise.all([
-      page.waitForResponse((res) => res.url().includes('/track/click')),
-      page.goto('/?via=derek'),
-    ]);
+    // Wait for the cookie to be set (max 5 seconds)
+    await expect(async () => {
+      const cookies = await page.context().cookies();
+      const dubIdCookie = cookies.find((cookie) => cookie.name === 'dub_id');
 
-    let responseBody = await response1.json();
-    let clickId = responseBody.clickId;
+      expect(dubIdCookie).toBeDefined();
+      expect(dubIdCookie?.value).toBe('first-click-id');
+    }).toPass({ timeout: 2500 });
 
-    // Verify cookie is set with derek's click ID
-    const cookies = await page.context().cookies();
-    const dubIdCookie = cookies.find((cookie) => cookie.name === 'dub_id');
-    expect(dubIdCookie).toBeDefined();
-    expect(dubIdCookie?.value).toEqual(clickId);
+    // Second click
+    await page.goto('/?dub_id=second-click-id');
 
-    // Visit ?via=derekforbes
-    const [response2] = await Promise.all([
-      page.waitForResponse((req) => req.url().includes('/track/click')),
-      page.goto('/?via=derekforbes'),
-    ]);
+    // Wait for the cookie to be set (max 5 seconds)
+    await expect(async () => {
+      const cookies = await page.context().cookies();
+      const dubIdCookie = cookies.find((cookie) => cookie.name === 'dub_id');
 
-    responseBody = await response2.json();
-    clickId = responseBody.clickId;
-
-    // Verify cookie is updated with derekforbes's click ID
-    const updatedCookies = await page.context().cookies();
-    const updatedDubIdCookie = updatedCookies.find(
-      (cookie) => cookie.name === 'dub_id',
-    );
-    expect(updatedDubIdCookie).toBeDefined();
-    expect(updatedDubIdCookie?.value).toEqual(clickId);
-
-    await page.context().clearCookies();
+      expect(dubIdCookie).toBeDefined();
+      expect(dubIdCookie?.value).toBe('second-click-id');
+    }).toPass({ timeout: 2500 });
   });
 });
