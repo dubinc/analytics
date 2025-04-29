@@ -1,5 +1,5 @@
 (function () {
-  console.log('dub analytics script loaded');
+  console.log('dub analytics script loaded 1');
 
   // Store script reference for extensions
   const script = document.currentScript;
