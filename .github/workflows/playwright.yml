@@ -22,7 +22,10 @@ jobs:
           version: 8
 
       - name: Install dependencies
-        run: pnpm i
+        run: pnpm install
+
+      - name: Install Playwright
+        run: pnpm add -D @playwright/test
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
