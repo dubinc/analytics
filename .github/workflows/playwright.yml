@@ -5,6 +5,7 @@ on:
     workflows: ['Deploy Analytics Script to Cloudflare Pages']
     types: [completed]
 
+jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
