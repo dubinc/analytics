@@ -7,6 +7,15 @@ on:
       - completed
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug GitHub Event
+        run: |
+          echo "Workflow Run Conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "Full Event Data:"
+          echo '${{ toJSON(github.event) }}' | jq '.'
+
   test:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 60
