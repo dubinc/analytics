@@ -1,3 +1,4 @@
+import { DUB_ANALYTICS_SCRIPT_URL } from '@/app/constants';
 import { test, expect } from '@playwright/test';
 
 declare global {
@@ -9,7 +10,7 @@ declare global {
 test.describe('Analytics configuration', () => {
   test('should work with data-domains props', async ({ page }) => {
     await page.setContent(`
-      <script src="${process.env.DUB_ANALYTICS_SCRIPT_URL}" defer
+      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
         data-domains='{"refer": "go.example.com", "site": "site.example.com", "outbound": "example.com,other.com"}'
       ></script>
     `);
@@ -29,7 +30,7 @@ test.describe('Analytics configuration', () => {
   }) => {
     // Set up test page with old shortDomain prop
     await page.setContent(`
-      <script src="${process.env.DUB_ANALYTICS_SCRIPT_URL}" defer data-short-domain="go.example.com"></script>
+      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer data-short-domain="go.example.com"></script>
     `);
 
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
@@ -45,7 +46,7 @@ test.describe('Analytics configuration', () => {
   }) => {
     // Set up test page with both old and new props
     await page.setContent(`
-      <script src="${process.env.DUB_ANALYTICS_SCRIPT_URL}" defer
+      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
         data-short-domain="old.example.com"
         data-domains='{"refer": "new.example.com"}'
       ></script>
@@ -62,7 +63,7 @@ test.describe('Analytics configuration', () => {
   // Fix this test
   test('should handle first-click attribution model', async ({ page }) => {
     await page.setContent(`
-      <script src="${process.env.DUB_ANALYTICS_SCRIPT_URL}" defer
+      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
         data-attribution-model="first-click"
         data-short-domain="getacme.link"
       ></script>
@@ -100,7 +101,7 @@ test.describe('Analytics configuration', () => {
   test('should handle last-click attribution model', async ({ page }) => {
     // Set up test page with last-click attribution
     await page.setContent(`
-      <script src="${process.env.DUB_ANALYTICS_SCRIPT_URL}" defer
+      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
         data-attribution-model="last-click"
         data-short-domain="getacme.link"
       ></script>
