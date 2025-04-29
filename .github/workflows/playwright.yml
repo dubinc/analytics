@@ -22,10 +22,12 @@ jobs:
           version: 8
 
       - name: Install dependencies
-        run: pnpm install
+        run: |
+          pnpm install
+          pnpm install --filter @dub/analytics
 
       - name: Build workspace dependencies
-        run: pnpm run build --filter=@dub/analytics...
+        run: pnpm --filter @dub/analytics build
 
       - name: Install Playwright
         working-directory: apps/nextjs
