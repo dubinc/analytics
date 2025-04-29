@@ -1,4 +1,6 @@
 (function () {
+  console.log('dub analytics script loaded');
+
   // Store script reference for extensions
   const script = document.currentScript;
 
