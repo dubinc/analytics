@@ -35,7 +35,7 @@ jobs:
 
       - name: Install Playwright Browsers
         working-directory: apps/nextjs
-        run: pnpm exec playwright install --with-deps
+        run: pnpm exec playwright install chromium --with-deps
 
       - name: Run Playwright tests
         working-directory: apps/nextjs
