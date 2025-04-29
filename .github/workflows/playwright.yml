@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build workspace dependencies
+        run: pnpm run build --filter=@dub/analytics...
+
       - name: Install Playwright
         working-directory: apps/nextjs
         run: pnpm add -D @playwright/test
