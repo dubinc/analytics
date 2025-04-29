@@ -25,12 +25,15 @@ jobs:
         run: pnpm install
 
       - name: Install Playwright
+        working-directory: apps/nextjs
         run: pnpm add -D @playwright/test
 
       - name: Install Playwright Browsers
+        working-directory: apps/nextjs
         run: pnpm exec playwright install --with-deps
 
       - name: Run Playwright tests
+        working-directory: apps/nextjs
         run: pnpm exec playwright test
 
       - uses: actions/upload-artifact@v4
