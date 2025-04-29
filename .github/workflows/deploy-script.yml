@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    outputs:
+      deployment_url: ${{ steps.deployment.outputs.url }}
 
     steps:
       - uses: actions/checkout@v3
@@ -26,3 +28,8 @@ jobs:
           command: pages deploy dist --project-name=dub-cdn --commit-dirty=true
           workingDirectory: packages/script
           packageManager: pnpm
+
+      - name: Get deployment URL
+        id: deployment
+        run: |
+          echo "url=$(pnpm wrangler pages deployment list --project-name=dub-cdn --json | jq -r '.[0].url')" >> $GITHUB_OUTPUT

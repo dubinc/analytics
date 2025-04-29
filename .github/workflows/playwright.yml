@@ -1,13 +1,14 @@
 name: Playwright Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_run:
+    workflows: ['Deploy Analytics Script to Cloudflare Pages']
+    types:
+      - completed
 
 jobs:
   test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
@@ -40,6 +41,8 @@ jobs:
       - name: Run Playwright tests
         working-directory: apps/nextjs
         run: pnpm exec playwright test
+        env:
+          DUB_ANALYTICS_SCRIPT_URL: ${{ github.event.workflow_run.outputs.deployment_url }}/analytics/script.site-visit.outbound-domains.js
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
