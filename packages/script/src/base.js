@@ -72,6 +72,26 @@
     discount: null,
   };
 
+  // Initialize dubAnalytics
+  if (window.dubAnalytics) {
+    const original = window.dubAnalytics;
+    const queue = original.q || [];
+
+    window.dubAnalytics = function (method, ...args) {
+      if (method === 'ready') {
+        const callback = args[0];
+        callback();
+      } else if (['trackClick'].includes(method)) {
+        trackClick(...args);
+      } else {
+        console.warn('[dubAnalytics] Unknown method:', method);
+      }
+    };
+
+    window.dubAnalytics.trackClick = trackClick;
+    window.dubAnalytics.q = queue;
+  }
+
   // Cookie management
   const cookieManager = {
     get(key) {
@@ -91,44 +111,44 @@
     },
   };
 
-  // Queue manager
+  // Queue management
   const queueManager = {
-    queue: window.dubAnalytics ? window.dubAnalytics.q : [],
+    queue: window.dubAnalytics?.q || [],
 
-    flush() {
+    // Process specific method types (e.g., only 'ready')
+    flush(methodFilter) {
+      const remainingQueue = [];
+
       while (this.queue.length) {
         const [method, ...args] = this.queue.shift();
-        this.process({ method, args });
+
+        if (!methodFilter || methodFilter(method)) {
+          this.process({ method, args });
+        } else {
+          remainingQueue.push([method, ...args]);
+        }
       }
 
-      // After initialization, we replace the queue function with a direct execution function.
-      // This optimization ensures that all subsequent calls are processed immediately
-      window.dubAnalytics = function () {
-        const [method, ...args] = Array.prototype.slice.call(arguments);
-        queueManager.process({ method, args });
-      };
+      this.queue = remainingQueue;
     },
 
     process({ method, args }) {
       if (method === 'ready') {
         const callback = args[0];
 
-        if (typeof callback !== 'function') {
-          console.error(
-            '[DubAnalytics] `dubAnalytics.ready` expects a function but received type "' +
-              typeof callback +
-              '"',
-          );
-          return;
+        if (typeof callback === 'function') {
+          callback();
         }
-
-        callback();
+      } else if (['trackClick'].includes(method)) {
+        trackClick(...args);
+      } else {
+        console.warn('[dubAnalytics] Unknown method:', method);
       }
     },
   };
 
   window.addEventListener('DubAnalytics:ready', () => {
-    queueManager.flush();
+    queueManager.flush((method) => method === 'ready');
   });
 
   let clientClickTracked = false;
@@ -206,27 +226,24 @@
       });
     }
 
+    console.log('dubAnalytics from init', window.dubAnalytics.q.length);
+
+    // Process the queued methods
+    queueManager.flush((method) => method === 'trackClick');
+
     // Initialize DubAnalytics from cookie if it exists
-    const partnerCookie = cookieManager.get(DUB_PARTNER_COOKIE);
+    // const partnerCookie = cookieManager.get(DUB_PARTNER_COOKIE);
 
-    if (partnerCookie) {
-      try {
-        const partnerData = JSON.parse(partnerCookie);
+    // if (partnerCookie) {
+    //   try {
+    //     const partnerData = JSON.parse(partnerCookie);
 
-        DubAnalytics.partner = partnerData.partner;
-        DubAnalytics.discount = partnerData.discount;
-      } catch (e) {
-        console.error('[DubAnalytics] Failed to parse partner cookie:', e);
-      }
-    }
-
-    // Add trackClick to dubAnalytics
-    if (window.dubAnalytics) {
-      window.dubAnalytics.trackClick = trackClick;
-    }
-
-    // TODO:
-    // Process the queued methods once it load
+    //     DubAnalytics.partner = partnerData.partner;
+    //     DubAnalytics.discount = partnerData.discount;
+    //   } catch (e) {
+    //     console.error('[DubAnalytics] Failed to parse partner cookie:', e);
+    //   }
+    // }
   }
 
   // Export minimal API with minified names

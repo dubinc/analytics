@@ -22,28 +22,25 @@
         });
       })(window, 'dubAnalytics');
 
-      dubAnalytics.trackClick({
-        domain: 'getacme.link',
-        key: 'derek',
-      });
-
       dubAnalytics('ready', function () {
-        console.log('DubAnalytics is ready!');
-
         if (DubAnalytics.partner) {
-          console.log(`Partner: ${JSON.stringify(DubAnalytics.partner)}`);
-          alert(JSON.stringify(DubAnalytics.partner, null, 2));
-        }
-
-        if (DubAnalytics.discount) {
-          console.log(`Discount: ${JSON.stringify(DubAnalytics.discount)}`);
+          console.log('Partner', JSON.stringify(DubAnalytics.partner));
         }
       });
+
+      setTimeout(() => {
+        dubAnalytics.trackClick({
+          domain: 'getacme.link',
+          key: 'derek',
+        });
+      }, 3000);
+
+      console.log('dubAnalytics from html', window.dubAnalytics.q.length);
     </script>
 
     <script
-      async
-      src="http://localhost:3000/src/base.js"
+      defer
+      src="http://[::]:8000/src/base.js"
       data-short-domain="getacme.link"
     ></script>
 
