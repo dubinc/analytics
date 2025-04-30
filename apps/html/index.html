@@ -24,18 +24,18 @@
 
       dubAnalytics('ready', function () {
         if (DubAnalytics.partner) {
-          console.log('Partner', JSON.stringify(DubAnalytics.partner));
+          document.body.innerHTML += `<pre>${JSON.stringify(
+            DubAnalytics,
+            null,
+            2,
+          )}</pre>`;
         }
       });
 
-      setTimeout(() => {
-        dubAnalytics.trackClick({
-          domain: 'getacme.link',
-          key: 'derek',
-        });
-      }, 3000);
-
-      console.log('dubAnalytics from html', window.dubAnalytics.q.length);
+      dubAnalytics.trackClick({
+        domain: 'getacme.link',
+        key: 'derek',
+      });
     </script>
 
     <script
@@ -47,9 +47,5 @@
     <header>
       <h1>Dub Analytics</h1>
     </header>
-
-    <main>
-      <p>Your content goes here</p>
-    </main>
   </body>
 </html>
