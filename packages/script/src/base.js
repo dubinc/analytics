@@ -88,7 +88,6 @@
       }
     };
 
-    window.dubAnalytics.trackClick = trackClick;
     window.dubAnalytics.q = queue;
   }
 
@@ -135,10 +134,7 @@
     process({ method, args }) {
       if (method === 'ready') {
         const callback = args[0];
-
-        if (typeof callback === 'function') {
-          callback();
-        }
+        callback();
       } else if (['trackClick'].includes(method)) {
         trackClick(...args);
       } else {
@@ -146,10 +142,6 @@
       }
     },
   };
-
-  window.addEventListener('DubAnalytics:ready', () => {
-    queueManager.flush((method) => method === 'ready');
-  });
 
   let clientClickTracked = false;
 
@@ -194,7 +186,7 @@
             DubAnalytics.partner = data.partner;
             DubAnalytics.discount = data.discount;
 
-            window.dispatchEvent(new Event('DubAnalytics:ready'));
+            queueManager.flush((method) => method === 'ready');
           }
         }
       });
@@ -230,18 +222,18 @@
     queueManager.flush((method) => method === 'trackClick');
 
     // Initialize DubAnalytics from cookie if it exists
-    // const partnerCookie = cookieManager.get(DUB_PARTNER_COOKIE);
+    const partnerCookie = cookieManager.get(DUB_PARTNER_COOKIE);
 
-    // if (partnerCookie) {
-    //   try {
-    //     const partnerData = JSON.parse(partnerCookie);
+    if (partnerCookie) {
+      try {
+        const partnerData = JSON.parse(partnerCookie);
 
-    //     DubAnalytics.partner = partnerData.partner;
-    //     DubAnalytics.discount = partnerData.discount;
-    //   } catch (e) {
-    //     console.error('[DubAnalytics] Failed to parse partner cookie:', e);
-    //   }
-    // }
+        DubAnalytics.partner = partnerData.partner;
+        DubAnalytics.discount = partnerData.discount;
+      } catch (e) {
+        console.error('[DubAnalytics] Failed to parse partner cookie:', e);
+      }
+    }
   }
 
   // Export minimal API with minified names
