@@ -1,5 +1,5 @@
 (function () {
-  console.log('Test the GH action 13');
+  console.log('Test the GH action 14');
 
   // Store script reference for extensions
   const script = document.currentScript;
