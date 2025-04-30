@@ -43,11 +43,16 @@ jobs:
           name: deployment-url
           path: .
 
+      - name: Read Deployment URL
+        id: read_url
+        run: |
+          echo "DUB_ANALYTICS_SCRIPT_URL=$(cat deployment_url.txt)/analytics/script.site-visit.outbound-domains.js" >> $GITHUB_ENV
+
       - name: Run Playwright tests
         working-directory: apps/nextjs
         run: pnpm exec playwright test
         env:
-          DUB_ANALYTICS_SCRIPT_URL: $(cat deployment_url.txt)/analytics/script.site-visit.outbound-domains.js
+          DUB_ANALYTICS_SCRIPT_URL: ${{ env.DUB_ANALYTICS_SCRIPT_URL }}
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
