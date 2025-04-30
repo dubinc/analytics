@@ -1,5 +1,6 @@
+import { DUB_ANALYTICS_SCRIPT_URL } from '@/app/constants';
 import { test, expect } from '@playwright/test';
-import { DUB_ANALYTICS_SCRIPT_URL } from '../app/constants';
+
 declare global {
   interface Window {
     _dubAnalytics: any;
