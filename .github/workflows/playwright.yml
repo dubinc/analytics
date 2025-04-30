@@ -42,6 +42,18 @@ jobs:
         with:
           name: deployment-url
           path: .
+          run_id: ${{ github.event.workflow_run.id }}
+        continue-on-error: true
+
+      - name: Check deployment URL file
+        run: |
+          if [ ! -f "deployment_url.txt" ]; then
+            echo "Error: deployment_url.txt not found"
+            echo "Workflow run ID: ${{ github.event.workflow_run.id }}"
+            echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
+            exit 1
+          fi
+          echo "Deployment URL file found"
 
       - name: Read and export deployment URL
         run: |

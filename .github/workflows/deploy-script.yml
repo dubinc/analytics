@@ -29,7 +29,12 @@ jobs:
           packageManager: pnpm
 
       - name: Save Deployment URL to file
-        run: echo "${{ steps.cloudflare-deploy.outputs.deployment-url }}" > deployment_url.txt
+        run: |
+          if [ -z "${{ steps.cloudflare-deploy.outputs.deployment-url }}" ]; then
+            echo "Error: Deployment URL is empty"
+            exit 1
+          fi
+          echo "${{ steps.cloudflare-deploy.outputs.deployment-url }}" > deployment_url.txt
 
       - uses: actions/upload-artifact@v4
         with:
