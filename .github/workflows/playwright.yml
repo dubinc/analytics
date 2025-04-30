@@ -1,15 +1,14 @@
 name: Playwright Tests
 
 on:
-  workflow_run:
-    workflows: ['Deploy Analytics Script to Cloudflare Pages']
-    types: [completed]
+  repository_dispatch:
+    types: [analytics-script-deployed]
 
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,28 +19,6 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 8
-
-      - name: Download deployment URL
-        uses: actions/download-artifact@v4
-        with:
-          name: deployment-url
-          path: .
-          run-id: ${{ github.event.workflow_run.id }}
-        continue-on-error: true
-
-      - name: Check deployment URL file
-        run: |
-          if [ ! -f "deployment_url.txt" ]; then
-            echo "Error: deployment_url.txt not found"
-            echo "Workflow run ID: ${{ github.event.workflow_run.id }}"
-            echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
-            exit 1
-          fi
-          echo "Deployment URL file found"
-
-      - name: Read and export deployment URL
-        run: |
-          echo "DUB_ANALYTICS_SCRIPT_URL=$(cat deployment_url.txt)/analytics/script.site-visit.outbound-domains.js" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -63,4 +40,4 @@ jobs:
         working-directory: apps/nextjs
         run: pnpm exec playwright test
         env:
-          DUB_ANALYTICS_SCRIPT_URL: $DUB_ANALYTICS_SCRIPT_URL
+          DUB_ANALYTICS_SCRIPT_URL: ${{ github.event.client_payload.deployment_url }}/analytics/script.site-visit.outbound-domains.js

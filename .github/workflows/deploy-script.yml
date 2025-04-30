@@ -28,16 +28,8 @@ jobs:
           workingDirectory: packages/script
           packageManager: pnpm
 
-      - name: Save Deployment URL to file
-        run: |
-          if [ -z "${{ steps.cloudflare-deploy.outputs.deployment-url }}" ]; then
-            echo "Error: Deployment URL is empty"
-            exit 1
-          fi
-          echo "${{ steps.cloudflare-deploy.outputs.deployment-url }}" > deployment_url.txt
-
-      - uses: actions/upload-artifact@v4
+      - name: Dispatch deployment event
+        uses: peter-evans/repository-dispatch@v3
         with:
-          name: deployment-url
-          path: deployment_url.txt
-          retention-days: 1
+          event-type: analytics-script-deployed
+          client-payload: '{"deployment_url": "${{ steps.cloudflare-deploy.outputs.deployment-url }}"}'
