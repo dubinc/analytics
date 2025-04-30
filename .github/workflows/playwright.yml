@@ -42,7 +42,7 @@ jobs:
         with:
           name: deployment-url
           path: .
-          run_id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id }}
         continue-on-error: true
 
       - name: Check deployment URL file
