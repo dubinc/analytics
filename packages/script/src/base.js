@@ -226,8 +226,6 @@
       });
     }
 
-    console.log('dubAnalytics from init', window.dubAnalytics.q.length);
-
     // Process the queued methods
     queueManager.flush((method) => method === 'trackClick');
 
