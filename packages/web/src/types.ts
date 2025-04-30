@@ -160,3 +160,16 @@ export interface TrackClickInput {
   domain: string;
   key: string;
 }
+
+export interface Partner {
+  id: string;
+  name: string;
+  image: string | null;
+}
+
+export interface Discount {
+  id: string;
+  amount: number;
+  type: 'percentage' | 'flat';
+  maxDuration: number | null;
+}

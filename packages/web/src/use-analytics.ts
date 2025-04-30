@@ -1,19 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { TrackClickInput } from './types';
+import { Discount, Partner, TrackClickInput } from './types';
 import { isDubAnalyticsReady } from './utils';
-
-interface Partner {
-  id: string;
-  name: string;
-  image: string | null;
-}
-
-interface Discount {
-  id: string;
-  amount: number;
-  type: 'percentage' | 'flat';
-  maxDuration: number | null;
-}
 
 interface PartnerData {
   partner?: Partner | null;
@@ -31,16 +18,12 @@ declare global {
 
 /**
  * Hook to access Dub Web Analytics data including partner and discount information.
- * @returns Object containing partner data, discount information, and any potential errors.
+ * @returns Object containing partner data, and discount information.
  * ```js
  * import { useAnalytics } from '@dub/analytics/react';
  *
  * function MyComponent() {
- *   const { partner, discount, error } = useAnalytics();
- *
- *   if (error) {
- *     return <div>Error: {error}</div>;
- *   }
+ *   const { partner, discount } = useAnalytics();
  *
  *   return (
  *     <div>

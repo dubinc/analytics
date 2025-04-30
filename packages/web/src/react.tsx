@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { inject } from './generic';
-import type { AnalyticsProps } from './types';
+import type { AnalyticsProps, Discount, Partner } from './types';
 import { useAnalytics } from './use-analytics';
 
 /**
@@ -28,4 +28,4 @@ function Analytics(props: AnalyticsProps): null {
 }
 
 export { Analytics, useAnalytics };
-export type { AnalyticsProps };
+export type { AnalyticsProps, Partner, Discount };
