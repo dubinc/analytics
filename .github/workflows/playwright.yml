@@ -37,15 +37,9 @@ jobs:
         working-directory: apps/nextjs
         run: pnpm exec playwright install chromium --with-deps
 
-      - name: Download deployment URL
-        uses: actions/download-artifact@v4
-        with:
-          name: deployment-url
-          path: .
-
-      - name: Read Deployment URL
-        id: read_url
+      - name: Download and set deployment URL
         run: |
+          npx --yes @actions/artifact download --name deployment-url --path .
           echo "DUB_ANALYTICS_SCRIPT_URL=$(cat deployment_url.txt)/analytics/script.site-visit.outbound-domains.js" >> $GITHUB_ENV
 
       - name: Run Playwright tests

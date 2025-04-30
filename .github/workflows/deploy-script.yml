@@ -28,10 +28,7 @@ jobs:
           workingDirectory: packages/script
           packageManager: pnpm
 
-      - name: Save Deployment URL to file
-        run: echo "${{ steps.cloudflare-deploy.outputs.deployment-url }}" > deployment_url.txt
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: deployment-url
-          path: deployment_url.txt
+      - name: Save and Upload Deployment URL
+        run: |
+          echo "${{ steps.cloudflare-deploy.outputs.deployment-url }}" > deployment_url.txt
+          npx --yes @actions/artifact upload --name deployment-url --path deployment_url.txt
