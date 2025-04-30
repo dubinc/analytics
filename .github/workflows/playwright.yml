@@ -46,7 +46,7 @@ jobs:
         working-directory: apps/nextjs
         run: pnpm exec playwright test
         env:
-          DUB_ANALYTICS_SCRIPT_URL: ${{ env.DUB_ANALYTICS_SCRIPT_URL }}
+          DUB_ANALYTICS_SCRIPT_URL: $DUB_ANALYTICS_SCRIPT_URL
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
