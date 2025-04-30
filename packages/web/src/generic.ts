@@ -12,7 +12,6 @@ interface DubAnalyticsWindow extends Window {
 function inject(props: AnalyticsProps): void {
   if (!isBrowser()) return;
 
-  // Initialize analytics queue
   (function (w: DubAnalyticsWindow, da: string) {
     w[da] =
       w[da] ||
