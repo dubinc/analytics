@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TrackClickInput } from './types';
+import { isDubAnalyticsReady } from './utils';
 
 interface Partner {
   id: string;
@@ -17,7 +18,6 @@ interface Discount {
 interface PartnerData {
   partner?: Partner | null;
   discount?: Discount | null;
-  error?: string | null;
 }
 
 declare global {
@@ -58,40 +58,18 @@ export function useAnalytics() {
   });
 
   const initialize = useCallback(() => {
-    if (typeof window === 'undefined') {
-      setData((prev) => ({ ...prev, error: 'Window is undefined (SSR)' }));
-      return;
-    }
-
-    if (!window.dubAnalytics) {
-      setData((prev) => ({ ...prev, error: 'dubAnalytics not available' }));
+    if (!isDubAnalyticsReady()) {
       return;
     }
 
     window.dubAnalytics('ready', () => {
-      try {
-        const { partner = null, discount = null } = window.DubAnalytics || {};
-
-        setData({
-          partner,
-          discount,
-          error: null,
-        });
-      } catch (err) {
-        setData((prev) => ({
-          ...prev,
-          error: 'Failed to load analytics data',
-        }));
-      }
+      const { partner = null, discount = null } = window.DubAnalytics || {};
+      setData({ partner, discount });
     });
   }, []);
 
   const trackClick = useCallback((event: TrackClickInput) => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    if (!window.dubAnalytics) {
+    if (!isDubAnalyticsReady()) {
       return;
     }
 
