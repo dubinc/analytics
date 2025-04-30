@@ -37,15 +37,13 @@ jobs:
         working-directory: apps/nextjs
         run: pnpm exec playwright install chromium --with-deps
 
+      - name: Set Deployment URL
+        run: |
+          npx --yes @actions/artifact download --name deployment-url --path .
+          echo "DUB_ANALYTICS_SCRIPT_URL=$(cat deployment_url.txt)/analytics/script.site-visit.outbound-domains.js" >> $GITHUB_ENV
+
       - name: Run Playwright tests
         working-directory: apps/nextjs
         run: pnpm exec playwright test
         env:
-          DUB_ANALYTICS_SCRIPT_URL: ${{ github.event.workflow_run.outputs.deployment_url }}/analytics/script.site-visit.outbound-domains.js
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: playwright-report
-          path: apps/nextjs/playwright-report/
-          retention-days: 30
+          DUB_ANALYTICS_SCRIPT_URL: $DUB_ANALYTICS_SCRIPT_URL
