@@ -19,6 +19,7 @@ jobs:
         run: pnpm --filter @dub/analytics-script build
 
       - name: Deploy to Cloudflare Pages
+        id: cloudflare-deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_KEY }}
@@ -26,3 +27,10 @@ jobs:
           command: pages deploy dist --project-name=dub-cdn --commit-dirty=true
           workingDirectory: packages/script
           packageManager: pnpm
+
+      # Dispatch deployment event to trigger Playwright tests
+      - name: Dispatch deployment event
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: analytics-script-deployed
+          client-payload: '{"deployment_url": "${{ steps.cloudflare-deploy.outputs.deployment-url }}"}'

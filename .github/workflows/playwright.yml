@@ -1,0 +1,43 @@
+name: Playwright Tests
+
+on:
+  repository_dispatch:
+    types: [analytics-script-deployed]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: |
+          pnpm install
+          pnpm install --filter @dub/analytics
+
+      - name: Build workspace dependencies
+        run: pnpm --filter @dub/analytics build
+
+      - name: Install Playwright
+        working-directory: apps/nextjs
+        run: pnpm add -D @playwright/test
+
+      - name: Install Playwright Browsers
+        working-directory: apps/nextjs
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run Playwright tests
+        working-directory: apps/nextjs
+        run: pnpm exec playwright test --reporter=list
+        env:
+          DUB_ANALYTICS_SCRIPT_URL: ${{ github.event.client_payload.deployment_url }}/analytics/script.site-visit.outbound-domains.js

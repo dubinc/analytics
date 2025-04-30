@@ -6,7 +6,10 @@
     "build": "pnpm --filter @dub/analytics... build && next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "test": "playwright test",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui"
   },
   "dependencies": {
     "@dub/analytics": "workspace:*",
@@ -15,6 +18,7 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
