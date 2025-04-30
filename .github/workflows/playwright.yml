@@ -21,6 +21,14 @@ jobs:
         with:
           version: 8
 
+      - name: Download deployment URL
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-url
+          path: .
+          run-id: ${{ github.event.workflow_run.id }}
+        continue-on-error: true
+
       - name: Check deployment URL file
         run: |
           if [ ! -f "deployment_url.txt" ]; then
@@ -50,14 +58,6 @@ jobs:
       - name: Install Playwright Browsers
         working-directory: apps/nextjs
         run: pnpm exec playwright install chromium --with-deps
-
-      - name: Download deployment URL
-        uses: actions/download-artifact@v4
-        with:
-          name: deployment-url
-          path: .
-          run-id: ${{ github.event.workflow_run.id }}
-        continue-on-error: true
 
       - name: Run Playwright tests
         working-directory: apps/nextjs
