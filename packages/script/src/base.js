@@ -2,7 +2,7 @@
   // Store script reference for extensions
   const script = document.currentScript;
 
-  const DUB_ID_VAR = 'dub_id';
+  const DUB_ID_VAR = 'dub_idd';
   const DUB_PARTNER_COOKIE = 'dub_partner_data';
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
