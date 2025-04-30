@@ -1,4 +1,6 @@
 (function () {
+  console.log('Test the GH action 8');
+
   // Store script reference for extensions
   const script = document.currentScript;
 
