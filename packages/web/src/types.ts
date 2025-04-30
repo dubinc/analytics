@@ -155,3 +155,8 @@ export interface AnalyticsProps {
 export interface ClickApiResponse {
   clickId: string;
 }
+
+export interface TrackClickInput {
+  domain: string;
+  key: string;
+}

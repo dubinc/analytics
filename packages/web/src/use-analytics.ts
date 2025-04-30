@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { TrackClickInput } from './types';
 
 interface Partner {
   id: string;
@@ -21,8 +22,10 @@ interface PartnerData {
 
 declare global {
   interface Window {
-    dubAnalytics: (event: 'ready', callback: () => void) => void;
     DubAnalytics: PartnerData;
+    dubAnalytics: ((event: 'ready', callback: () => void) => void) & {
+      trackClick: (event: TrackClickInput) => void;
+    };
   }
 }
 
@@ -83,11 +86,24 @@ export function useAnalytics() {
     });
   }, []);
 
+  const trackClick = useCallback((event: TrackClickInput) => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (!window.dubAnalytics) {
+      return;
+    }
+
+    window.dubAnalytics.trackClick(event);
+  }, []);
+
   useEffect(() => {
     initialize();
   }, [initialize]);
 
   return {
     ...data,
+    trackClick,
   };
 }
