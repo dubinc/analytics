@@ -19,6 +19,7 @@ jobs:
         run: pnpm --filter @dub/analytics-script build
 
       - name: Deploy to Cloudflare Pages
+        id: cloudflare-deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_KEY }}
@@ -26,3 +27,11 @@ jobs:
           command: pages deploy dist --project-name=dub-cdn --commit-dirty=true
           workingDirectory: packages/script
           packageManager: pnpm
+
+      - name: Save Deployment URL to file
+        run: echo "${{ steps.cloudflare-deploy.outputs.deployment-url }}" > deployment_url.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deployment-url
+          path: deployment_url.txt
