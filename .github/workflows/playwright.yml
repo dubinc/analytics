@@ -38,6 +38,6 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: apps/nextjs
-        run: pnpm exec playwright test
+        run: pnpm exec playwright test --reporter=list
         env:
           DUB_ANALYTICS_SCRIPT_URL: ${{ github.event.client_payload.deployment_url }}/analytics/script.site-visit.outbound-domains.js
