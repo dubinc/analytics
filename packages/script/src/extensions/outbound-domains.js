@@ -8,26 +8,41 @@ const initOutboundDomains = () => {
   } = window._dubAnalytics;
   let outboundLinksUpdated = new Set(); // Track processed links
 
+  function normalizeDomain(domain) {
+    return domain.replace(/^www\./, '').trim();
+  }
+
+  function isMatchingDomain(url, domain) {
+    try {
+      const urlHostname = new URL(url).hostname;
+      const normalizedUrlHostname = normalizeDomain(urlHostname);
+      const normalizedDomain = normalizeDomain(domain);
+
+      // Exact match after removing www.
+      return normalizedUrlHostname === normalizedDomain;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function addOutboundTracking(clickId) {
-    // Parse comma-separated outbound domains
-    const outboundDomains = DOMAINS_CONFIG.outbound
-      ?.split(',')
-      .map((d) => d.trim());
+    // Handle both string and array configurations for outbound domains
+    const outboundDomains = Array.isArray(DOMAINS_CONFIG.outbound)
+      ? DOMAINS_CONFIG.outbound
+      : DOMAINS_CONFIG.outbound?.split(',').map((d) => d.trim());
+
     if (!outboundDomains?.length) return;
 
-    const currentDomain = HOSTNAME.replace(/^www\./, '');
-    const filteredDomains = outboundDomains.filter((d) => d !== currentDomain);
+    const currentDomain = normalizeDomain(HOSTNAME);
+    const filteredDomains = outboundDomains
+      .map(normalizeDomain)
+      .filter((d) => d !== currentDomain);
 
     const existingCookie = clickId || cookieManager.get(DUB_ID_VAR);
     if (!existingCookie) return;
 
-    // Create selectors for both links and iframes
-    const selectors = filteredDomains
-      .map((domain) => [`a[href*="${domain}"]`, `iframe[src*="${domain}"]`])
-      .flat()
-      .join(',');
-
-    const elements = document.querySelectorAll(selectors);
+    // Get all links and iframes
+    const elements = document.querySelectorAll('a[href], iframe[src]');
     if (!elements || elements.length === 0) return;
 
     elements.forEach((element) => {
@@ -35,18 +50,33 @@ const initOutboundDomains = () => {
       if (outboundLinksUpdated.has(element)) return;
 
       try {
-        const url = new URL(element.href || element.src);
-        url.searchParams.set(DUB_ID_VAR, existingCookie);
+        const urlString = element.href || element.src;
+        if (!urlString) return;
 
-        // Update the appropriate attribute based on element type
-        if (element.tagName.toLowerCase() === 'a') {
-          element.href = url.toString();
-        } else if (element.tagName.toLowerCase() === 'iframe') {
-          element.src = url.toString();
+        // Check if the URL matches any of our outbound domains
+        const isOutbound = filteredDomains.some((domain) =>
+          isMatchingDomain(urlString, domain),
+        );
+        if (!isOutbound) return;
+
+        const url = new URL(urlString);
+
+        // Only add the tracking parameter if it's not already present
+        if (!url.searchParams.has(DUB_ID_VAR)) {
+          url.searchParams.set(DUB_ID_VAR, existingCookie);
+
+          // Update the appropriate attribute based on element type
+          if (element.tagName.toLowerCase() === 'a') {
+            element.href = url.toString();
+          } else if (element.tagName.toLowerCase() === 'iframe') {
+            element.src = url.toString();
+          }
+
+          outboundLinksUpdated.add(element);
         }
-
-        outboundLinksUpdated.add(element);
-      } catch (e) {}
+      } catch (e) {
+        console.error('Error processing element:', e);
+      }
     });
   }
 
