@@ -21,22 +21,31 @@ const initOutboundDomains = () => {
     const existingCookie = clickId || cookieManager.get(DUB_ID_VAR);
     if (!existingCookie) return;
 
-    const selector = filteredDomains
-      .map((domain) => `a[href*="${domain}"]`)
+    // Create selectors for both links and iframes
+    const selectors = filteredDomains
+      .map((domain) => [`a[href*="${domain}"]`, `iframe[src*="${domain}"]`])
+      .flat()
       .join(',');
 
-    const links = document.querySelectorAll(selector);
-    if (!links || links.length === 0) return;
+    const elements = document.querySelectorAll(selectors);
+    if (!elements || elements.length === 0) return;
 
-    links.forEach((link) => {
-      // Skip already processed links
-      if (outboundLinksUpdated.has(link)) return;
+    elements.forEach((element) => {
+      // Skip already processed elements
+      if (outboundLinksUpdated.has(element)) return;
 
       try {
-        const url = new URL(link.href);
+        const url = new URL(element.href || element.src);
         url.searchParams.set(DUB_ID_VAR, existingCookie);
-        link.href = url.toString();
-        outboundLinksUpdated.add(link);
+
+        // Update the appropriate attribute based on element type
+        if (element.tagName.toLowerCase() === 'a') {
+          element.href = url.toString();
+        } else if (element.tagName.toLowerCase() === 'iframe') {
+          element.src = url.toString();
+        }
+
+        outboundLinksUpdated.add(element);
       } catch (e) {}
     });
   }
