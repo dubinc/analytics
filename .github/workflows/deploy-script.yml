@@ -28,6 +28,7 @@ jobs:
           workingDirectory: packages/script
           packageManager: pnpm
 
+      # Dispatch deployment event to trigger Playwright tests
       - name: Dispatch deployment event
         uses: peter-evans/repository-dispatch@v3
         with:

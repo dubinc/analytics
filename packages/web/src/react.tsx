@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { inject } from './generic';
-import type { AnalyticsProps } from './types';
+import type { AnalyticsProps, Discount, Partner } from './types';
+import { useAnalytics } from './use-analytics';
 
 /**
  * Injects the Dub Web Analytics script into the page head.
@@ -26,5 +27,5 @@ function Analytics(props: AnalyticsProps): null {
   return null;
 }
 
-export { Analytics };
-export type { AnalyticsProps };
+export { Analytics, useAnalytics };
+export type { AnalyticsProps, Partner, Discount };
