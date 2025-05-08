@@ -60,6 +60,7 @@ test.describe('Outbound domains tracking', () => {
     expect(externalHref).toContain('dub_id=test-click-id');
   });
 
+  // TODO: Fix this test
   test.skip('should handle dynamically added links', async ({ page }) => {
     await page.goto('/outbound?dub_id=test-click-id');
 
