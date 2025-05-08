@@ -8,6 +8,8 @@ const initOutboundDomains = () => {
   } = window._dubAnalytics;
   let outboundLinksUpdated = new Set(); // Track processed links
 
+  console.log('DOMAINS_CONFIG', DOMAINS_CONFIG);
+
   function normalizeDomain(domain) {
     return domain.replace(/^www\./, '').trim();
   }
