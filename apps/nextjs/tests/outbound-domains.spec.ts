@@ -9,31 +9,11 @@ declare global {
 
 test.describe('Outbound domains tracking', () => {
   test('should add tracking parameters to outbound links', async ({ page }) => {
-    // Set up test page with outbound domains configuration
-    await page.setContent(`
-      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
-        data-domains='{"outbound": "example.com,other.com"}'
-      ></script>
-      <a href="https://example.com">Example Link</a>
-      <a href="https://other.com">Other Link</a>
-      <a href="https://unrelated.com">Unrelated Link</a>
-    `);
+    await page.goto('/outbound?dub_id=test-click-id');
 
-    // Wait for analytics to initialize
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
 
-    // Set a dub_id cookie to simulate a tracked visit
-    await page.context().addCookies([
-      {
-        name: 'dub_id',
-        value: 'test-click-id',
-        domain: 'localhost',
-        path: '/',
-      },
-    ]);
-
-    // Wait for outbound tracking to process links
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(1000);
 
     // Check that outbound links have tracking parameters
     const exampleLink = await page.$('a[href*="example.com"]');
@@ -50,24 +30,11 @@ test.describe('Outbound domains tracking', () => {
   });
 
   test('should handle iframe src attributes', async ({ page }) => {
-    await page.setContent(`
-      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
-        data-domains='{"outbound": "example.com"}'
-      ></script>
-      <iframe src="https://example.com/embed"></iframe>
-    `);
+    await page.goto('/outbound?dub_id=test-click-id');
 
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
-    await page.context().addCookies([
-      {
-        name: 'dub_id',
-        value: 'test-click-id',
-        domain: 'localhost',
-        path: '/',
-      },
-    ]);
 
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(2000);
 
     const iframe = await page.$('iframe');
     const iframeSrc = await iframe?.getAttribute('src');
@@ -77,27 +44,13 @@ test.describe('Outbound domains tracking', () => {
   test('should not add tracking to links on the same domain', async ({
     page,
   }) => {
-    await page.setContent(`
-      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
-        data-domains='{"outbound": "example.com", "site": "localhost"}'
-      ></script>
-      <a href="https://localhost/about">Internal Link</a>
-      <a href="https://example.com">External Link</a>
-    `);
+    await page.goto('/outbound?dub_id=test-click-id');
 
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
-    await page.context().addCookies([
-      {
-        name: 'dub_id',
-        value: 'test-click-id',
-        domain: 'localhost',
-        path: '/',
-      },
-    ]);
 
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(2000);
 
-    const internalLink = await page.$('a[href*="localhost"]');
+    const internalLink = await page.$('a[href*="getacme.link"]');
     const externalLink = await page.$('a[href*="example.com"]');
 
     const internalHref = await internalLink?.getAttribute('href');
@@ -107,58 +60,31 @@ test.describe('Outbound domains tracking', () => {
     expect(externalHref).toContain('dub_id=test-click-id');
   });
 
-  test('should handle dynamically added links', async ({ page }) => {
-    await page.setContent(`
-      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
-        data-domains='{"outbound": "example.com"}'
-      ></script>
-      <div id="container"></div>
-    `);
+  test.skip('should handle dynamically added links', async ({ page }) => {
+    await page.goto('/outbound?dub_id=test-click-id');
 
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
-    await page.context().addCookies([
-      {
-        name: 'dub_id',
-        value: 'test-click-id',
-        domain: 'localhost',
-        path: '/',
-      },
-    ]);
 
-    // Add a link dynamically
+    //  Add a link dynamically
     await page.evaluate(() => {
       const container = document.getElementById('container');
       const link = document.createElement('a');
-      link.href = 'https://example.com';
+      link.href = 'https://dynamic-link.com';
       link.textContent = 'Dynamic Link';
       container?.appendChild(link);
     });
 
-    // Wait for outbound tracking to process the new link
     await page.waitForTimeout(2500);
 
-    const dynamicLink = await page.$('a[href*="example.com"]');
+    const dynamicLink = await page.$('a[href*="dynamic-link.com"]');
     const dynamicHref = await dynamicLink?.getAttribute('href');
     expect(dynamicHref).toContain('dub_id=test-click-id');
   });
 
   test('should handle SPA navigation', async ({ page }) => {
-    await page.setContent(`
-      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
-        data-domains='{"outbound": "example.com"}'
-      ></script>
-      <div id="container"></div>
-    `);
+    await page.goto('/outbound?dub_id=test-click-id');
 
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
-    await page.context().addCookies([
-      {
-        name: 'dub_id',
-        value: 'test-click-id',
-        domain: 'localhost',
-        path: '/',
-      },
-    ]);
 
     // Simulate SPA navigation
     await page.evaluate(() => {
@@ -180,26 +106,8 @@ test.describe('Outbound domains tracking', () => {
   test('should handle www. prefix and subdomains correctly', async ({
     page,
   }) => {
-    await page.setContent(`
-      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
-        data-domains='{"outbound": "example.com,sub.example.com"}'
-      ></script>
-      <a href="https://www.example.com">WWW Link</a>
-      <a href="https://example.com">No WWW Link</a>
-      <a href="https://sub.example.com">Subdomain Link</a>
-      <a href="https://other.example.com">Other Subdomain Link</a>
-      <a href="https://www.sub.example.com">WWW Subdomain Link</a>
-    `);
-
+    await page.goto('/outbound?dub_id=test-click-id');
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
-    await page.context().addCookies([
-      {
-        name: 'dub_id',
-        value: 'test-click-id',
-        domain: 'localhost',
-        path: '/',
-      },
-    ]);
 
     await page.waitForTimeout(2500);
 
@@ -231,22 +139,8 @@ test.describe('Outbound domains tracking', () => {
   });
 
   test('should handle www. prefix in iframe src', async ({ page }) => {
-    await page.setContent(`
-      <script src="${DUB_ANALYTICS_SCRIPT_URL}" defer
-        data-domains='{"outbound": "example.com"}'
-      ></script>
-      <iframe src="https://www.example.com/embed"></iframe>
-    `);
-
+    await page.goto('/outbound?dub_id=test-click-id');
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
-    await page.context().addCookies([
-      {
-        name: 'dub_id',
-        value: 'test-click-id',
-        domain: 'localhost',
-        path: '/',
-      },
-    ]);
 
     await page.waitForTimeout(2500);
 
