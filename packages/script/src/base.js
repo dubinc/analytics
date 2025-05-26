@@ -146,9 +146,12 @@
   let clientClickTracked = false;
 
   // Track click and set cookie
-  function trackClick({ domain, key }, serverClickId) {
+  function trackClick({ domain, key }) {
     if (clientClickTracked) return;
     clientClickTracked = true;
+
+    const params = new URLSearchParams(location.search);
+    const serverClickId = params.get(DUB_ID_VAR);
 
     fetch(`${API_HOST}/track/click`, {
       method: 'POST',
@@ -215,13 +218,10 @@
 
     // Dub Partners tracking (via query param e.g. ?via=partner_id)
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
-      trackClick(
-        {
-          domain: SHORT_DOMAIN,
-          key: QUERY_PARAM_VALUE,
-        },
-        clickId,
-      );
+      trackClick({
+        domain: SHORT_DOMAIN,
+        key: QUERY_PARAM_VALUE,
+      });
     }
 
     // Process the queued methods
