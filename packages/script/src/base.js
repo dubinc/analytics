@@ -87,7 +87,7 @@
 
   let clientClickTracked = false;
   // Track click and set cookie
-  function trackClick(identifier) {
+  function trackClick(identifier, serverClickId) {
     if (clientClickTracked) return;
     clientClickTracked = true;
 
@@ -104,6 +104,12 @@
       .then((res) => res.ok && res.json())
       .then((data) => {
         if (data) {
+          if (serverClickId && serverClickId !== data.clickId) {
+            console.warn(
+              `Client-tracked click ID ${data.clickId} does not match server-tracked click ID ${serverClickId}, skipping...`,
+            );
+            return;
+          }
           cookieManager.set(DUB_ID_VAR, data.clickId);
           // if partner data is present, set it as dub_partner_data cookie
           if (data.partner) {
@@ -143,7 +149,7 @@
 
     // Dub Partners tracking (via query param e.g. ?via=partner_id)
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
-      trackClick(QUERY_PARAM_VALUE);
+      trackClick(QUERY_PARAM_VALUE, clickId);
     }
   }
 
