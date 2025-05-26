@@ -146,11 +146,8 @@
   let clientClickTracked = false;
 
   // Track click and set cookie
-  function trackClick({ domain, key }) {
-    if (clientClickTracked) {
-      return;
-    }
-
+  function trackClick({ domain, key }, serverClickId) {
+    if (clientClickTracked) return;
     clientClickTracked = true;
 
     fetch(`${API_HOST}/track/click`, {
@@ -166,6 +163,12 @@
       .then((res) => res.ok && res.json())
       .then((data) => {
         if (data) {
+          if (serverClickId && serverClickId !== data.clickId) {
+            console.warn(
+              `Client-tracked click ID ${data.clickId} does not match server-tracked click ID ${serverClickId}, skipping...`,
+            );
+            return;
+          }
           cookieManager.set(DUB_ID_VAR, data.clickId);
           // if partner data is present, set it as dub_partner_data cookie
           if (data.partner) {
@@ -212,10 +215,13 @@
 
     // Dub Partners tracking (via query param e.g. ?via=partner_id)
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
-      trackClick({
-        domain: SHORT_DOMAIN,
-        key: QUERY_PARAM_VALUE,
-      });
+      trackClick(
+        {
+          domain: SHORT_DOMAIN,
+          key: QUERY_PARAM_VALUE,
+        },
+        clickId,
+      );
     }
 
     // Process the queued methods
