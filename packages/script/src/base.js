@@ -106,7 +106,7 @@
         if (data) {
           if (serverClickId && serverClickId !== data.clickId) {
             console.warn(
-              `Client-tracked click ID ${data.clickId} does not match server-tracked click ID ${queryParamClickId}, skipping...`,
+              `Client-tracked click ID ${data.clickId} does not match server-tracked click ID ${serverClickId}, skipping...`,
             );
             return;
           }
