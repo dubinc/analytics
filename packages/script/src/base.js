@@ -119,7 +119,9 @@
               partner: {
                 ...data.partner,
                 name: encodeURIComponent(data.partner.name),
-                image: encodeURIComponent(data.partner.image),
+                image: data.partner.image
+                  ? encodeURIComponent(data.partner.image)
+                  : null,
               },
             };
 
