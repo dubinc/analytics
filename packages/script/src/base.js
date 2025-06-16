@@ -194,6 +194,8 @@
 
             queueManager.flush((method) => method === 'ready');
           }
+
+          return data;
         }
       });
   }
