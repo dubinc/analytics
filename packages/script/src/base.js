@@ -75,20 +75,14 @@
   // Initialize dubAnalytics
   if (window.dubAnalytics) {
     const original = window.dubAnalytics;
-    const queue = original.q || [];
 
-    window.dubAnalytics = function (method, ...args) {
-      if (method === 'ready') {
-        const callback = args[0];
+    window.dubAnalytics = {
+      q: original.q || [],
+      ready(callback) {
         callback();
-      } else if (['trackClick'].includes(method)) {
-        trackClick(...args);
-      } else {
-        console.warn('[dubAnalytics] Unknown method:', method);
-      }
+      },
+      trackClick,
     };
-
-    window.dubAnalytics.q = queue;
   }
 
   // Cookie management
@@ -147,7 +141,10 @@
 
   // Track click and set cookie
   function trackClick({ domain, key }) {
-    if (clientClickTracked) return;
+    if (clientClickTracked) {
+      return;
+    }
+
     clientClickTracked = true;
 
     const params = new URLSearchParams(location.search);
@@ -237,7 +234,7 @@
         DubAnalytics.partner = partnerData.partner;
         DubAnalytics.discount = partnerData.discount;
       } catch (e) {
-        console.error('[DubAnalytics] Failed to parse partner cookie:', e);
+        console.error('[dubAnalytics] Failed to parse partner cookie:', e);
       }
     }
   }
