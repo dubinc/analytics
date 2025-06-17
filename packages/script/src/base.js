@@ -75,14 +75,32 @@
   // Initialize dubAnalytics
   if (window.dubAnalytics) {
     const original = window.dubAnalytics;
+    const queue = original.q || [];
 
-    window.dubAnalytics = {
-      q: original.q || [],
-      ready(callback) {
-        callback();
-      },
-      trackClick,
+    // Create a callable function
+    function dubAnalytics(method, ...args) {
+      if (method === 'ready') {
+        dubAnalytics.ready(...args);
+      } else if (method === 'trackClick') {
+        dubAnalytics.trackClick(...args);
+      } else {
+        console.warn('[dubAnalytics] Unknown method:', method);
+      }
+    }
+
+    // Attach properties and methods
+    dubAnalytics.q = queue;
+
+    dubAnalytics.ready = function (callback) {
+      callback();
     };
+
+    dubAnalytics.trackClick = function (...args) {
+      trackClick(...args);
+    };
+
+    // Replace window.dubAnalytics with the callable + augmented function
+    window.dubAnalytics = dubAnalytics;
   }
 
   // Cookie management
