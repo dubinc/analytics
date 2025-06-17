@@ -38,14 +38,24 @@
       });
     </script>
 
-    <script
-      defer
-      src="http://[::]:8000/src/base.js"
-      data-short-domain="getacme.link"
-    ></script>
+    <script>
+      // Add a 3-second delay before loading the script to test queue functionality
+      setTimeout(() => {
+        const script = document.createElement('script');
+        script.defer = true;
+        script.src = './script.js';
+        script.setAttribute('data-short-domain', 'getacme.link');
+        document.head.appendChild(script);
+      }, 3000);
+    </script>
 
     <header>
       <h1>Dub Analytics</h1>
+      <button
+        onclick="dubAnalytics.trackClick({domain: 'getacme.link', key: 'derek'})"
+      >
+        Track Click
+      </button>
     </header>
   </body>
 </html>
