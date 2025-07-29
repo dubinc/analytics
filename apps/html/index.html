@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Your website description" />
+    <title>Dub Analytics</title>
+  </head>
+  <body>
+    <script>
+      !(function (w, da) {
+        w[da] =
+          w[da] ||
+          function () {
+            (w[da].q = w[da].q || []).push(arguments);
+          };
+
+        ['trackClick'].forEach(function (m) {
+          w[da][m] = function () {
+            w[da](m, ...arguments);
+          };
+        });
+      })(window, 'dubAnalytics');
+
+      dubAnalytics('ready', function () {
+        if (DubAnalytics.partner) {
+          document.body.innerHTML += `<pre>${JSON.stringify(
+            DubAnalytics,
+            null,
+            2,
+          )}</pre>`;
+        }
+      });
+
+      dubAnalytics.trackClick({
+        domain: 'getacme.link',
+        key: 'derek',
+      });
+    </script>
+
+    <script>
+      // Add a 3-second delay before loading the script to test queue functionality
+      setTimeout(() => {
+        const script = document.createElement('script');
+        script.defer = true;
+        script.src = './script.js';
+        script.setAttribute('data-short-domain', 'getacme.link');
+        document.head.appendChild(script);
+      }, 3000);
+    </script>
+
+    <header>
+      <h1>Dub Analytics</h1>
+      <button
+        onclick="dubAnalytics.trackClick({domain: 'getacme.link', key: 'derek'})"
+      >
+        Track Click
+      </button>
+    </header>
+  </body>
+</html>

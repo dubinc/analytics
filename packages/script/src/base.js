@@ -66,6 +66,43 @@
     QUERY_PARAM,
   );
 
+  // Initialize global DubAnalytics object
+  window.DubAnalytics = window.DubAnalytics || {
+    partner: null,
+    discount: null,
+  };
+
+  // Initialize dubAnalytics
+  if (window.dubAnalytics) {
+    const original = window.dubAnalytics;
+    const queue = original.q || [];
+
+    // Create a callable function
+    function dubAnalytics(method, ...args) {
+      if (method === 'ready') {
+        dubAnalytics.ready(...args);
+      } else if (method === 'trackClick') {
+        dubAnalytics.trackClick(...args);
+      } else {
+        console.warn('[dubAnalytics] Unknown method:', method);
+      }
+    }
+
+    // Attach properties and methods
+    dubAnalytics.q = queue;
+
+    dubAnalytics.ready = function (callback) {
+      callback();
+    };
+
+    dubAnalytics.trackClick = function (...args) {
+      trackClick(...args);
+    };
+
+    // Replace window.dubAnalytics with the callable + augmented function
+    window.dubAnalytics = dubAnalytics;
+  }
+
   // Cookie management
   const cookieManager = {
     get(key) {
@@ -85,18 +122,58 @@
     },
   };
 
+  // Queue management
+  const queueManager = {
+    queue: window.dubAnalytics?.q || [],
+
+    // Process specific method types (e.g., only 'ready')
+    flush(methodFilter) {
+      const remainingQueue = [];
+
+      while (this.queue.length) {
+        const [method, ...args] = this.queue.shift();
+
+        if (!methodFilter || methodFilter(method)) {
+          this.process({ method, args });
+        } else {
+          remainingQueue.push([method, ...args]);
+        }
+      }
+
+      this.queue = remainingQueue;
+    },
+
+    process({ method, args }) {
+      if (method === 'ready') {
+        const callback = args[0];
+        callback();
+      } else if (['trackClick'].includes(method)) {
+        trackClick(...args);
+      } else {
+        console.warn('[dubAnalytics] Unknown method:', method);
+      }
+    },
+  };
+
   let clientClickTracked = false;
+
   // Track click and set cookie
-  function trackClick(identifier, serverClickId) {
-    if (clientClickTracked) return;
+  function trackClick({ domain, key }) {
+    if (clientClickTracked) {
+      return;
+    }
+
     clientClickTracked = true;
+
+    const params = new URLSearchParams(location.search);
+    const serverClickId = params.get(DUB_ID_VAR);
 
     fetch(`${API_HOST}/track/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        domain: SHORT_DOMAIN,
-        key: identifier,
+        domain,
+        key,
         url: window.location.href,
         referrer: document.referrer,
       }),
@@ -106,7 +183,7 @@
         if (data) {
           if (serverClickId && serverClickId !== data.clickId) {
             console.warn(
-              `Client-tracked click ID ${data.clickId} does not match server-tracked click ID ${serverClickId}, skipping...`,
+              `[dubAnalytics] Client-tracked click ID ${data.clickId} does not match server-tracked click ID ${serverClickId}, skipping...`,
             );
             return;
           }
@@ -119,12 +196,21 @@
               partner: {
                 ...data.partner,
                 name: encodeURIComponent(data.partner.name),
-                image: encodeURIComponent(data.partner.image),
+                image: data.partner.image
+                  ? encodeURIComponent(data.partner.image)
+                  : null,
               },
             };
 
             cookieManager.set(DUB_PARTNER_COOKIE, JSON.stringify(encodedData));
+
+            DubAnalytics.partner = data.partner;
+            DubAnalytics.discount = data.discount;
+
+            queueManager.flush((method) => method === 'ready');
           }
+
+          return data;
         }
       });
   }
@@ -149,7 +235,27 @@
 
     // Dub Partners tracking (via query param e.g. ?via=partner_id)
     if (QUERY_PARAM_VALUE && SHORT_DOMAIN && shouldSetCookie()) {
-      trackClick(QUERY_PARAM_VALUE, clickId);
+      trackClick({
+        domain: SHORT_DOMAIN,
+        key: QUERY_PARAM_VALUE,
+      });
+    }
+
+    // Process the queued methods
+    queueManager.flush((method) => method === 'trackClick');
+
+    // Initialize DubAnalytics from cookie if it exists
+    const partnerCookie = cookieManager.get(DUB_PARTNER_COOKIE);
+
+    if (partnerCookie) {
+      try {
+        const partnerData = JSON.parse(partnerCookie);
+
+        DubAnalytics.partner = partnerData.partner;
+        DubAnalytics.discount = partnerData.discount;
+      } catch (e) {
+        console.error('[dubAnalytics] Failed to parse partner cookie:', e);
+      }
     }
   }
 

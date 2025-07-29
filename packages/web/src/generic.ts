@@ -2,11 +2,29 @@ import { name, version } from '../package.json';
 import type { AnalyticsProps } from './types';
 import { isBrowser } from './utils';
 
+interface DubAnalyticsWindow extends Window {
+  [key: string]: any;
+}
+
 /**
  * Injects the Dub Web Analytics script into the page head.
  */
 function inject(props: AnalyticsProps): void {
   if (!isBrowser()) return;
+
+  (function (w: DubAnalyticsWindow, da: string) {
+    w[da] =
+      w[da] ||
+      function () {
+        (w[da].q = w[da].q || []).push(arguments);
+      };
+
+    ['trackClick'].forEach(function (m) {
+      w[da][m] = function () {
+        w[da](m, ...Array.from(arguments));
+      };
+    });
+  })(window as DubAnalyticsWindow, 'dubAnalytics');
 
   // Determine script source based on enabled features
   const baseUrl = 'https://www.dubcdn.com/analytics/script';
