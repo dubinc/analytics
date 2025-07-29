@@ -172,4 +172,6 @@ export interface Discount {
   amount: number;
   type: 'percentage' | 'flat';
   maxDuration: number | null;
+  couponId: string | null;
+  couponTestId: string | null;
 }

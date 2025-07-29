@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Discount, Partner, TrackClickInput } from './types';
+import type { Discount, Partner, TrackClickInput } from './types';
 import { isDubAnalyticsReady } from './utils';
 
 interface PartnerData {
