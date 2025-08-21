@@ -273,6 +273,7 @@
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
     n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
     k: PUBLISHABLE_KEY,
+    qm: queueManager,
   };
 
   // Initialize
