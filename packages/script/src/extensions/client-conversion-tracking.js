@@ -67,13 +67,20 @@ const initClientConversionTracking = () => {
     const queueManager = window._dubAnalytics.qm;
     const existingQueue = queueManager.queue || [];
 
-    existingQueue.forEach(([method, ...args]) => {
+    const remainingQueue = existingQueue.filter(([method, ...args]) => {
       if (method === 'trackLead') {
         trackLead(...args);
+        return false;
       } else if (method === 'trackSale') {
         trackSale(...args);
+        return false;
       }
+
+      return true;
     });
+
+    // Update the queue with remaining items
+    queueManager.queue = remainingQueue;
   }
 };
 
