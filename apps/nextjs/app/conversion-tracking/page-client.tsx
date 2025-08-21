@@ -2,7 +2,7 @@
 
 import { useAnalytics } from '@dub/analytics/react';
 
-export function ClientConversionTracking() {
+export function ConversionTrackingPageClient() {
   const { trackLead, trackSale } = useAnalytics();
 
   const handleTrackLead = () => {

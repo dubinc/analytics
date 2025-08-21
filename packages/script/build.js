@@ -62,18 +62,18 @@ Promise.all([
     outfile: 'dist/analytics/script.outbound-domains.js',
   }),
 
-  // Client conversion tracking
+  // Conversion tracking
   esbuild.build({
     ...baseConfig,
     stdin: {
       contents: combineFiles([
         'src/base.js',
-        'src/extensions/client-conversion-tracking.js',
+        'src/extensions/conversion-tracking.js',
       ]),
       resolveDir: __dirname,
       sourcefile: 'combined.js',
     },
-    outfile: 'dist/analytics/script.client-conversion-tracking.js',
+    outfile: 'dist/analytics/script.conversion-tracking.js',
   }),
 
   // Complete script with concatenated feature names

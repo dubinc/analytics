@@ -32,7 +32,7 @@ function inject(props: AnalyticsProps): void {
 
   if (props.domainsConfig?.site) features.push('site-visit');
   if (props.domainsConfig?.outbound) features.push('outbound-domains');
-  if (props.publishableKey) features.push('client-conversion-tracking');
+  if (props.publishableKey) features.push('conversion-tracking');
 
   const src =
     props.scriptProps?.src ||

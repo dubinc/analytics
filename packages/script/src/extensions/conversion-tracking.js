@@ -1,4 +1,4 @@
-const initClientConversionTracking = () => {
+const initConversionTracking = () => {
   const { a: API_HOST, k: PUBLISHABLE_KEY } = window._dubAnalytics || {};
 
   if (!API_HOST) {
@@ -86,7 +86,7 @@ const initClientConversionTracking = () => {
 
 // Run when base script is ready
 if (window._dubAnalytics) {
-  initClientConversionTracking();
+  initConversionTracking();
 } else {
-  window.addEventListener('load', initClientConversionTracking);
+  window.addEventListener('load', initConversionTracking);
 }
