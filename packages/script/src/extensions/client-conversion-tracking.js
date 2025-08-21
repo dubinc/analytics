@@ -1,5 +1,15 @@
 const initClientConversionTracking = () => {
-  const { a: API_HOST, k: PUBLISHABLE_KEY } = window._dubAnalytics;
+  const { a: API_HOST, k: PUBLISHABLE_KEY } = window._dubAnalytics || {};
+
+  if (!API_HOST) {
+    console.warn('[dubAnalytics] Missing API_HOST');
+    return;
+  }
+
+  if (!PUBLISHABLE_KEY) {
+    console.warn('[dubAnalytics] Missing PUBLISHABLE_KEY');
+    return;
+  }
 
   // Track lead conversion
   const trackLead = async (input) => {
