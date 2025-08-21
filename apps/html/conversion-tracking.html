@@ -54,6 +54,7 @@
 
       <button
         onclick="dubAnalytics.trackSale({
+          eventName: 'Purchase completed',
           customerExternalId: 'CXvG5QOLi8QKBA2jYmDh',
           paymentProcessor: 'stripe',
           invoiceId: Math.random().toString(36).substring(2, 15),
