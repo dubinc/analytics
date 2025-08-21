@@ -51,6 +51,10 @@ function inject(props: AnalyticsProps): void {
     script.setAttribute('data-api-host', props.apiHost);
   }
 
+  if (props.publishableKey) {
+    script.setAttribute('data-publishable-key', props.publishableKey);
+  }
+
   if (props.domainsConfig) {
     script.setAttribute('data-domains', JSON.stringify(props.domainsConfig));
   }

@@ -6,6 +6,7 @@
     "dist/analytics/script.js",
     "dist/analytics/script.site-visit.js",
     "dist/analytics/script.outbound-domains.js",
+    "dist/analytics/script.client-conversion-tracking.js",
     "dist/analytics/script.site-visit.outbound-domains.js"
   ],
   "scripts": {

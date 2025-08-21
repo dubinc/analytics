@@ -8,6 +8,12 @@ export interface AnalyticsProps {
   apiHost?: string;
 
   /**
+   * The publishable key for client conversion tracking
+   * @example 'dub_pk_BgyBCEJCPCGN3RN7oieLVHRs'
+   */
+  publishableKey?: string;
+
+  /**
    * This is a JSON object that configures the domains that Dub will track.
    *
    * - `refer`: The Dub short domain for referral program client-side click tracking (previously `shortDomain`). @see: https://d.to/clicks/refer
