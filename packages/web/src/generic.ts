@@ -19,7 +19,7 @@ function inject(props: AnalyticsProps): void {
         (w[da].q = w[da].q || []).push(arguments);
       };
 
-    ['trackClick'].forEach(function (m) {
+    ['trackClick', 'trackLead', 'trackSale'].forEach(function (m) {
       w[da][m] = function () {
         w[da](m, ...Array.from(arguments));
       };
@@ -32,6 +32,7 @@ function inject(props: AnalyticsProps): void {
 
   if (props.domainsConfig?.site) features.push('site-visit');
   if (props.domainsConfig?.outbound) features.push('outbound-domains');
+  if (props.publishableKey) features.push('client-conversion-tracking');
 
   const src =
     props.scriptProps?.src ||

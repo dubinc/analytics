@@ -1,5 +1,3 @@
-export type AllowedPropertyValues = string | number | boolean | null;
-
 export interface AnalyticsProps {
   /**
    * The API endpoint to send analytics data to.
@@ -165,6 +163,27 @@ export interface ClickApiResponse {
 export interface TrackClickInput {
   domain: string;
   key: string;
+}
+
+export interface TrackLeadInput {
+  clickId: string;
+  eventName: string;
+  customerExternalId: string;
+  customerName?: string | null;
+  customerEmail?: string | null;
+  customerAvatar?: string | null;
+  mode?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface TrackSaleInput {
+  eventName: string;
+  customerExternalId: string;
+  paymentProcessor: string;
+  amount: number;
+  invoiceId?: string | null;
+  currency?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface Partner {

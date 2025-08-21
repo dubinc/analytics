@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Discount, Partner, TrackClickInput } from './types';
+import type {
+  Discount,
+  Partner,
+  TrackClickInput,
+  TrackLeadInput,
+  TrackSaleInput,
+} from './types';
 import { isDubAnalyticsReady } from './utils';
 
 interface PartnerData {
@@ -12,13 +18,15 @@ declare global {
     DubAnalytics: PartnerData;
     dubAnalytics: ((event: 'ready', callback: () => void) => void) & {
       trackClick: (event: TrackClickInput) => void;
+      trackLead: (event: TrackLeadInput) => void;
+      trackSale: (event: TrackSaleInput) => void;
     };
   }
 }
 
 /**
  * Hook to access Dub Web Analytics data including partner and discount information.
- * @returns Object containing partner data, and discount information.
+ * @returns Object containing partner data, discount information, and tracking methods.
  * ```js
  * import { useAnalytics } from '@dub/analytics/react';
  *
@@ -59,6 +67,22 @@ export function useAnalytics() {
     window.dubAnalytics.trackClick(event);
   }, []);
 
+  const trackLead = useCallback((event: TrackLeadInput) => {
+    if (!isDubAnalyticsReady()) {
+      return;
+    }
+
+    window.dubAnalytics.trackLead(event);
+  }, []);
+
+  const trackSale = useCallback((event: TrackSaleInput) => {
+    if (!isDubAnalyticsReady()) {
+      return;
+    }
+
+    window.dubAnalytics.trackSale(event);
+  }, []);
+
   useEffect(() => {
     initialize();
   }, [initialize]);
@@ -66,5 +90,7 @@ export function useAnalytics() {
   return {
     ...data,
     trackClick,
+    trackLead,
+    trackSale,
   };
 }
