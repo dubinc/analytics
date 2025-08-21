@@ -1,6 +1,4 @@
 const initClientConversionTracking = () => {
-  console.debug('Running initClientConversionTracking');
-
   const { a: API_HOST, k: PUBLISHABLE_KEY } = window._dubAnalytics;
 
   // Track lead conversion
@@ -59,18 +57,10 @@ const initClientConversionTracking = () => {
     const queueManager = window._dubAnalytics.qm;
     const existingQueue = queueManager.queue || [];
 
-    console.debug(
-      '[dubAnalytics] Processing existing queue:',
-      existingQueue.length,
-      'events',
-    );
-
     existingQueue.forEach(([method, ...args]) => {
       if (method === 'trackLead') {
-        console.debug('[dubAnalytics] Processing queued trackLead:', args);
         trackLead(...args);
       } else if (method === 'trackSale') {
-        console.debug('[dubAnalytics] Processing queued trackSale:', args);
         trackSale(...args);
       }
     });
