@@ -166,24 +166,24 @@ export interface TrackClickInput {
 }
 
 export interface TrackLeadInput {
-  clickId: string;
+  clickId?: string; // falls back to dub_id cookie
   eventName: string;
   customerExternalId: string;
-  customerName?: string | null;
-  customerEmail?: string | null;
-  customerAvatar?: string | null;
+  customerName?: string;
+  customerEmail?: string;
+  customerAvatar?: string;
   mode?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TrackSaleInput {
   eventName: string;
   customerExternalId: string;
-  paymentProcessor: string;
+  paymentProcessor?: string;
   amount: number;
-  invoiceId?: string | null;
+  invoiceId?: string;
   currency?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Partner {

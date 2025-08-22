@@ -1,5 +1,10 @@
 const initConversionTracking = () => {
-  const { a: API_HOST, k: PUBLISHABLE_KEY } = window._dubAnalytics || {};
+  const {
+    a: API_HOST,
+    k: PUBLISHABLE_KEY,
+    c: cookieManager,
+    i: DUB_ID_VAR,
+  } = window._dubAnalytics || {};
 
   if (!API_HOST) {
     console.warn('[dubAnalytics] Missing API_HOST');
@@ -13,13 +18,20 @@ const initConversionTracking = () => {
 
   // Track lead conversion
   const trackLead = async (input) => {
+    const clickId = cookieManager?.get(DUB_ID_VAR);
+
+    const requestBody = {
+      ...(clickId && { clickId }),
+      ...input,
+    };
+
     const response = await fetch(`${API_HOST}/track/lead/client`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify(input),
+      body: JSON.stringify(requestBody),
     });
 
     const result = await response.json();
