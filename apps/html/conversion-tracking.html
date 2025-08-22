@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Your website description" />
+    <title>Client Conversion Tracking</title>
+  </head>
+  <body>
+    <script>
+      !(function (w, da) {
+        w[da] =
+          w[da] ||
+          function () {
+            (w[da].q = w[da].q || []).push(arguments);
+          };
+
+        ['trackClick', 'trackLead', 'trackSale'].forEach(function (m) {
+          w[da][m] = function () {
+            w[da](m, ...arguments);
+          };
+        });
+      })(window, 'dubAnalytics');
+    </script>
+
+    <script>
+      // Add a 3-second delay before loading the script to test queue functionality
+      setTimeout(() => {
+        const script = document.createElement('script');
+        script.defer = true;
+        script.src = './analytics/script.conversion-tracking.js';
+        script.setAttribute('data-api-host', 'http://api.localhost:8888');
+        script.setAttribute(
+          'data-publishable-key',
+          'dub_pk_BgyBCEJCPCGN3RN7oieLVHRs',
+        );
+        document.head.appendChild(script);
+      }, 3000);
+    </script>
+
+    <header>
+      <h1>Client Conversion Tracking</h1>
+      <button
+        onclick="dubAnalytics.trackLead({
+          eventName: 'Account created',
+          customerExternalId: '1234567890',
+          customerName: 'John Doe',
+          customerEmail: 'john.doe@example.com',
+        })"
+      >
+        Track Lead
+      </button>
+
+      <button
+        onclick="dubAnalytics.trackSale({
+          eventName: 'Purchase completed',
+          customerExternalId: 'CXvG5QOLi8QKBA2jYmDh',
+          invoiceId: Math.random().toString(36).substring(2, 15),
+          amount: 5000, // defaults to usd cents, use `currency` prop to specify a different currency
+        })"
+      >
+        Track Sale
+      </button>
+    </header>
+  </body>
+</html>

@@ -1,11 +1,15 @@
-export type AllowedPropertyValues = string | number | boolean | null;
-
 export interface AnalyticsProps {
   /**
    * The API endpoint to send analytics data to.
    * @default 'https://api.dub.co'
    */
   apiHost?: string;
+
+  /**
+   * The publishable key for client conversion tracking
+   * @example 'dub_pk_BgyBCEJCPCGN3RN7oieLVHRs'
+   */
+  publishableKey?: string;
 
   /**
    * This is a JSON object that configures the domains that Dub will track.
@@ -159,6 +163,27 @@ export interface ClickApiResponse {
 export interface TrackClickInput {
   domain: string;
   key: string;
+}
+
+export interface TrackLeadInput {
+  clickId?: string; // falls back to dub_id cookie
+  eventName: string;
+  customerExternalId: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerAvatar?: string;
+  mode?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TrackSaleInput {
+  eventName: string;
+  customerExternalId: string;
+  paymentProcessor?: string;
+  amount: number;
+  invoiceId?: string;
+  currency?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Partner {

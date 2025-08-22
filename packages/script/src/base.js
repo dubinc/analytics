@@ -9,6 +9,7 @@
 
   // Common script attributes
   const API_HOST = script.getAttribute('data-api-host') || 'https://api.dub.co';
+  const PUBLISHABLE_KEY = script.getAttribute('data-publishable-key');
   const COOKIE_OPTIONS = (() => {
     const defaultOptions = {
       domain:
@@ -271,6 +272,8 @@
     p: QUERY_PARAM, // was QUERY_PARAM
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
     n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
+    k: PUBLISHABLE_KEY,
+    qm: queueManager,
   };
 
   // Initialize

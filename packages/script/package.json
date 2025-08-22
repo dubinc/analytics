@@ -1,12 +1,16 @@
 {
   "name": "@dub/analytics-script",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "main": "src/index.js",
   "files": [
     "dist/analytics/script.js",
     "dist/analytics/script.site-visit.js",
     "dist/analytics/script.outbound-domains.js",
-    "dist/analytics/script.site-visit.outbound-domains.js"
+    "dist/analytics/script.conversion-tracking.js",
+    "dist/analytics/script.site-visit.outbound-domains.js",
+    "dist/analytics/script.site-visit.conversion-tracking.js",
+    "dist/analytics/script.outbound-domains.conversion-tracking.js",
+    "dist/analytics/script.site-visit.outbound-domains.conversion-tracking.js"
   ],
   "scripts": {
     "prebuild": "mkdir -p dist/analytics",
