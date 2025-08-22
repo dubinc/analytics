@@ -30,6 +30,9 @@ export default function RootLayout({
         scriptProps={{
           src: DUB_ANALYTICS_SCRIPT_URL,
         }}
+        // optional – only needed for client-side conversion tracking
+        // get your publishable key from https://app.dub.co/settings/analytics
+        publishableKey="dub_pk_xxxxxxxx"
       />
     </html>
   );

@@ -24,18 +24,14 @@
     </script>
 
     <script>
-      // Add a 3-second delay before loading the script to test queue functionality
-      setTimeout(() => {
-        const script = document.createElement('script');
-        script.defer = true;
-        script.src = './analytics/script.conversion-tracking.js';
-        script.setAttribute('data-api-host', 'http://api.localhost:8888');
-        script.setAttribute(
-          'data-publishable-key',
-          'dub_pk_BgyBCEJCPCGN3RN7oieLVHRs',
-        );
-        document.head.appendChild(script);
-      }, 3000);
+      const script = document.createElement('script');
+      script.defer = true;
+      script.src = 'https://dubcdn.com/analytics/script.conversion-tracking.js';
+      script.setAttribute(
+        'data-publishable-key',
+        'dub_pk_xxxxxxxx', // get your publishable key from https://app.dub.co/settings/analytics
+      );
+      document.head.appendChild(script);
     </script>
 
     <header>
