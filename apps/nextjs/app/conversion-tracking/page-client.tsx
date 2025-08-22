@@ -7,7 +7,6 @@ export function ConversionTrackingPageClient() {
 
   const handleTrackLead = () => {
     trackLead({
-      clickId: 'W13FJbgeLIGdlx7s',
       eventName: 'Account created',
       customerExternalId: '1234567890',
     });
@@ -17,8 +16,7 @@ export function ConversionTrackingPageClient() {
     trackSale({
       eventName: 'Purchase completed',
       customerExternalId: 'CXvG5QOLi8QKBA2jYmDh',
-      paymentProcessor: 'stripe',
-      amount: 5000,
+      amount: 5000, // defaults to usd cents, use `currency` prop to specify a different currency
     });
   };
 

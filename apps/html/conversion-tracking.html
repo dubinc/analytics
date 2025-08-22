@@ -42,7 +42,6 @@
       <h1>Client Conversion Tracking</h1>
       <button
         onclick="dubAnalytics.trackLead({
-          clickId: 'W13FJbgeLIGdlx7s',
           eventName: 'Account created',
           customerExternalId: '1234567890',
           customerName: 'John Doe',
@@ -56,10 +55,8 @@
         onclick="dubAnalytics.trackSale({
           eventName: 'Purchase completed',
           customerExternalId: 'CXvG5QOLi8QKBA2jYmDh',
-          paymentProcessor: 'stripe',
           invoiceId: Math.random().toString(36).substring(2, 15),
-          amount: 5000,
-          currency: 'usd',
+          amount: 5000, // defaults to usd cents, use `currency` prop to specify a different currency
         })"
       >
         Track Sale
