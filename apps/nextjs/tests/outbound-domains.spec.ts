@@ -1,4 +1,3 @@
-import { DUB_ANALYTICS_SCRIPT_URL } from '@/app/constants';
 import { test, expect } from '@playwright/test';
 
 declare global {
@@ -27,6 +26,11 @@ test.describe('Outbound domains tracking', () => {
     expect(exampleHref).toContain('dub_id=test-click-id');
     expect(otherHref).toContain('dub_id=test-click-id');
     expect(unrelatedHref).not.toContain('dub_id=test-click-id');
+
+    // Also verify wildcard domain functionality
+    const wildcardLink = await page.$('a[href*="api.wildcard.com"]');
+    const wildcardHref = await wildcardLink?.getAttribute('href');
+    expect(wildcardHref).toContain('dub_id=test-click-id');
   });
 
   test('should handle iframe src attributes', async ({ page }) => {
@@ -148,5 +152,60 @@ test.describe('Outbound domains tracking', () => {
     const iframe = await page.$('iframe');
     const iframeSrc = await iframe?.getAttribute('src');
     expect(iframeSrc).toContain('dub_id=test-click-id');
+  });
+
+  test('should handle wildcard domains correctly', async ({ page }) => {
+    await page.goto('/outbound?dub_id=test-click-id');
+    await page.waitForFunction(() => window._dubAnalytics !== undefined);
+
+    await page.waitForTimeout(1000);
+
+    // Test wildcard domain matching - *.wildcard.com should match all subdomains
+    const wildcardLink = await page.$('a[href*="api.wildcard.com"]');
+    const wildcardSubdomainLink = await page.$('a[href*="admin.wildcard.com"]');
+    const wildcardNestedLink = await page.$(
+      'a[href*="deep.nested.wildcard.com"]',
+    );
+    const wildcardRootLink = await page.$('a[href*="wildcard.com"]');
+
+    // Test non-wildcard domain that shouldn't match wildcard pattern
+    const nonWildcardLink = await page.$('a[href*="notwildcard.com"]');
+
+    const wildcardHref = await wildcardLink?.getAttribute('href');
+    const wildcardSubdomainHref =
+      await wildcardSubdomainLink?.getAttribute('href');
+    const wildcardNestedHref = await wildcardNestedLink?.getAttribute('href');
+    const wildcardRootHref = await wildcardRootLink?.getAttribute('href');
+    const nonWildcardHref = await nonWildcardLink?.getAttribute('href');
+
+    // All wildcard.com subdomains should have tracking
+    expect(wildcardHref).toContain('dub_id=test-click-id');
+    expect(wildcardSubdomainHref).toContain('dub_id=test-click-id');
+    expect(wildcardNestedHref).toContain('dub_id=test-click-id');
+    expect(wildcardRootHref).toContain('dub_id=test-click-id');
+
+    // Non-wildcard domain should not have tracking
+    expect(nonWildcardHref).not.toContain('dub_id=test-click-id');
+  });
+
+  test('should handle wildcard with www prefix correctly', async ({ page }) => {
+    await page.goto('/outbound?dub_id=test-click-id');
+    await page.waitForFunction(() => window._dubAnalytics !== undefined);
+
+    await page.waitForTimeout(1000);
+
+    // Test wildcard domain with www prefix
+    const wwwWildcardLink = await page.$('a[href*="www.api.wildcard.com"]');
+    const wwwWildcardSubdomainLink = await page.$(
+      'a[href*="www.admin.wildcard.com"]',
+    );
+
+    const wwwWildcardHref = await wwwWildcardLink?.getAttribute('href');
+    const wwwWildcardSubdomainHref =
+      await wwwWildcardSubdomainLink?.getAttribute('href');
+
+    // www. prefix should be ignored, so these should still match wildcard pattern
+    expect(wwwWildcardHref).toContain('dub_id=test-click-id');
+    expect(wwwWildcardSubdomainHref).toContain('dub_id=test-click-id');
   });
 });
