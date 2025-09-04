@@ -18,9 +18,10 @@ const initOutboundDomains = () => {
       const normalizedUrlHostname = normalizeDomain(urlHostname);
       const normalizedDomain = normalizeDomain(domain);
 
-      // if wildcard domain, check if the url hostname ends with the domain
+      // if wildcard domain, check if the url hostname ends with the apex domain
       if (normalizedDomain.startsWith('*.')) {
-        return normalizedUrlHostname.endsWith(normalizedDomain.slice(2));
+        const apexDomain = normalizedDomain.slice(2);
+        return normalizedUrlHostname.endsWith(`.${apexDomain}`);
       }
 
       // check for exact match after removing www.
