@@ -25,7 +25,7 @@ export default function RootLayout({
         domainsConfig={{
           refer: 'getacme.link',
           site: 'getacme.link',
-          outbound: 'example.com,other.com,sub.example.com',
+          outbound: 'example.com,other.com,sub.example.com,*.wildcard.com',
         }}
         scriptProps={{
           src: DUB_ANALYTICS_SCRIPT_URL,

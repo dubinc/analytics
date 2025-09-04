@@ -15,6 +15,15 @@ export default function Outbound() {
       <a href="https://sub.example.com">Subdomain Link</a>
       <a href="https://other.example.com">Other Subdomain Link</a>
       <a href="https://www.sub.example.com">WWW Subdomain Link</a>
+
+      {/* Wildcard domain test links */}
+      <a href="https://api.wildcard.com">Wildcard API Link</a>
+      <a href="https://admin.wildcard.com">Wildcard Admin Link</a>
+      <a href="https://deep.nested.wildcard.com">Wildcard Nested Link</a>
+      <a href="https://wildcard.com">Wildcard Root Link</a>
+      <a href="https://notwildcard.com">Non-Wildcard Link</a>
+      <a href="https://www.api.wildcard.com">WWW Wildcard API Link</a>
+      <a href="https://www.admin.wildcard.com">WWW Wildcard Admin Link</a>
     </div>
   );
 }

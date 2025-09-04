@@ -18,7 +18,12 @@ const initOutboundDomains = () => {
       const normalizedUrlHostname = normalizeDomain(urlHostname);
       const normalizedDomain = normalizeDomain(domain);
 
-      // Exact match after removing www.
+      // if wildcard domain, check if the url hostname ends with the domain
+      if (normalizedDomain.startsWith('*.')) {
+        return normalizedUrlHostname.endsWith(normalizedDomain.slice(2));
+      }
+
+      // check for exact match after removing www.
       return normalizedUrlHostname === normalizedDomain;
     } catch (e) {
       return false;
