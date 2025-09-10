@@ -19,9 +19,8 @@ const initConversionTracking = () => {
   // Track lead conversion
   const trackLead = async (input) => {
     const clickId = cookieManager?.get(DUB_ID_VAR);
-
     const requestBody = {
-      ...(clickId && { clickId }),
+      clickId: clickId ?? '',
       ...input,
     };
 
@@ -45,13 +44,18 @@ const initConversionTracking = () => {
 
   // Track sale conversion
   const trackSale = async (input) => {
+    const clickId = cookieManager?.get(DUB_ID_VAR);
+    const requestBody = {
+      clickId: clickId ?? '',
+      ...input,
+    };
     const response = await fetch(`${API_HOST}/track/sale/client`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify(input),
+      body: JSON.stringify(requestBody),
     });
 
     const result = await response.json();
