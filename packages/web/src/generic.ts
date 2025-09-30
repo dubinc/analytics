@@ -21,7 +21,7 @@ function inject(props: AnalyticsProps): void {
 
     ['trackClick', 'trackLead', 'trackSale'].forEach(function (m) {
       w[da][m] = function () {
-        w[da](m, ...Array.from(arguments));
+        (w[da].q = w[da].q || []).push([m, ...Array.from(arguments)]);
       };
     });
   })(window as DubAnalyticsWindow, 'dubAnalytics');
