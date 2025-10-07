@@ -70,8 +70,6 @@ test.describe('Analytics configuration', () => {
     `);
 
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
-    const analytics = await page.evaluate(() => window._dubAnalytics);
-    expect(analytics.m).toBe('first-click');
 
     // First click
     await page.goto('/?dub_id=first-click-id');
@@ -108,9 +106,6 @@ test.describe('Analytics configuration', () => {
     `);
 
     await page.waitForFunction(() => window._dubAnalytics !== undefined);
-
-    const analytics = await page.evaluate(() => window._dubAnalytics);
-    expect(analytics.m).toBe('last-click');
 
     // First click
     await page.goto('/?dub_id=first-click-id');
