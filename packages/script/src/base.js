@@ -62,10 +62,44 @@
   const SHORT_DOMAIN = DOMAINS_CONFIG.refer;
   const ATTRIBUTION_MODEL =
     script.getAttribute('data-attribution-model') || 'last-click';
-  const QUERY_PARAM = script.getAttribute('data-query-param') || 'via';
-  const QUERY_PARAM_VALUE = new URLSearchParams(location.search).get(
-    QUERY_PARAM,
-  );
+
+  // Resolve query params from data-query-param and data-query-params
+  const QUERY_PARAMS = (() => {
+    const queryParam = script.getAttribute('data-query-param');
+    const queryParams = script.getAttribute('data-query-params');
+
+    let resolvedQueryParams = ['via'];
+
+    if (queryParam) {
+      resolvedQueryParams = [queryParam, ...resolvedQueryParams];
+    } else if (queryParams) {
+      try {
+        resolvedQueryParams = [
+          ...JSON.parse(queryParams),
+          ...resolvedQueryParams,
+        ];
+      } catch (error) {
+        console.warn(
+          '[dubAnalytics] Failed to parse data-query-params.',
+          error,
+        );
+      }
+    }
+
+    return [...new Set(resolvedQueryParams)];
+  })();
+
+  const QUERY_PARAM_VALUE = (() => {
+    const params = new URLSearchParams(location.search);
+
+    for (const param of QUERY_PARAMS) {
+      if (params.get(param)) {
+        return params.get(param);
+      }
+    }
+
+    return null;
+  })();
 
   // Initialize global DubAnalytics object
   window.DubAnalytics = window.DubAnalytics || {
@@ -269,7 +303,7 @@
     o: COOKIE_OPTIONS, // was COOKIE_OPTIONS
     d: SHORT_DOMAIN, // was SHORT_DOMAIN
     m: ATTRIBUTION_MODEL, // was ATTRIBUTION_MODEL
-    p: QUERY_PARAM, // was QUERY_PARAM
+    p: QUERY_PARAMS, // was QUERY_PARAM
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
     n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
     k: PUBLISHABLE_KEY,
