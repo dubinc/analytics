@@ -143,8 +143,16 @@ export interface AnalyticsProps {
    * The query parameter to listen to for client-side click-tracking (e.g. `?via=john`, `?ref=jane`).
    *
    * @default 'via'
+   * @deprecated Use queryParams instead
    */
   queryParam?: string;
+
+  /**
+   * The list of query parameters to listen to for client-side click-tracking (e.g. `?via=john`, `?ref=jane`).
+   *
+   * @default ['via']
+   */
+  queryParams?: string[];
 
   /**
    * Custom properties to pass to the script.
