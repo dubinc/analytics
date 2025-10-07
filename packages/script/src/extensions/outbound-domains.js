@@ -31,6 +31,37 @@ const initOutboundDomains = () => {
     }
   }
 
+  function extractUrlFromSrcdoc(srcdoc) {
+    if (!srcdoc) return null;
+
+    // Look for URLs in the srcdoc content
+    // This is a basic implementation - may need refinement based on actual Cal.com usage
+    const urlRegex = /https?:\/\/[^\s"'<>]+/g;
+    const matches = srcdoc.match(urlRegex);
+
+    if (matches && matches.length > 0) {
+      // Return the first URL found - this might need to be more sophisticated
+      // depending on how Cal.com structures their srcdoc content
+      return matches[0];
+    }
+
+    return null;
+  }
+
+  function updateSrcdocWithTracking(element, originalUrl, newUrl) {
+    if (!element.srcdoc) return false;
+
+    try {
+      // Replace the original URL with the new URL in the srcdoc content
+      const updatedSrcdoc = element.srcdoc.replace(originalUrl, newUrl);
+      element.srcdoc = updatedSrcdoc;
+      return true;
+    } catch (e) {
+      console.error('Error updating srcdoc:', e);
+      return false;
+    }
+  }
+
   function addOutboundTracking(clickId) {
     // Handle both string and array configurations for outbound domains
     const outboundDomains = Array.isArray(DOMAINS_CONFIG.outbound)
@@ -47,8 +78,10 @@ const initOutboundDomains = () => {
     const existingCookie = clickId || cookieManager.get(DUB_ID_VAR);
     if (!existingCookie) return;
 
-    // Get all links and iframes
-    const elements = document.querySelectorAll('a[href], iframe[src]');
+    // Get all links and iframes (including those with srcdoc)
+    const elements = document.querySelectorAll(
+      'a[href], iframe[src], iframe[srcdoc]',
+    );
     if (!elements || elements.length === 0) return;
 
     elements.forEach((element) => {
@@ -56,7 +89,8 @@ const initOutboundDomains = () => {
       if (outboundLinksUpdated.has(element)) return;
 
       try {
-        const urlString = element.href || element.src;
+        const urlString =
+          element.href || element.src || extractUrlFromSrcdoc(element.srcdoc);
         if (!urlString) return;
 
         // Check if the URL matches any of our outbound domains
@@ -70,15 +104,29 @@ const initOutboundDomains = () => {
         // Only add the tracking parameter if it's not already present
         if (!url.searchParams.has(DUB_ID_VAR)) {
           url.searchParams.set(DUB_ID_VAR, existingCookie);
+          const newUrlString = url.toString();
 
           // Update the appropriate attribute based on element type
           if (element.tagName.toLowerCase() === 'a') {
-            element.href = url.toString();
+            element.href = newUrlString;
+            outboundLinksUpdated.add(element);
           } else if (element.tagName.toLowerCase() === 'iframe') {
-            element.src = url.toString();
+            if (element.src) {
+              // Standard iframe with src attribute
+              element.src = newUrlString;
+              outboundLinksUpdated.add(element);
+            } else if (element.srcdoc) {
+              // Iframe with srcdoc attribute (like Cal.com)
+              const updated = updateSrcdocWithTracking(
+                element,
+                urlString,
+                newUrlString,
+              );
+              if (updated) {
+                outboundLinksUpdated.add(element);
+              }
+            }
           }
-
-          outboundLinksUpdated.add(element);
         }
       } catch (e) {
         console.error('Error processing element:', e);

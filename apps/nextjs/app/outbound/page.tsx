@@ -8,6 +8,10 @@ export default function Outbound() {
       <iframe src="https://example.com/embed"></iframe>
       <iframe src="https://www.example.com/embed"></iframe>
 
+      {/* Cal.com style iframe with srcdoc */}
+      <iframe srcdoc='<html><body><h1>Cal.com Embed</h1><a href="https://example.com/booking">Book Now</a><script src="https://other.com/widget.js"></script></body></html>'></iframe>
+      <iframe srcdoc='<div>Another srcdoc iframe with <a href="https://wildcard.com/test">link</a></div>'></iframe>
+
       <a href="https://getacme.link/about">Internal Link</a>
       <div id="container"></div>
 

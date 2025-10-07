@@ -45,6 +45,40 @@ test.describe('Outbound domains tracking', () => {
     expect(iframeSrc).toContain('dub_id=test-click-id');
   });
 
+  test('should handle iframe srcdoc attributes (Cal.com style)', async ({
+    page,
+  }) => {
+    await page.goto('/outbound?dub_id=test-click-id');
+
+    await page.waitForFunction(() => window._dubAnalytics !== undefined);
+
+    await page.waitForTimeout(2500);
+
+    // Check the first srcdoc iframe
+    const srcdocIframes = await page.$$('iframe[srcdoc]');
+    expect(srcdocIframes.length).toBeGreaterThan(0);
+
+    const firstSrcdocIframe = srcdocIframes[0];
+    const srcdocContent = await firstSrcdocIframe?.getAttribute('srcdoc');
+
+    // Should contain the tracking parameter in the URLs within srcdoc
+    expect(srcdocContent).toContain('dub_id=test-click-id');
+
+    // Check that both example.com and other.com URLs got the tracking parameter
+    expect(srcdocContent).toContain('example.com/booking?dub_id=test-click-id');
+    expect(srcdocContent).toContain('other.com/widget.js?dub_id=test-click-id');
+
+    // Check the second srcdoc iframe
+    if (srcdocIframes.length > 1) {
+      const secondSrcdocIframe = srcdocIframes[1];
+      const secondSrcdocContent =
+        await secondSrcdocIframe?.getAttribute('srcdoc');
+      expect(secondSrcdocContent).toContain(
+        'wildcard.com/test?dub_id=test-click-id',
+      );
+    }
+  });
+
   test('should not add tracking to links on the same domain', async ({
     page,
   }) => {
