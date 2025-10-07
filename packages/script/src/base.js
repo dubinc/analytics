@@ -296,18 +296,15 @@
 
   // Export minimal API with minified names
   window._dubAnalytics = {
-    c: cookieManager, // was cookieManager
-    i: DUB_ID_VAR, // was DUB_ID_VAR
-    h: HOSTNAME, // was HOSTNAME
-    a: API_HOST, // was API_HOST
-    o: COOKIE_OPTIONS, // was COOKIE_OPTIONS
-    d: SHORT_DOMAIN, // was SHORT_DOMAIN
-    m: ATTRIBUTION_MODEL, // was ATTRIBUTION_MODEL
-    p: QUERY_PARAMS, // was QUERY_PARAM
-    v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
-    n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
-    k: PUBLISHABLE_KEY,
+    c: cookieManager,
     qm: queueManager,
+    i: DUB_ID_VAR,
+    h: HOSTNAME,
+    a: API_HOST,
+    d: SHORT_DOMAIN,
+    v: QUERY_PARAM_VALUE,
+    n: DOMAINS_CONFIG,
+    k: PUBLISHABLE_KEY,
   };
 
   // Initialize
