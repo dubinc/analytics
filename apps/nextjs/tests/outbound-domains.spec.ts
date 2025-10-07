@@ -45,7 +45,7 @@ test.describe('Outbound domains tracking', () => {
     expect(iframeSrc).toContain('dub_id=test-click-id');
   });
 
-  test('should handle iframe srcdoc attributes (Cal.com style)', async ({
+  test('should handle nested iframes inside srcdoc (Cal.com style)', async ({
     page,
   }) => {
     await page.goto('/outbound?dub_id=test-click-id');
@@ -54,29 +54,56 @@ test.describe('Outbound domains tracking', () => {
 
     await page.waitForTimeout(2500);
 
-    // Check the first srcdoc iframe
-    const srcdocIframes = await page.$$('iframe[srcdoc]');
-    expect(srcdocIframes.length).toBeGreaterThan(0);
+    // Check that nested iframes inside srcdoc get tracking parameters
+    // This tests the contentDocument access functionality
+    const nestedIframeCheck = await page.evaluate(() => {
+      const srcdocIframes = document.querySelectorAll('iframe[srcdoc]');
+      const results = [];
 
-    const firstSrcdocIframe = srcdocIframes[0];
-    const srcdocContent = await firstSrcdocIframe?.getAttribute('srcdoc');
+      srcdocIframes.forEach((srcdocIframe, index) => {
+        try {
+          const contentDoc = srcdocIframe.contentDocument;
+          if (contentDoc) {
+            const nestedIframes = contentDoc.querySelectorAll('iframe[src]');
+            nestedIframes.forEach((nestedIframe) => {
+              results.push({
+                index,
+                src: nestedIframe.src,
+                hasTracking: nestedIframe.src.includes('dub_id=test-click-id'),
+              });
+            });
+          }
+        } catch (e) {
+          results.push({ index, error: e.message });
+        }
+      });
 
-    // Should contain the tracking parameter in the URLs within srcdoc
-    expect(srcdocContent).toContain('dub_id=test-click-id');
+      return results;
+    });
 
-    // Check that both example.com and other.com URLs got the tracking parameter
-    expect(srcdocContent).toContain('example.com/booking?dub_id=test-click-id');
-    expect(srcdocContent).toContain('other.com/widget.js?dub_id=test-click-id');
+    // Verify that nested iframes were found and have tracking parameters
+    expect(nestedIframeCheck.length).toBeGreaterThan(0);
 
-    // Check the second srcdoc iframe
-    if (srcdocIframes.length > 1) {
-      const secondSrcdocIframe = srcdocIframes[1];
-      const secondSrcdocContent =
-        await secondSrcdocIframe?.getAttribute('srcdoc');
-      expect(secondSrcdocContent).toContain(
-        'wildcard.com/test?dub_id=test-click-id',
-      );
-    }
+    // Check that at least some nested iframes have tracking
+    const trackedIframes = nestedIframeCheck.filter(
+      (result) => result.hasTracking,
+    );
+    expect(trackedIframes.length).toBeGreaterThan(0);
+
+    // Verify specific URLs got tracking
+    const exampleTracked = nestedIframeCheck.some(
+      (result) =>
+        result.src &&
+        result.src.includes('example.com/booking-widget?dub_id=test-click-id'),
+    );
+    const otherTracked = nestedIframeCheck.some(
+      (result) =>
+        result.src &&
+        result.src.includes('other.com/calendar?dub_id=test-click-id'),
+    );
+
+    expect(exampleTracked).toBe(true);
+    expect(otherTracked).toBe(true);
   });
 
   test('should not add tracking to links on the same domain', async ({
