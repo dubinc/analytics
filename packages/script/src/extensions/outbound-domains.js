@@ -49,9 +49,33 @@ const initOutboundDomains = () => {
 
     // Get all links and iframes
     const elements = document.querySelectorAll('a[href], iframe[src]');
-    if (!elements || elements.length === 0) return;
 
-    elements.forEach((element) => {
+    // Also get nested iframes inside srcdoc iframes
+    const srcdocIframes = document.querySelectorAll('iframe[srcdoc]');
+    const nestedElements = [];
+
+    srcdocIframes.forEach((srcdocIframe) => {
+      try {
+        // Access the content document of the srcdoc iframe
+        const contentDoc = srcdocIframe.contentDocument;
+        if (contentDoc) {
+          // Find iframes and links inside the srcdoc content
+          const nestedIframes = contentDoc.querySelectorAll('iframe[src]');
+          const nestedLinks = contentDoc.querySelectorAll('a[href]');
+
+          nestedElements.push(...nestedIframes, ...nestedLinks);
+        }
+      } catch (e) {
+        // contentDocument access might fail due to CORS or other security restrictions
+        console.warn('Could not access contentDocument of srcdoc iframe:', e);
+      }
+    });
+
+    // Combine all elements
+    const allElements = [...elements, ...nestedElements];
+    if (!allElements || allElements.length === 0) return;
+
+    allElements.forEach((element) => {
       // Skip already processed elements
       if (outboundLinksUpdated.has(element)) return;
 

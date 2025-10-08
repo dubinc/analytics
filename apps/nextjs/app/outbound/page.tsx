@@ -8,6 +8,10 @@ export default function Outbound() {
       <iframe src="https://example.com/embed"></iframe>
       <iframe src="https://www.example.com/embed"></iframe>
 
+      {/* Cal.com style iframe with srcdoc containing nested iframes */}
+      <iframe srcdoc='<html><body><h1>Cal.com Embed</h1><iframe src="https://example.com/booking-widget"></iframe><iframe src="https://other.com/calendar"></iframe></body></html>'></iframe>
+      <iframe srcdoc='<div>Another srcdoc with nested content<iframe src="https://wildcard.com/scheduler"></iframe></div>'></iframe>
+
       <a href="https://getacme.link/about">Internal Link</a>
       <div id="container"></div>
 

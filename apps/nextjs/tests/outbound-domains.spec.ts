@@ -45,6 +45,67 @@ test.describe('Outbound domains tracking', () => {
     expect(iframeSrc).toContain('dub_id=test-click-id');
   });
 
+  test('should handle nested iframes inside srcdoc (Cal.com style)', async ({
+    page,
+  }) => {
+    await page.goto('/outbound?dub_id=test-click-id');
+
+    await page.waitForFunction(() => window._dubAnalytics !== undefined);
+
+    await page.waitForTimeout(2500);
+
+    // Check that nested iframes inside srcdoc get tracking parameters
+    // This tests the contentDocument access functionality
+    const nestedIframeCheck = await page.evaluate(() => {
+      const srcdocIframes = document.querySelectorAll('iframe[srcdoc]');
+      const results = [];
+
+      srcdocIframes.forEach((srcdocIframe, index) => {
+        try {
+          const contentDoc = srcdocIframe.contentDocument;
+          if (contentDoc) {
+            const nestedIframes = contentDoc.querySelectorAll('iframe[src]');
+            nestedIframes.forEach((nestedIframe) => {
+              results.push({
+                index,
+                src: nestedIframe.src,
+                hasTracking: nestedIframe.src.includes('dub_id=test-click-id'),
+              });
+            });
+          }
+        } catch (e) {
+          results.push({ index, error: e.message });
+        }
+      });
+
+      return results;
+    });
+
+    // Verify that nested iframes were found and have tracking parameters
+    expect(nestedIframeCheck.length).toBeGreaterThan(0);
+
+    // Check that at least some nested iframes have tracking
+    const trackedIframes = nestedIframeCheck.filter(
+      (result) => result.hasTracking,
+    );
+    expect(trackedIframes.length).toBeGreaterThan(0);
+
+    // Verify specific URLs got tracking
+    const exampleTracked = nestedIframeCheck.some(
+      (result) =>
+        result.src &&
+        result.src.includes('example.com/booking-widget?dub_id=test-click-id'),
+    );
+    const otherTracked = nestedIframeCheck.some(
+      (result) =>
+        result.src &&
+        result.src.includes('other.com/calendar?dub_id=test-click-id'),
+    );
+
+    expect(exampleTracked).toBe(true);
+    expect(otherTracked).toBe(true);
+  });
+
   test('should not add tracking to links on the same domain', async ({
     page,
   }) => {
