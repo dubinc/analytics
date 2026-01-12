@@ -200,9 +200,6 @@
 
     clientClickTracked = true;
 
-    const params = new URLSearchParams(location.search);
-    const serverClickId = params.get(DUB_ID_VAR);
-
     fetch(`${API_HOST}/track/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -216,12 +213,6 @@
       .then((res) => res.ok && res.json())
       .then((data) => {
         if (data) {
-          if (serverClickId && serverClickId !== data.clickId) {
-            console.warn(
-              `[dubAnalytics] Client-tracked click ID ${data.clickId} does not match server-tracked click ID ${serverClickId}, skipping...`,
-            );
-            return;
-          }
           cookieManager.set(DUB_ID_VAR, data.clickId);
           // if partner data is present, set it as dub_partner_data cookie
           if (data.partner) {
