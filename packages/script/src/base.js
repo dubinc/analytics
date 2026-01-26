@@ -277,11 +277,30 @@
       try {
         const partnerData = JSON.parse(partnerCookie);
 
+        if (partnerData.partner?.name) {
+          partnerData.partner.name = safeDecodeURIComponent(
+            partnerData.partner.name,
+          );
+        }
+        if (partnerData.partner?.image) {
+          partnerData.partner.image = safeDecodeURIComponent(
+            partnerData.partner.image,
+          );
+        }
+
         DubAnalytics.partner = partnerData.partner;
         DubAnalytics.discount = partnerData.discount;
       } catch (e) {
         console.error('[dubAnalytics] Failed to parse partner cookie:', e);
       }
+    }
+  }
+
+  function safeDecodeURIComponent(value) {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
     }
   }
 
