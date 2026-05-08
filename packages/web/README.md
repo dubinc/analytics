@@ -70,6 +70,8 @@ The `cookieOptions` prop accepts the following keys:
 | `expiresInDays` | `90` | Specifies the number (in days) to be the value for the `Expires` Set-Cookie attribute. | `90` |
 | `path` | `/` | Specifies the value for the `Path` Set-Cookie attribute. By default, the path is considered the "default path". | `/` |
 
+> **Note:** Domains on the [Public Suffix List](https://publicsuffix.org/) (PSL) — such as `.vercel.app`, `.netlify.app`, `.github.io`, or `.pages.dev` — **cannot** be used as cookie domains. Browsers silently reject cookies set on PSL entries because these suffixes are treated like top-level domains (`.com`, `.io`). If you pass a PSL domain, the script will log a `console.warn` and fall back to the current hostname. Cross-subdomain cookie sharing under a PSL domain is not achievable via client-side cookies.
+
 For example, to set a 60-day cookie window, you can use the following code:
 
 ```tsx
