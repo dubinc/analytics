@@ -10,6 +10,15 @@
   // Common script attributes
   const API_HOST = script.getAttribute('data-api-host') || 'https://api.dub.co';
   const PUBLISHABLE_KEY = script.getAttribute('data-publishable-key');
+  // Domains on the Public Suffix List that browsers treat as TLDs.
+  // Cookies cannot be set on these domains — the browser silently drops them.
+  const KNOWN_PSL_DOMAINS = [
+    'vercel.app', 'vercel.dev', 'vercel.run', 'now.sh', 'v0.build',
+    'vusercontent.net', 'netlify.app', 'pages.dev', 'github.io', 'fly.dev',
+    'railway.app', 'onrender.com', 'web.app', 'firebaseapp.com',
+    'surge.sh', 'azurewebsites.net', 'amplifyapp.com',
+  ];
+
   const COOKIE_OPTIONS = (() => {
     const defaultOptions = {
       domain:
@@ -30,6 +39,19 @@
         Date.now() + parsedOpts.expiresInDays * 24 * 60 * 60 * 1000,
       ).toUTCString();
       delete parsedOpts.expiresInDays;
+    }
+
+    if (parsedOpts.domain) {
+      const bare = parsedOpts.domain.trim().replace(/^\./, '').toLowerCase();
+      if (KNOWN_PSL_DOMAINS.includes(bare)) {
+        console.warn(
+          `[dubAnalytics] cookieOptions.domain "${parsedOpts.domain}" is on the Public Suffix List. ` +
+          `Browsers silently reject cookies set on PSL domains. ` +
+          `Falling back to the default domain "${defaultOptions.domain}". ` +
+          `Cross-subdomain cookie sharing under a PSL domain is not possible via client-side cookies.`,
+        );
+        delete parsedOpts.domain;
+      }
     }
 
     return { ...defaultOptions, ...parsedOpts };

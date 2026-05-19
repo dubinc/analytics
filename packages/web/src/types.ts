@@ -59,6 +59,14 @@ export interface AnalyticsProps {
      * By default, the domain is set to the current hostname (including all subdomains).
      *
      * @default `.` + window.location.hostname
+     *
+     * **Warning:** Domains listed on the {@link https://publicsuffix.org/|Public Suffix List} (PSL) —
+     * such as `.vercel.app`, `.netlify.app`, `.github.io`, or `.pages.dev` — cannot be used as
+     * cookie domains. Browsers silently reject `document.cookie` writes that target a PSL entry,
+     * because these suffixes are treated equivalently to top-level domains like `.com`.
+     * If you provide a PSL domain, the script will log a warning and fall back to the default
+     * hostname-derived domain. Cross-subdomain cookie sharing under a PSL domain is not achievable
+     * via client-side cookies.
      */
     domain?: string | undefined;
 
