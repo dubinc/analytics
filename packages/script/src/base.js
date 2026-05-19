@@ -42,7 +42,7 @@
     }
 
     if (parsedOpts.domain) {
-      const bare = parsedOpts.domain.replace(/^\./, '');
+      const bare = parsedOpts.domain.trim().replace(/^\./, '').toLowerCase();
       if (KNOWN_PSL_DOMAINS.includes(bare)) {
         console.warn(
           `[dubAnalytics] cookieOptions.domain "${parsedOpts.domain}" is on the Public Suffix List. ` +
