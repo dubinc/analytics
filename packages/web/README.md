@@ -86,6 +86,16 @@ import { Analytics as DubAnalytics } from "@dub/analytics"
 
 The query parameter to listen to for client-side click-tracking (e.g. `?via=john`, `?ref=jane`). The default is `via`.
 
+### `trackIdentity`
+
+Identifies the visitor's device with [Fingerprint](https://fingerprint.com) and links it to their Dub click, so Dub can flag partners who refer several customers from the same device. The default is `false`.
+
+It only runs for visitors with a `dub_id` cookie, and at most once per click every 30 minutes (tracked with a `dub_fid` cookie). The Fingerprint agent is loaded only when this is on, and failures never throw or block the page.
+
+```tsx
+<DubAnalytics trackIdentity />
+```
+
 ### `scriptProps`
 
 Custom properties to pass to the script tag. Refer to [MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement) for all available options.
