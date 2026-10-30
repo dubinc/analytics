@@ -7,6 +7,9 @@ const cfg = {
   treeshake: false,
   dts: true,
   format: ['esm', 'cjs'],
+  env: {
+    DUB_FINGERPRINT_PUBLIC_KEY: process.env.DUB_FINGERPRINT_PUBLIC_KEY ?? '',
+  },
 };
 
 export default defineConfig([

@@ -1,4 +1,5 @@
 import { name, version } from '../package.json';
+import { trackIdentity } from './identity';
 import type { AnalyticsProps } from './types';
 import { isBrowser } from './utils';
 
@@ -86,6 +87,14 @@ function inject(props: AnalyticsProps): void {
   if (props.scriptProps) {
     const { src: _, ...restProps } = props.scriptProps; // we already set the src above
     Object.assign(script, restProps);
+  }
+
+  if (props.trackIdentity) {
+    script.addEventListener('load', () => {
+      void trackIdentity({
+        apiHost: props.apiHost,
+      });
+    });
   }
 
   script.onerror = (): void => {

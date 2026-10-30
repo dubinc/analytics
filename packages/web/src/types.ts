@@ -155,6 +155,14 @@ export interface AnalyticsProps {
   queryParams?: string[];
 
   /**
+   * Identify the visitor's device with Fingerprint and link it to their Dub click, to detect
+   * partners referring several customers from one device. Only runs for visitors with a `dub_id` cookie.
+   *
+   * @default false
+   */
+  trackIdentity?: boolean;
+
+  /**
    * Custom properties to pass to the script.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
    */

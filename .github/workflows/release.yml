@@ -23,6 +23,8 @@ jobs:
 
       - name: build
         run: pnpm --filter @dub/analytics build
+        env:
+          DUB_FINGERPRINT_PUBLIC_KEY: ${{ vars.DUB_FINGERPRINT_PUBLIC_KEY }}
 
       - run: pnpm --filter @dub/analytics publish --tag beta --no-git-checks
         if: github.event.release.prerelease == true

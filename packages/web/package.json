@@ -53,6 +53,7 @@
     }
   },
   "dependencies": {
+    "@fingerprint/agent": "^4.1.6",
     "server-only": "^0.0.1"
   },
   "devDependencies": {
