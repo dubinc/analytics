@@ -88,9 +88,9 @@ The query parameter to listen to for client-side click-tracking (e.g. `?via=john
 
 ### `trackIdentity`
 
-Identifies the visitor's device with [Fingerprint](https://fingerprint.com) and links it to their Dub click, so Dub can flag partners who refer several customers from the same device. The default is `false`.
+Identifies the visitor's device and links it to their Dub click, so Dub can flag partners who refer several customers from the same device. The default is `false`.
 
-It only runs for visitors with a `dub_id` cookie, and at most once per click every 30 minutes (tracked with a `dub_fid` cookie). The Fingerprint agent is loaded only when this is on, and failures never throw or block the page.
+It only runs for visitors with a `dub_id` cookie, and at most once per click every 30 minutes (tracked with a `dub_fid` cookie). The device identification agent is loaded only when this is on, and failures never throw or block the page.
 
 ```tsx
 <DubAnalytics trackIdentity />

@@ -31,7 +31,7 @@ async function waitForClickId(
 }
 
 /**
- * Identifies the visitor's device with Fingerprint and links it to their Dub click.
+ * Identifies the visitor's device and links it to their Dub click.
  * Runs only for visitors with a `dub_id` cookie, at most once per click every 30 minutes.
  */
 export async function trackIdentity({

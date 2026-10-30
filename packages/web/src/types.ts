@@ -155,7 +155,7 @@ export interface AnalyticsProps {
   queryParams?: string[];
 
   /**
-   * Identify the visitor's device with Fingerprint and link it to their Dub click, to detect
+   * Identify the visitor's device and link it to their Dub click, to detect
    * partners referring several customers from one device. Only runs for visitors with a `dub_id` cookie.
    *
    * @default false
