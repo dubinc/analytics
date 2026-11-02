@@ -88,7 +88,7 @@ The query parameter to listen to for client-side click-tracking (e.g. `?via=john
 
 ### `trackIdentity`
 
-Identifies the visitor's device on the given paths and links it to their Dub click, so Dub can flag partners who refer several customers from the same device.
+Identifies the visitor's device on the given paths and links it to their Dub click, for partner risk monitoring.
 
 A path matches exactly (a trailing slash is ignored). A trailing `/*` also matches everything under the path, so `/checkout/*` matches `/checkout` and `/checkout/plan`. It runs on the first page load and on client-side navigation to a matching path.
 

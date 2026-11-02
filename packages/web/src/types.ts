@@ -155,8 +155,8 @@ export interface AnalyticsProps {
   queryParams?: string[];
 
   /**
-   * Identify the visitor's device on these paths and link it to their Dub click, to detect
-   * partners referring several customers from one device. Only runs for visitors with a `dub_id` cookie.
+   * Identify the visitor's device on these paths and link it to their Dub click, for partner
+   * risk monitoring. Only runs for visitors with a `dub_id` cookie.
    * Paths match exactly; a trailing `/*` also matches everything under the path (e.g. `/checkout/*`).
    */
   trackIdentity?: {
