@@ -106,7 +106,17 @@ const { trackIdentity } = useAnalytics();
 await trackIdentity();
 ```
 
-Without React, call `window.dubAnalytics.trackIdentity()`.
+Every script variant supports this, so installs without React work too. Set the paths with a `data-identity-paths` attribute, and call `dubAnalytics.trackIdentity()`. To queue calls made before the script loads, add `trackIdentity` to the snippet's method list.
+
+```html
+<script
+  src="https://www.dubcdn.com/analytics/script.js"
+  data-identity-paths='["/signup", "/checkout/*"]'
+  defer
+></script>
+```
+
+The device identification agent loads from `identity.js` next to the script. If you serve the script from your own domain or a proxy, serve `identity.js` from the same folder.
 
 ### `scriptProps`
 
