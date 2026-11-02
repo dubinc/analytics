@@ -192,6 +192,26 @@ describe('identity extension', () => {
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
+  it('ignores data-identity-paths that is not an array of paths', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    replaceState.call(window.history, null, '', '/signup');
+
+    expect(() =>
+      runScript({
+        'data-identity-paths': JSON.stringify('/signup'),
+      }),
+    ).not.toThrow();
+    expect(() =>
+      runScript({
+        'data-identity-paths': JSON.stringify([42, '/signup']),
+      }),
+    ).not.toThrow();
+
+    await vi.waitFor(() => {
+      expect(identify).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('skips loading identity-agent.js without a dub_id cookie', async () => {
     replaceState.call(window.history, null, '', '/signup');
 

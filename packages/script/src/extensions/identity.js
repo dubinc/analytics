@@ -16,7 +16,11 @@ const initIdentity = () => {
     if (!identityPaths) return [];
 
     try {
-      return JSON.parse(identityPaths);
+      const paths = JSON.parse(identityPaths);
+
+      return Array.isArray(paths)
+        ? paths.filter((path) => typeof path === 'string')
+        : [];
     } catch (error) {
       console.warn(
         '[dubAnalytics] Failed to parse data-identity-paths.',
