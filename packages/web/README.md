@@ -88,13 +88,25 @@ The query parameter to listen to for client-side click-tracking (e.g. `?via=john
 
 ### `trackIdentity`
 
-Identifies the visitor's device and links it to their Dub click, so Dub can flag partners who refer several customers from the same device. The default is `false`.
+Identifies the visitor's device on the given paths and links it to their Dub click, so Dub can flag partners who refer several customers from the same device.
 
-It only runs for visitors with a `dub_id` cookie, and at most once per click every 30 minutes (tracked with a `dub_fid` cookie). The device identification agent is loaded only when this is on, and failures never throw or block the page.
+A path matches exactly (a trailing slash is ignored). A trailing `/*` also matches everything under the path, so `/checkout/*` matches `/checkout` and `/checkout/plan`. It runs on the first page load and on client-side navigation to a matching path.
+
+It only runs for visitors with a `dub_id` cookie, and at most once per click every 30 minutes (tracked with a `dub_fid` cookie). The device identification agent is loaded only when identification runs, and failures never throw or block the page.
 
 ```tsx
-<DubAnalytics trackIdentity />
+<DubAnalytics trackIdentity={{ paths: ['/signup', '/checkout/*'] }} />
 ```
+
+To identify conditionally instead, call `trackIdentity` yourself. It follows the same `dub_id` and `dub_fid` rules.
+
+```tsx
+const { trackIdentity } = useAnalytics();
+
+await trackIdentity();
+```
+
+Without React, call `window.dubAnalytics.trackIdentity()`.
 
 ### `scriptProps`
 
