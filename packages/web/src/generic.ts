@@ -1,5 +1,5 @@
 import { name, version } from '../package.json';
-import { watchIdentityPaths } from './identity';
+import { trackIdentity, watchIdentityPaths } from './identity';
 import type { AnalyticsProps } from './types';
 import { isBrowser } from './utils';
 
@@ -89,16 +89,26 @@ function inject(props: AnalyticsProps): void {
     Object.assign(script, restProps);
   }
 
-  const { trackIdentity } = props;
-
-  if (trackIdentity) {
-    script.addEventListener('load', () => {
-      watchIdentityPaths({
-        paths: trackIdentity.paths,
+  const attachTrackIdentity = (): void => {
+    (window as DubAnalyticsWindow).dubAnalytics.trackIdentity = () =>
+      trackIdentity({
         apiHost: props.apiHost,
       });
-    });
-  }
+  };
+
+  attachTrackIdentity();
+
+  // The script replaces window.dubAnalytics when it loads
+  script.addEventListener('load', () => {
+    attachTrackIdentity();
+
+    if (props.trackIdentity) {
+      watchIdentityPaths({
+        paths: props.trackIdentity.paths,
+        apiHost: props.apiHost,
+      });
+    }
+  });
 
   script.onerror = (): void => {
     // eslint-disable-next-line no-console -- Logging to console is intentional

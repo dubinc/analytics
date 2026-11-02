@@ -20,6 +20,7 @@ declare global {
       trackClick: (event: TrackClickInput) => void;
       trackLead: (event: TrackLeadInput) => void;
       trackSale: (event: TrackSaleInput) => void;
+      trackIdentity?: () => Promise<void>;
     };
   }
 }
@@ -83,6 +84,14 @@ export function useAnalytics() {
     window.dubAnalytics.trackSale(event);
   }, []);
 
+  const trackIdentity = useCallback(async () => {
+    if (!isDubAnalyticsReady()) {
+      return;
+    }
+
+    await window.dubAnalytics.trackIdentity?.();
+  }, []);
+
   useEffect(() => {
     initialize();
   }, [initialize]);
@@ -92,5 +101,6 @@ export function useAnalytics() {
     trackClick,
     trackLead,
     trackSale,
+    trackIdentity,
   };
 }
