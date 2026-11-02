@@ -2,8 +2,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const BASE_SOURCE = readFileSync(join(__dirname, 'base.js'), 'utf8');
-const SCRIPT_SRC = 'https://www.dubcdn.com/analytics/script.js';
+const BASE_SOURCE = readFileSync(join(__dirname, '../base.js'), 'utf8');
+const SOURCE = [
+  BASE_SOURCE,
+  readFileSync(join(__dirname, 'identity.js'), 'utf8'),
+].join('\n');
+const SCRIPT_SRC = 'https://www.dubcdn.com/analytics/script.identity.js';
 const CLICK_ID = 'kVrpHmuNu8Q9VpBG';
 
 const { pushState, replaceState } = window.history;
@@ -12,7 +16,7 @@ const popstateListeners = [];
 const fetchMock = vi.fn();
 const identify = vi.fn();
 
-function runBase(attributes = {}) {
+function runScript(attributes = {}, source = SOURCE) {
   const script = document.createElement('script');
   script.src = SCRIPT_SRC;
 
@@ -25,7 +29,7 @@ function runBase(attributes = {}) {
     get: () => script,
   });
 
-  new Function(BASE_SOURCE)();
+  new Function(source)();
 }
 
 function stubDubAnalytics() {
@@ -60,7 +64,7 @@ function flush() {
   });
 }
 
-describe('base.js identity', () => {
+describe('identity extension', () => {
   beforeEach(() => {
     clearCookies();
     document.head.innerHTML = '';
@@ -82,7 +86,7 @@ describe('base.js identity', () => {
     vi.spyOn(document.head, 'appendChild').mockImplementation((node) => {
       document.head.append(node);
 
-      if (node.src.endsWith('/identity.js')) {
+      if (node.src.endsWith('/identity-agent.js')) {
         window._dubIdentity = {
           identify,
         };
@@ -106,11 +110,11 @@ describe('base.js identity', () => {
     vi.clearAllMocks();
   });
 
-  it('loads identity.js next to the script and identifies the click on a matching path', async () => {
+  it('loads identity-agent.js next to the script and identifies the click on a matching path', async () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
     replaceState.call(window.history, null, '', '/signup');
 
-    runBase({
+    runScript({
       'data-api-host': 'https://api.example.com',
       'data-identity-paths': JSON.stringify(['/signup']),
     });
@@ -120,7 +124,7 @@ describe('base.js identity', () => {
     });
 
     expect(loadedIdentityScripts()).toEqual([
-      'https://www.dubcdn.com/analytics/identity.js',
+      'https://www.dubcdn.com/analytics/identity-agent.js',
     ]);
     expect(identify).toHaveBeenCalledWith({
       apiHost: 'https://api.example.com',
@@ -137,7 +141,7 @@ describe('base.js identity', () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
     replaceState.call(window.history, null, '', pathname);
 
-    runBase({
+    runScript({
       'data-identity-paths': JSON.stringify(paths),
     });
 
@@ -155,7 +159,7 @@ describe('base.js identity', () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
     replaceState.call(window.history, null, '', pathname);
 
-    runBase({
+    runScript({
       'data-identity-paths': JSON.stringify(paths),
     });
     await flush();
@@ -163,19 +167,35 @@ describe('base.js identity', () => {
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
+  it('is not part of variants without the identity extension', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    replaceState.call(window.history, null, '', '/signup');
+
+    runScript(
+      {
+        'data-identity-paths': JSON.stringify(['/signup']),
+      },
+      BASE_SOURCE,
+    );
+    await flush();
+
+    expect(window.dubAnalytics.trackIdentity).toBeUndefined();
+    expect(loadedIdentityScripts()).toEqual([]);
+  });
+
   it('does nothing without data-identity-paths', async () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
 
-    runBase();
+    runScript();
     await flush();
 
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
-  it('skips loading identity.js without a dub_id cookie', async () => {
+  it('skips loading identity-agent.js without a dub_id cookie', async () => {
     replaceState.call(window.history, null, '', '/signup');
 
-    runBase({
+    runScript({
       'data-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
@@ -188,7 +208,7 @@ describe('base.js identity', () => {
     document.cookie = `dub_fid=${CLICK_ID}; path=/`;
     replaceState.call(window.history, null, '', '/signup');
 
-    runBase({
+    runScript({
       'data-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
@@ -201,7 +221,7 @@ describe('base.js identity', () => {
     document.cookie = 'dub_fid=otherClickId; path=/';
     replaceState.call(window.history, null, '', '/signup');
 
-    runBase({
+    runScript({
       'data-identity-paths': JSON.stringify(['/signup']),
     });
 
@@ -219,7 +239,7 @@ describe('base.js identity', () => {
     );
     replaceState.call(window.history, null, '', '/signup?via=partner');
 
-    runBase({
+    runScript({
       'data-domains': JSON.stringify({
         refer: 'dub.sh',
       }),
@@ -251,7 +271,7 @@ describe('base.js identity', () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
     replaceState.call(window.history, null, '', '/signup');
 
-    runBase({
+    runScript({
       'data-identity-paths': JSON.stringify(['/signup']),
     });
 
@@ -263,7 +283,7 @@ describe('base.js identity', () => {
     expect(getCookie('dub_fid')).toBeUndefined();
   });
 
-  it('never throws when identity.js fails to load', async () => {
+  it('never throws when identity-agent.js fails to load', async () => {
     document.head.appendChild.mockImplementation((node) => {
       document.head.append(node);
       setTimeout(() => node.onerror());
@@ -271,7 +291,7 @@ describe('base.js identity', () => {
     });
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
 
-    runBase();
+    runScript();
 
     await expect(window.dubAnalytics.trackIdentity()).resolves.toBeUndefined();
     expect(getCookie('dub_fid')).toBeUndefined();
@@ -280,7 +300,7 @@ describe('base.js identity', () => {
   it('identifies after a client-side navigation to a matching path', async () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
 
-    runBase({
+    runScript({
       'data-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
@@ -297,7 +317,7 @@ describe('base.js identity', () => {
   it('identifies when going back to a matching path', async () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
 
-    runBase({
+    runScript({
       'data-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
@@ -314,7 +334,7 @@ describe('base.js identity', () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
     replaceState.call(window.history, null, '', '/signup');
 
-    runBase({
+    runScript({
       'data-identity-paths': JSON.stringify(['/signup']),
     });
     await vi.waitFor(() => {
@@ -332,7 +352,7 @@ describe('base.js identity', () => {
   it('exposes trackIdentity on window.dubAnalytics without paths', async () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
 
-    runBase();
+    runScript();
     await window.dubAnalytics.trackIdentity();
 
     expect(identify).toHaveBeenCalledTimes(1);
@@ -343,7 +363,7 @@ describe('base.js identity', () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
     window.dubAnalytics('trackIdentity');
 
-    runBase();
+    runScript();
 
     await vi.waitFor(() => {
       expect(identify).toHaveBeenCalledTimes(1);
@@ -353,7 +373,7 @@ describe('base.js identity', () => {
   it('shares one identification between concurrent calls', async () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
 
-    runBase();
+    runScript();
     await Promise.all([
       window.dubAnalytics.trackIdentity(),
       window.dubAnalytics.trackIdentity(),

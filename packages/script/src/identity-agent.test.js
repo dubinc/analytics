@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import './identity';
+import './identity-agent';
 
 const CLICK_ID = 'kVrpHmuNu8Q9VpBG';
 const SEALED_RESULT = 'noXc7Q==';
@@ -28,7 +28,7 @@ function identify() {
   });
 }
 
-describe('identity.js', () => {
+describe('identity-agent.js', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', fetchMock);
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);

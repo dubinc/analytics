@@ -6,12 +6,20 @@
     "dist/analytics/script.js",
     "dist/analytics/script.site-visit.js",
     "dist/analytics/script.outbound-domains.js",
-    "dist/analytics/script.conversion-tracking.js",
     "dist/analytics/script.site-visit.outbound-domains.js",
+    "dist/analytics/script.conversion-tracking.js",
     "dist/analytics/script.site-visit.conversion-tracking.js",
     "dist/analytics/script.outbound-domains.conversion-tracking.js",
     "dist/analytics/script.site-visit.outbound-domains.conversion-tracking.js",
-    "dist/analytics/identity.js"
+    "dist/analytics/script.identity.js",
+    "dist/analytics/script.site-visit.identity.js",
+    "dist/analytics/script.outbound-domains.identity.js",
+    "dist/analytics/script.site-visit.outbound-domains.identity.js",
+    "dist/analytics/script.conversion-tracking.identity.js",
+    "dist/analytics/script.site-visit.conversion-tracking.identity.js",
+    "dist/analytics/script.outbound-domains.conversion-tracking.identity.js",
+    "dist/analytics/script.site-visit.outbound-domains.conversion-tracking.identity.js",
+    "dist/analytics/identity-agent.js"
   ],
   "scripts": {
     "prebuild": "mkdir -p dist/analytics",

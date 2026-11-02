@@ -9,11 +9,28 @@ const baseConfig = {
   target: 'es2015',
 };
 
+// Order matters: variant names list extensions in this order (e.g. script.site-visit.identity.js)
+const EXTENSIONS = [
+  'site-visit',
+  'outbound-domains',
+  'conversion-tracking',
+  'identity',
+];
+
 // Helper to read and combine files
 const combineFiles = (files) => {
   // Just concatenate the files, esbuild will handle the IIFE wrapping
   return files.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
 };
+
+// Every subset of EXTENSIONS, keeping their order
+const combinations = EXTENSIONS.reduce(
+  (subsets, extension) => [
+    ...subsets,
+    ...subsets.map((subset) => [...subset, extension]),
+  ],
+  [[]],
+);
 
 // Ensure dist/analytics exists
 fs.mkdirSync(path.join(__dirname, 'dist/analytics'), { recursive: true });
@@ -24,129 +41,31 @@ fs.copyFileSync(
   path.join(__dirname, 'dist/_redirects'),
 );
 
-// Build all variants (8 total combinations of 3 extensions), plus identity.js
+// Build all variants (16 combinations of 4 extensions), plus the identity agent they load on demand
 Promise.all([
-  // 1. Base script (no extensions)
-  esbuild.build({
-    ...baseConfig,
-    stdin: {
-      contents: fs.readFileSync('src/base.js', 'utf8'),
-      resolveDir: __dirname,
-      sourcefile: 'base.js',
-    },
-    outfile: 'dist/analytics/script.js',
-  }),
+  ...combinations.map((extensions) =>
+    esbuild.build({
+      ...baseConfig,
+      stdin: {
+        contents: combineFiles([
+          'src/base.js',
+          ...extensions.map((extension) => `src/extensions/${extension}.js`),
+        ]),
+        resolveDir: __dirname,
+        sourcefile: extensions.length ? 'combined.js' : 'base.js',
+      },
+      outfile: `dist/analytics/${['script', ...extensions, 'js'].join('.')}`,
+    }),
+  ),
 
-  // 2. Site visit only
   esbuild.build({
     ...baseConfig,
-    stdin: {
-      contents: combineFiles(['src/base.js', 'src/extensions/site-visit.js']),
-      resolveDir: __dirname,
-      sourcefile: 'combined.js',
-    },
-    outfile: 'dist/analytics/script.site-visit.js',
-  }),
-
-  // 3. Outbound domains only
-  esbuild.build({
-    ...baseConfig,
-    stdin: {
-      contents: combineFiles([
-        'src/base.js',
-        'src/extensions/outbound-domains.js',
-      ]),
-      resolveDir: __dirname,
-      sourcefile: 'combined.js',
-    },
-    outfile: 'dist/analytics/script.outbound-domains.js',
-  }),
-
-  // 4. Conversion tracking only
-  esbuild.build({
-    ...baseConfig,
-    stdin: {
-      contents: combineFiles([
-        'src/base.js',
-        'src/extensions/conversion-tracking.js',
-      ]),
-      resolveDir: __dirname,
-      sourcefile: 'combined.js',
-    },
-    outfile: 'dist/analytics/script.conversion-tracking.js',
-  }),
-
-  // 5. Site visit + Outbound domains
-  esbuild.build({
-    ...baseConfig,
-    stdin: {
-      contents: combineFiles([
-        'src/base.js',
-        'src/extensions/site-visit.js',
-        'src/extensions/outbound-domains.js',
-      ]),
-      resolveDir: __dirname,
-      sourcefile: 'combined.js',
-    },
-    outfile: 'dist/analytics/script.site-visit.outbound-domains.js',
-  }),
-
-  // 6. Site visit + Conversion tracking
-  esbuild.build({
-    ...baseConfig,
-    stdin: {
-      contents: combineFiles([
-        'src/base.js',
-        'src/extensions/site-visit.js',
-        'src/extensions/conversion-tracking.js',
-      ]),
-      resolveDir: __dirname,
-      sourcefile: 'combined.js',
-    },
-    outfile: 'dist/analytics/script.site-visit.conversion-tracking.js',
-  }),
-
-  // 7. Outbound domains + Conversion tracking
-  esbuild.build({
-    ...baseConfig,
-    stdin: {
-      contents: combineFiles([
-        'src/base.js',
-        'src/extensions/outbound-domains.js',
-        'src/extensions/conversion-tracking.js',
-      ]),
-      resolveDir: __dirname,
-      sourcefile: 'combined.js',
-    },
-    outfile: 'dist/analytics/script.outbound-domains.conversion-tracking.js',
-  }),
-
-  // 8. All extensions combined
-  esbuild.build({
-    ...baseConfig,
-    stdin: {
-      contents: combineFiles([
-        'src/base.js',
-        'src/extensions/site-visit.js',
-        'src/extensions/outbound-domains.js',
-        'src/extensions/conversion-tracking.js',
-      ]),
-      resolveDir: __dirname,
-      sourcefile: 'combined.js',
-    },
-    outfile:
-      'dist/analytics/script.site-visit.outbound-domains.conversion-tracking.js',
-  }),
-
-  // 9. Identity, loaded on demand by every variant
-  esbuild.build({
-    ...baseConfig,
-    entryPoints: ['src/identity.js'],
+    entryPoints: ['src/identity-agent.js'],
     define: {
       'process.env.DUB_FINGERPRINT_PUBLIC_KEY': JSON.stringify(
         process.env.DUB_FINGERPRINT_PUBLIC_KEY ?? '',
       ),
     },
-    outfile: 'dist/analytics/identity.js',
+    outfile: 'dist/analytics/identity-agent.js',
   }),
 ]).catch(() => process.exit(1));

@@ -4,8 +4,6 @@
 
   const DUB_ID_VAR = 'dub_id';
   const DUB_PARTNER_COOKIE = 'dub_partner_data';
-  const DUB_FID_VAR = 'dub_fid';
-  const DUB_FID_MAX_AGE_SECONDS = 30 * 60;
   const COOKIE_EXPIRES = 90 * 24 * 60 * 60 * 1000; // 90 days
   const HOSTNAME = window.location.hostname;
 
@@ -91,22 +89,6 @@
     return [...new Set(resolvedQueryParams)];
   })();
 
-  const IDENTITY_PATHS = (() => {
-    const identityPaths = script.getAttribute('data-identity-paths');
-
-    if (!identityPaths) return [];
-
-    try {
-      return JSON.parse(identityPaths);
-    } catch (error) {
-      console.warn(
-        '[dubAnalytics] Failed to parse data-identity-paths.',
-        error,
-      );
-      return [];
-    }
-  })();
-
   const QUERY_PARAM_VALUE = (() => {
     const params = new URLSearchParams(location.search);
 
@@ -136,8 +118,6 @@
         dubAnalytics.ready(...args);
       } else if (method === 'trackClick') {
         dubAnalytics.trackClick(...args);
-      } else if (method === 'trackIdentity') {
-        return dubAnalytics.trackIdentity();
       } else {
         console.warn('[dubAnalytics] Unknown method:', method);
       }
@@ -152,10 +132,6 @@
 
     dubAnalytics.trackClick = function (...args) {
       trackClick(...args);
-    };
-
-    dubAnalytics.trackIdentity = function () {
-      return trackIdentity();
     };
 
     // Replace window.dubAnalytics with the callable + augmented function
@@ -208,8 +184,6 @@
         callback();
       } else if (['trackClick'].includes(method)) {
         trackClick(...args);
-      } else if (method === 'trackIdentity') {
-        trackIdentity();
       } else {
         console.warn('[dubAnalytics] Unknown method:', method);
       }
@@ -218,8 +192,6 @@
 
   let clientClickTracked = false;
   let pendingClick = Promise.resolve();
-  let pendingIdentity;
-  let identityScript;
 
   // Track click and set cookie
   function trackClick({ domain, key }) {
@@ -270,115 +242,6 @@
       });
   }
 
-  function matchesIdentityPath(pathname) {
-    const normalize = (path) =>
-      path.length > 1 ? path.replace(/\/+$/, '') : path;
-    const current = normalize(pathname);
-
-    return IDENTITY_PATHS.some((path) => {
-      if (path.endsWith('/*')) {
-        const base = normalize(path.slice(0, -2));
-
-        return (
-          base === '' || current === base || current.startsWith(`${base}/`)
-        );
-      }
-
-      return current === normalize(path);
-    });
-  }
-
-  // The Fingerprint agent lives in identity.js, next to this script, so it only loads when needed
-  function loadIdentityScript() {
-    identityScript =
-      identityScript ||
-      new Promise((resolve, reject) => {
-        const identity = document.createElement('script');
-        identity.src = new URL('identity.js', script.src).href;
-        identity.async = true;
-        identity.onload = () => resolve(window._dubIdentity);
-        identity.onerror = () => {
-          identityScript = undefined;
-          reject(new Error('Failed to load identity.js'));
-        };
-        document.head.appendChild(identity);
-      });
-
-    return identityScript;
-  }
-
-  // Links the visitor's device to their click, at most once per click every 30 minutes
-  function trackIdentity() {
-    pendingIdentity =
-      pendingIdentity ||
-      pendingClick
-        .catch(() => undefined)
-        .then(() => {
-          const clickId = cookieManager.get(DUB_ID_VAR);
-
-          if (!clickId || cookieManager.get(DUB_FID_VAR) === clickId) {
-            return;
-          }
-
-          return loadIdentityScript()
-            .then((identity) =>
-              identity.identify({
-                apiHost: API_HOST,
-                clickId,
-              }),
-            )
-            .then((identified) => {
-              if (identified) {
-                document.cookie = `${DUB_FID_VAR}=${clickId}; path=/; max-age=${DUB_FID_MAX_AGE_SECONDS}; SameSite=Lax`;
-              }
-            });
-        })
-        .catch((error) => {
-          console.warn('[dubAnalytics] trackIdentity failed.', error);
-        })
-        .then(() => {
-          pendingIdentity = undefined;
-        });
-
-    return pendingIdentity;
-  }
-
-  // Identifies on the first page load and on client-side navigation to a matching path
-  function watchIdentityPaths() {
-    if (!IDENTITY_PATHS.length) return;
-
-    let lastPathname;
-
-    const check = () => {
-      const { pathname } = window.location;
-
-      if (pathname === lastPathname) return;
-
-      lastPathname = pathname;
-
-      if (matchesIdentityPath(pathname)) {
-        trackIdentity();
-      }
-    };
-
-    const pushState = history.pushState.bind(history);
-    const replaceState = history.replaceState.bind(history);
-
-    history.pushState = (...args) => {
-      pushState(...args);
-      check();
-    };
-
-    history.replaceState = (...args) => {
-      replaceState(...args);
-      check();
-    };
-
-    window.addEventListener('popstate', check);
-
-    check();
-  }
-
   // Initialize tracking
   function init() {
     const params = new URLSearchParams(location.search);
@@ -406,11 +269,7 @@
     }
 
     // Process the queued methods
-    queueManager.flush(
-      (method) => method === 'trackClick' || method === 'trackIdentity',
-    );
-
-    watchIdentityPaths();
+    queueManager.flush((method) => method === 'trackClick');
 
     // Initialize DubAnalytics from cookie if it exists
     const partnerCookie = cookieManager.get(DUB_PARTNER_COOKIE);
@@ -438,6 +297,8 @@
     v: QUERY_PARAM_VALUE,
     n: DOMAINS_CONFIG,
     k: PUBLISHABLE_KEY,
+    s: script,
+    p: () => pendingClick,
   };
 
   // Initialize
