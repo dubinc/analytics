@@ -51,7 +51,7 @@ describe('trackIdentity', () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
-          clickIdentityId: 'cid_1',
+          clickIdentificationId: 'cid_1',
         }),
       ),
     );
