@@ -52,7 +52,7 @@ export async function trackIdentity({
 
     const { start } = await import('@fingerprint/agent');
 
-    // The server reads the click from linkedId and rejects events older than 10 seconds
+    // The server reads the click from linkedId
     const { sealed_result: sealedResult } = await start({
       apiKey: FINGERPRINT_PUBLIC_KEY,
     }).get({
