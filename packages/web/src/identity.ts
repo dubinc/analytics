@@ -6,6 +6,8 @@ const CLICK_ID_POLL_ATTEMPTS = 5;
 const CLICK_ID_POLL_INTERVAL_MS = 1000;
 const FINGERPRINT_PUBLIC_KEY = process.env.DUB_FINGERPRINT_PUBLIC_KEY;
 
+let pendingIdentity: Promise<void> | undefined;
+
 function getCookie(name: string): string | undefined {
   return document.cookie
     .split(';')
@@ -30,15 +32,25 @@ async function waitForClickId(
   return waitForClickId(attemptsLeft - 1);
 }
 
-/**
- * Identifies the visitor's device and links it to their Dub click.
- * Runs only for visitors with a `dub_id` cookie, at most once per click every 30 minutes.
- */
-export async function trackIdentity({
-  apiHost = DEFAULT_API_HOST,
-}: {
-  apiHost?: string;
-}): Promise<void> {
+function normalizePath(path: string): string {
+  return path.length > 1 ? path.replace(/\/+$/, '') : path;
+}
+
+function matchesIdentityPath(pathname: string, paths: string[]): boolean {
+  const current = normalizePath(pathname);
+
+  return paths.some((path) => {
+    if (path.endsWith('/*')) {
+      const base = normalizePath(path.slice(0, -2));
+
+      return base === '' || current === base || current.startsWith(`${base}/`);
+    }
+
+    return current === normalizePath(path);
+  });
+}
+
+async function identify(apiHost: string): Promise<void> {
   try {
     if (!FINGERPRINT_PUBLIC_KEY) {
       return;
@@ -86,4 +98,66 @@ export async function trackIdentity({
     // eslint-disable-next-line no-console -- Logging to console is intentional
     console.warn('[Dub Web Analytics] identity tracking failed.', error);
   }
+}
+
+/**
+ * Identifies the visitor's device and links it to their Dub click.
+ * Runs only for visitors with a `dub_id` cookie, at most once per click every 30 minutes.
+ */
+export function trackIdentity({
+  apiHost = DEFAULT_API_HOST,
+}: {
+  apiHost?: string;
+}): Promise<void> {
+  pendingIdentity ??= identify(apiHost).finally(() => {
+    pendingIdentity = undefined;
+  });
+
+  return pendingIdentity;
+}
+
+/**
+ * Runs trackIdentity on the current page and on every client-side navigation to one of the paths.
+ */
+export function watchIdentityPaths({
+  paths,
+  apiHost,
+}: {
+  paths: string[];
+  apiHost?: string;
+}): void {
+  let lastPathname: string | undefined;
+
+  const check = (): void => {
+    const { pathname } = window.location;
+
+    if (pathname === lastPathname) {
+      return;
+    }
+
+    lastPathname = pathname;
+
+    if (matchesIdentityPath(pathname, paths)) {
+      void trackIdentity({
+        apiHost,
+      });
+    }
+  };
+
+  const pushState = window.history.pushState.bind(window.history);
+  const replaceState = window.history.replaceState.bind(window.history);
+
+  window.history.pushState = (...args) => {
+    pushState(...args);
+    check();
+  };
+
+  window.history.replaceState = (...args) => {
+    replaceState(...args);
+    check();
+  };
+
+  window.addEventListener('popstate', check);
+
+  check();
 }

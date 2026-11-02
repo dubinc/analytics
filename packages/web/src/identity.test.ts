@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { trackIdentity } from './identity';
+import { trackIdentity, watchIdentityPaths } from './identity';
 
 const CLICK_ID = 'kVrpHmuNu8Q9VpBG';
 const SEALED_RESULT = 'noXc7Q==';
@@ -20,11 +20,18 @@ vi.mock('@fingerprint/agent', () => ({
 }));
 
 const fetchMock = vi.fn();
+const { pushState, replaceState } = window.history;
 
 function clearCookies(): void {
   document.cookie.split(';').forEach((cookie) => {
     const [name] = cookie.trim().split('=');
     document.cookie = `${name}=; path=/; max-age=0`;
+  });
+}
+
+function flush(): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
   });
 }
 
@@ -58,6 +65,9 @@ describe('trackIdentity', () => {
   });
 
   afterEach(() => {
+    window.history.pushState = pushState;
+    window.history.replaceState = replaceState;
+    window.history.replaceState(null, '', '/');
     vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.clearAllMocks();
@@ -189,5 +199,134 @@ describe('trackIdentity', () => {
     await expect(trackIdentity({})).resolves.toBeUndefined();
 
     expect(getCookie('dub_fid')).toBeUndefined();
+  });
+
+  it('shares one identification between concurrent calls', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+
+    await Promise.all([trackIdentity({}), trackIdentity({})]);
+
+    expect(get).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('watchIdentityPaths', () => {
+  beforeEach(() => {
+    clearCookies();
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    get.mockResolvedValue({
+      event_id: 'evt_1',
+      sealed_result: {
+        base64: () => SEALED_RESULT,
+      },
+    });
+
+    fetchMock.mockResolvedValue(new Response('{}'));
+  });
+
+  afterEach(() => {
+    window.history.pushState = pushState;
+    window.history.replaceState = replaceState;
+    window.history.replaceState(null, '', '/');
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    ['/signup', ['/signup']],
+    ['/signup/', ['/signup']],
+    ['/checkout', ['/checkout/*']],
+    ['/checkout/plan/pro', ['/checkout/*']],
+    ['/anything', ['/*']],
+  ])('identifies on %s for paths %j', async (pathname, paths) => {
+    window.history.replaceState(null, '', pathname);
+
+    watchIdentityPaths({
+      paths,
+    });
+
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it.each([
+    ['/', ['/signup']],
+    ['/signup/step-2', ['/signup']],
+    ['/signup-old', ['/signup']],
+    ['/checkouts', ['/checkout/*']],
+  ])('skips %s for paths %j', async (pathname, paths) => {
+    window.history.replaceState(null, '', pathname);
+
+    watchIdentityPaths({
+      paths,
+    });
+    await flush();
+
+    expect(start).not.toHaveBeenCalled();
+  });
+
+  it('identifies after a client-side navigation to a matching path', async () => {
+    watchIdentityPaths({
+      paths: ['/signup'],
+      apiHost: 'https://api.example.com',
+    });
+    await flush();
+
+    expect(start).not.toHaveBeenCalled();
+
+    window.history.pushState(null, '', '/signup');
+
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.example.com/track/identity',
+        expect.anything(),
+      );
+    });
+  });
+
+  it('identifies when going back to a matching path', async () => {
+    window.history.replaceState(null, '', '/signup');
+    watchIdentityPaths({
+      paths: ['/signup'],
+    });
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    clearCookies();
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    window.history.pushState(null, '', '/pricing');
+    await flush();
+    replaceState.call(window.history, null, '', '/signup');
+
+    expect(start).toHaveBeenCalledTimes(1);
+
+    window.dispatchEvent(new PopStateEvent('popstate'));
+
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('ignores history updates that keep the same path', async () => {
+    window.history.replaceState(null, '', '/signup');
+    watchIdentityPaths({
+      paths: ['/signup'],
+    });
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    clearCookies();
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    window.history.replaceState(null, '', '/signup?step=2');
+    await flush();
+
+    expect(start).toHaveBeenCalledTimes(1);
   });
 });
