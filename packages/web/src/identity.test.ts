@@ -73,7 +73,7 @@ describe('trackIdentity', () => {
     vi.clearAllMocks();
   });
 
-  it('identifies with linkedId set to the clickId and posts only the sealed result', async () => {
+  it('identifies with linkedId set to the clickId and posts only the identityToken', async () => {
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
 
     await trackIdentity({
@@ -94,7 +94,7 @@ describe('trackIdentity', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          sealedResult: SEALED_RESULT,
+          identityToken: SEALED_RESULT,
         }),
       },
     );

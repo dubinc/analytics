@@ -81,7 +81,7 @@ async function identify(apiHost: string): Promise<void> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        sealedResult: sealedResult.base64(),
+        identityToken: sealedResult.base64(),
       }),
     });
 
