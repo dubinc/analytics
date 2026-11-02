@@ -1,5 +1,4 @@
 import { name, version } from '../package.json';
-import { trackIdentity, watchIdentityPaths } from './identity';
 import type { AnalyticsProps } from './types';
 import { isBrowser } from './utils';
 
@@ -20,11 +19,13 @@ function inject(props: AnalyticsProps): void {
         (w[da].q = w[da].q || []).push(arguments);
       };
 
-    ['trackClick', 'trackLead', 'trackSale'].forEach(function (m) {
-      w[da][m] = function () {
-        (w[da].q = w[da].q || []).push([m, ...Array.from(arguments)]);
-      };
-    });
+    ['trackClick', 'trackLead', 'trackSale', 'trackIdentity'].forEach(
+      function (m) {
+        w[da][m] = function () {
+          (w[da].q = w[da].q || []).push([m, ...Array.from(arguments)]);
+        };
+      },
+    );
   })(window as DubAnalyticsWindow, 'dubAnalytics');
 
   // Determine script source based on enabled features
@@ -84,31 +85,17 @@ function inject(props: AnalyticsProps): void {
     script.setAttribute('data-query-params', JSON.stringify(props.queryParams));
   }
 
+  if (props.trackIdentity) {
+    script.setAttribute(
+      'data-identity-paths',
+      JSON.stringify(props.trackIdentity.paths),
+    );
+  }
+
   if (props.scriptProps) {
     const { src: _, ...restProps } = props.scriptProps; // we already set the src above
     Object.assign(script, restProps);
   }
-
-  const attachTrackIdentity = (): void => {
-    (window as DubAnalyticsWindow).dubAnalytics.trackIdentity = () =>
-      trackIdentity({
-        apiHost: props.apiHost,
-      });
-  };
-
-  attachTrackIdentity();
-
-  // The script replaces window.dubAnalytics when it loads
-  script.addEventListener('load', () => {
-    attachTrackIdentity();
-
-    if (props.trackIdentity) {
-      watchIdentityPaths({
-        paths: props.trackIdentity.paths,
-        apiHost: props.apiHost,
-      });
-    }
-  });
 
   script.onerror = (): void => {
     // eslint-disable-next-line no-console -- Logging to console is intentional
