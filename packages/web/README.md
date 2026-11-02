@@ -98,7 +98,7 @@ It only runs for visitors with a `dub_id` cookie, and at most once per click eve
 <DubAnalytics trackIdentity={{ paths: ['/signup', '/checkout/*'] }} />
 ```
 
-To identify conditionally instead, call `trackIdentity` yourself. It follows the same `dub_id` and `dub_fid` rules.
+To identify conditionally instead, call `trackIdentity` yourself. It follows the same `dub_id` and `dub_fid` rules, and needs the `trackIdentity` prop to load the identity variant (`paths: []` turns off automatic identification).
 
 ```tsx
 const { trackIdentity } = useAnalytics();
@@ -106,17 +106,17 @@ const { trackIdentity } = useAnalytics();
 await trackIdentity();
 ```
 
-Every script variant supports this, so installs without React work too. Set the paths with a `data-identity-paths` attribute, and call `dubAnalytics.trackIdentity()`. To queue calls made before the script loads, add `trackIdentity` to the snippet's method list.
+Without React, use the `identity` script variant (`script.identity.js`, or combined like `script.site-visit.identity.js`). Set the paths with a `data-identity-paths` attribute, and call `dubAnalytics.trackIdentity()`. To queue calls made before the script loads, add `trackIdentity` to the snippet's method list.
 
 ```html
 <script
-  src="https://www.dubcdn.com/analytics/script.js"
+  src="https://www.dubcdn.com/analytics/script.identity.js"
   data-identity-paths='["/signup", "/checkout/*"]'
   defer
 ></script>
 ```
 
-The device identification agent loads from `identity.js` next to the script. If you serve the script from your own domain or a proxy, serve `identity.js` from the same folder.
+The device identification agent loads from `identity-agent.js` next to the script. If you serve the script from your own domain or a proxy, serve `identity-agent.js` from the same folder.
 
 ### `scriptProps`
 
