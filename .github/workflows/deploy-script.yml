@@ -17,6 +17,8 @@ jobs:
 
       - name: Install Dependencies and Build
         run: pnpm --filter @dub/analytics-script build
+        env:
+          DUB_FINGERPRINT_PUBLIC_KEY: ${{ vars.DUB_FINGERPRINT_PUBLIC_KEY }}
 
       - name: Deploy to Cloudflare Pages
         id: cloudflare-deploy

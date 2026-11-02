@@ -1,0 +1,365 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const BASE_SOURCE = readFileSync(join(__dirname, 'base.js'), 'utf8');
+const SCRIPT_SRC = 'https://www.dubcdn.com/analytics/script.js';
+const CLICK_ID = 'kVrpHmuNu8Q9VpBG';
+
+const { pushState, replaceState } = window.history;
+const addEventListener = window.addEventListener.bind(window);
+const popstateListeners = [];
+const fetchMock = vi.fn();
+const identify = vi.fn();
+
+function runBase(attributes = {}) {
+  const script = document.createElement('script');
+  script.src = SCRIPT_SRC;
+
+  Object.entries(attributes).forEach(([name, value]) => {
+    script.setAttribute(name, value);
+  });
+
+  Object.defineProperty(document, 'currentScript', {
+    configurable: true,
+    get: () => script,
+  });
+
+  new Function(BASE_SOURCE)();
+}
+
+function stubDubAnalytics() {
+  window.dubAnalytics = function () {
+    (window.dubAnalytics.q = window.dubAnalytics.q || []).push(arguments);
+  };
+}
+
+function loadedIdentityScripts() {
+  return [...document.head.querySelectorAll('script')].map(
+    (script) => script.src,
+  );
+}
+
+function clearCookies() {
+  document.cookie.split(';').forEach((cookie) => {
+    const [name] = cookie.trim().split('=');
+    document.cookie = `${name}=; path=/; max-age=0`;
+  });
+}
+
+function getCookie(name) {
+  return document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim().split('='))
+    .find(([key]) => key === name)?.[1];
+}
+
+function flush() {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
+}
+
+describe('base.js identity', () => {
+  beforeEach(() => {
+    clearCookies();
+    document.head.innerHTML = '';
+    stubDubAnalytics();
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(window, 'addEventListener').mockImplementation(
+      (type, listener, options) => {
+        if (type === 'popstate') {
+          popstateListeners.push(listener);
+        }
+
+        addEventListener(type, listener, options);
+      },
+    );
+
+    identify.mockResolvedValue(true);
+
+    vi.spyOn(document.head, 'appendChild').mockImplementation((node) => {
+      document.head.append(node);
+
+      if (node.src.endsWith('/identity.js')) {
+        window._dubIdentity = {
+          identify,
+        };
+        setTimeout(() => node.onload());
+      }
+
+      return node;
+    });
+  });
+
+  afterEach(() => {
+    popstateListeners.splice(0).forEach((listener) => {
+      window.removeEventListener('popstate', listener);
+    });
+    window.history.pushState = pushState;
+    window.history.replaceState = replaceState;
+    replaceState.call(window.history, null, '', '/');
+    delete window._dubIdentity;
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  it('loads identity.js next to the script and identifies the click on a matching path', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    replaceState.call(window.history, null, '', '/signup');
+
+    runBase({
+      'data-api-host': 'https://api.example.com',
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+
+    await vi.waitFor(() => {
+      expect(getCookie('dub_fid')).toBe(CLICK_ID);
+    });
+
+    expect(loadedIdentityScripts()).toEqual([
+      'https://www.dubcdn.com/analytics/identity.js',
+    ]);
+    expect(identify).toHaveBeenCalledWith({
+      apiHost: 'https://api.example.com',
+      clickId: CLICK_ID,
+    });
+  });
+
+  it.each([
+    ['/signup/', ['/signup']],
+    ['/checkout', ['/checkout/*']],
+    ['/checkout/plan/pro', ['/checkout/*']],
+    ['/anything', ['/*']],
+  ])('identifies on %s for paths %j', async (pathname, paths) => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    replaceState.call(window.history, null, '', pathname);
+
+    runBase({
+      'data-identity-paths': JSON.stringify(paths),
+    });
+
+    await vi.waitFor(() => {
+      expect(identify).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it.each([
+    ['/', ['/signup']],
+    ['/signup/step-2', ['/signup']],
+    ['/signup-old', ['/signup']],
+    ['/checkouts', ['/checkout/*']],
+  ])('skips %s for paths %j', async (pathname, paths) => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    replaceState.call(window.history, null, '', pathname);
+
+    runBase({
+      'data-identity-paths': JSON.stringify(paths),
+    });
+    await flush();
+
+    expect(loadedIdentityScripts()).toEqual([]);
+  });
+
+  it('does nothing without data-identity-paths', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+
+    runBase();
+    await flush();
+
+    expect(loadedIdentityScripts()).toEqual([]);
+  });
+
+  it('skips loading identity.js without a dub_id cookie', async () => {
+    replaceState.call(window.history, null, '', '/signup');
+
+    runBase({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+    await flush();
+
+    expect(loadedIdentityScripts()).toEqual([]);
+  });
+
+  it('skips when dub_fid already matches the click', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    document.cookie = `dub_fid=${CLICK_ID}; path=/`;
+    replaceState.call(window.history, null, '', '/signup');
+
+    runBase({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+    await flush();
+
+    expect(loadedIdentityScripts()).toEqual([]);
+  });
+
+  it('identifies again when dub_fid belongs to another click', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    document.cookie = 'dub_fid=otherClickId; path=/';
+    replaceState.call(window.history, null, '', '/signup');
+
+    runBase({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+
+    await vi.waitFor(() => {
+      expect(getCookie('dub_fid')).toBe(CLICK_ID);
+    });
+  });
+
+  it('waits for a ?via= click before identifying', async () => {
+    let resolveClick;
+    fetchMock.mockReturnValue(
+      new Promise((resolve) => {
+        resolveClick = resolve;
+      }),
+    );
+    replaceState.call(window.history, null, '', '/signup?via=partner');
+
+    runBase({
+      'data-domains': JSON.stringify({
+        refer: 'dub.sh',
+      }),
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+    await flush();
+
+    expect(loadedIdentityScripts()).toEqual([]);
+
+    resolveClick(
+      new Response(
+        JSON.stringify({
+          clickId: CLICK_ID,
+        }),
+      ),
+    );
+
+    await vi.waitFor(() => {
+      expect(identify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          clickId: CLICK_ID,
+        }),
+      );
+    });
+  });
+
+  it('does not set dub_fid when identification fails', async () => {
+    identify.mockResolvedValue(false);
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    replaceState.call(window.history, null, '', '/signup');
+
+    runBase({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+
+    await vi.waitFor(() => {
+      expect(identify).toHaveBeenCalledTimes(1);
+    });
+    await flush();
+
+    expect(getCookie('dub_fid')).toBeUndefined();
+  });
+
+  it('never throws when identity.js fails to load', async () => {
+    document.head.appendChild.mockImplementation((node) => {
+      document.head.append(node);
+      setTimeout(() => node.onerror());
+      return node;
+    });
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+
+    runBase();
+
+    await expect(window.dubAnalytics.trackIdentity()).resolves.toBeUndefined();
+    expect(getCookie('dub_fid')).toBeUndefined();
+  });
+
+  it('identifies after a client-side navigation to a matching path', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+
+    runBase({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+    await flush();
+
+    expect(loadedIdentityScripts()).toEqual([]);
+
+    window.history.pushState(null, '', '/signup');
+
+    await vi.waitFor(() => {
+      expect(identify).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('identifies when going back to a matching path', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+
+    runBase({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+    await flush();
+
+    replaceState.call(window.history, null, '', '/signup');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+
+    await vi.waitFor(() => {
+      expect(identify).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('ignores history updates that keep the same path', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    replaceState.call(window.history, null, '', '/signup');
+
+    runBase({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+    await vi.waitFor(() => {
+      expect(identify).toHaveBeenCalledTimes(1);
+    });
+
+    clearCookies();
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    window.history.replaceState(null, '', '/signup?step=2');
+    await flush();
+
+    expect(identify).toHaveBeenCalledTimes(1);
+  });
+
+  it('exposes trackIdentity on window.dubAnalytics without paths', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+
+    runBase();
+    await window.dubAnalytics.trackIdentity();
+
+    expect(identify).toHaveBeenCalledTimes(1);
+    expect(getCookie('dub_fid')).toBe(CLICK_ID);
+  });
+
+  it('runs a trackIdentity call queued before the script loaded', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    window.dubAnalytics('trackIdentity');
+
+    runBase();
+
+    await vi.waitFor(() => {
+      expect(identify).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('shares one identification between concurrent calls', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+
+    runBase();
+    await Promise.all([
+      window.dubAnalytics.trackIdentity(),
+      window.dubAnalytics.trackIdentity(),
+    ]);
+
+    expect(identify).toHaveBeenCalledTimes(1);
+    expect(loadedIdentityScripts()).toHaveLength(1);
+  });
+});

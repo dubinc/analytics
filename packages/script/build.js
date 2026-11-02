@@ -24,7 +24,7 @@ fs.copyFileSync(
   path.join(__dirname, 'dist/_redirects'),
 );
 
-// Build all variants (8 total combinations of 3 extensions)
+// Build all variants (8 total combinations of 3 extensions), plus identity.js
 Promise.all([
   // 1. Base script (no extensions)
   esbuild.build({
@@ -136,5 +136,17 @@ Promise.all([
     },
     outfile:
       'dist/analytics/script.site-visit.outbound-domains.conversion-tracking.js',
+  }),
+
+  // 9. Identity, loaded on demand by every variant
+  esbuild.build({
+    ...baseConfig,
+    entryPoints: ['src/identity.js'],
+    define: {
+      'process.env.DUB_FINGERPRINT_PUBLIC_KEY': JSON.stringify(
+        process.env.DUB_FINGERPRINT_PUBLIC_KEY ?? '',
+      ),
+    },
+    outfile: 'dist/analytics/identity.js',
   }),
 ]).catch(() => process.exit(1));
