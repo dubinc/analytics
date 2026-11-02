@@ -2,7 +2,7 @@ import { start } from '@fingerprint/agent';
 
 const FINGERPRINT_PUBLIC_KEY = process.env.DUB_FINGERPRINT_PUBLIC_KEY;
 
-// Loaded on demand by base.js; resolves true once Dub has linked the device to the click
+// Loaded on demand by the identity extension; resolves true once Dub has linked the device to the click
 async function identify({ apiHost, clickId }) {
   if (!FINGERPRINT_PUBLIC_KEY) {
     return false;
