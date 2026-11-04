@@ -18,7 +18,8 @@ const initConversionTracking = () => {
 
   // Track lead conversion
   const trackLead = async (input) => {
-    const clickId = cookieManager?.get(DUB_ID_VAR);
+    // Drop the visitorId the identity extension appends to dub_id
+    const clickId = cookieManager?.get(DUB_ID_VAR)?.split('_')[0];
     const requestBody = {
       clickId: clickId ?? '',
       ...input,
@@ -44,7 +45,8 @@ const initConversionTracking = () => {
 
   // Track sale conversion
   const trackSale = async (input) => {
-    const clickId = cookieManager?.get(DUB_ID_VAR);
+    // Drop the visitorId the identity extension appends to dub_id
+    const clickId = cookieManager?.get(DUB_ID_VAR)?.split('_')[0];
     const requestBody = {
       clickId: clickId ?? '',
       ...input,
