@@ -68,33 +68,33 @@ const initIdentity = () => {
   }
 
   // Links the visitor's device to their click once, then suffixes dub_id with the visitorId
+  async function identifyClick() {
+    await getPendingClick().catch(() => undefined);
+
+    const clickId = cookieManager.get(DUB_ID_VAR);
+
+    // Click ids never contain "_", so a suffixed dub_id is already identified
+    if (!clickId || clickId.includes('_')) {
+      return;
+    }
+
+    const identity = await loadIdentityAgent();
+    const visitorId = await identity.identify({
+      apiHost: API_HOST,
+      clickId,
+    });
+
+    // Skip when a new click replaced dub_id while identifying
+    if (visitorId && cookieManager.get(DUB_ID_VAR) === clickId) {
+      cookieManager.set(DUB_ID_VAR, `${clickId}_${visitorId}`);
+    }
+  }
+
+  // Concurrent calls share one run, and failures never reach the caller
   function trackIdentity() {
     pendingIdentity =
       pendingIdentity ||
-      getPendingClick()
-        .catch(() => undefined)
-        .then(() => {
-          const clickId = cookieManager.get(DUB_ID_VAR);
-
-          // Click ids never contain "_", so a suffixed dub_id is already identified
-          if (!clickId || clickId.includes('_')) {
-            return;
-          }
-
-          return loadIdentityAgent()
-            .then((identity) =>
-              identity.identify({
-                apiHost: API_HOST,
-                clickId,
-              }),
-            )
-            .then((visitorId) => {
-              // Skip when a new click replaced dub_id while identifying
-              if (visitorId && cookieManager.get(DUB_ID_VAR) === clickId) {
-                cookieManager.set(DUB_ID_VAR, `${clickId}_${visitorId}`);
-              }
-            });
-        })
+      identifyClick()
         .catch((error) => {
           console.warn('[dubAnalytics] trackIdentity failed.', error);
         })
