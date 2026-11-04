@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import './identity-agent';
 
 const CLICK_ID = 'kVrpHmuNu8Q9VpBG';
-const SEALED_RESULT = 'noXc7Q==';
+const VISITOR_ID = 'Uxk0Swb1Ofgfq2Jcg1cV';
+const EVENT_ID = '1708102555327.NLOjmg';
 
 const { get, start } = vi.hoisted(() => {
   const getMock = vi.fn();
@@ -34,10 +35,9 @@ describe('identity-agent.js', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     get.mockResolvedValue({
-      event_id: 'evt_1',
-      sealed_result: {
-        base64: () => SEALED_RESULT,
-      },
+      event_id: EVENT_ID,
+      visitor_id: VISITOR_ID,
+      sealed_result: null,
     });
 
     fetchMock.mockResolvedValue(
@@ -54,8 +54,8 @@ describe('identity-agent.js', () => {
     vi.clearAllMocks();
   });
 
-  it('identifies with linkedId set to the clickId and posts only the identityToken', async () => {
-    await expect(identify()).resolves.toBe(true);
+  it('identifies with linkedId set to the clickId and posts only the eventId', async () => {
+    await expect(identify()).resolves.toBe(VISITOR_ID);
 
     expect(start).toHaveBeenCalledWith({
       apiKey: 'test_public_key',
@@ -71,30 +71,44 @@ describe('identity-agent.js', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          identityToken: SEALED_RESULT,
+          eventId: EVENT_ID,
         }),
       },
     );
   });
 
-  it('skips the request when sealed results are off', async () => {
+  it('skips the request without a visitor_id, as when Sealed Client Results are on', async () => {
     get.mockResolvedValue({
-      event_id: 'evt_1',
-      sealed_result: null,
+      event_id: EVENT_ID,
+      sealed_result: {
+        base64: () => 'noXc7Q==',
+      },
     });
 
-    await expect(identify()).resolves.toBe(false);
+    await expect(identify()).resolves.toBeNull();
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('resolves false when the request is rejected', async () => {
+  it('resolves the visitorId without waiting for the request', async () => {
+    fetchMock.mockReturnValue(new Promise(() => undefined));
+
+    await expect(identify()).resolves.toBe(VISITOR_ID);
+  });
+
+  it('warns when the request is rejected', async () => {
     fetchMock.mockResolvedValue(
       new Response('Bad Request', {
         status: 400,
       }),
     );
 
-    await expect(identify()).resolves.toBe(false);
+    await expect(identify()).resolves.toBe(VISITOR_ID);
+
+    await vi.waitFor(() => {
+      expect(console.warn).toHaveBeenCalledWith(
+        '[dubAnalytics] trackIdentity failed with status 400.',
+      );
+    });
   });
 });

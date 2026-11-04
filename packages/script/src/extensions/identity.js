@@ -7,9 +7,6 @@ const initIdentity = () => {
     p: getPendingClick,
   } = window._dubAnalytics || {};
 
-  const DUB_FID_VAR = 'dub_fid';
-  const DUB_FID_MAX_AGE_SECONDS = 30 * 60;
-
   const IDENTITY_PATHS = (() => {
     const identityPaths = script.getAttribute('data-identity-paths');
 
@@ -70,7 +67,7 @@ const initIdentity = () => {
     return identityAgent;
   }
 
-  // Links the visitor's device to their click, at most once per click every 30 minutes
+  // Links the visitor's device to their click once, then suffixes dub_id with the visitorId
   function trackIdentity() {
     pendingIdentity =
       pendingIdentity ||
@@ -79,7 +76,8 @@ const initIdentity = () => {
         .then(() => {
           const clickId = cookieManager.get(DUB_ID_VAR);
 
-          if (!clickId || cookieManager.get(DUB_FID_VAR) === clickId) {
+          // Click ids never contain "_", so a suffixed dub_id is already identified
+          if (!clickId || clickId.includes('_')) {
             return;
           }
 
@@ -90,9 +88,10 @@ const initIdentity = () => {
                 clickId,
               }),
             )
-            .then((identified) => {
-              if (identified) {
-                document.cookie = `${DUB_FID_VAR}=${clickId}; path=/; max-age=${DUB_FID_MAX_AGE_SECONDS}; SameSite=Lax`;
+            .then((visitorId) => {
+              // Skip when a new click replaced dub_id while identifying
+              if (visitorId && cookieManager.get(DUB_ID_VAR) === clickId) {
+                cookieManager.set(DUB_ID_VAR, `${clickId}_${visitorId}`);
               }
             });
         })

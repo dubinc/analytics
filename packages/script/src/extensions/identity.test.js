@@ -9,6 +9,8 @@ const SOURCE = [
 ].join('\n');
 const SCRIPT_SRC = 'https://www.dubcdn.com/analytics/script.identity.js';
 const CLICK_ID = 'kVrpHmuNu8Q9VpBG';
+const VISITOR_ID = 'Uxk0Swb1Ofgfq2Jcg1cV';
+const IDENTIFIED_CLICK_ID = `${CLICK_ID}_${VISITOR_ID}`;
 
 const { pushState, replaceState } = window.history;
 const addEventListener = window.addEventListener.bind(window);
@@ -81,7 +83,7 @@ describe('identity extension', () => {
       },
     );
 
-    identify.mockResolvedValue(true);
+    identify.mockResolvedValue(VISITOR_ID);
 
     vi.spyOn(document.head, 'appendChild').mockImplementation((node) => {
       document.head.append(node);
@@ -120,7 +122,7 @@ describe('identity extension', () => {
     });
 
     await vi.waitFor(() => {
-      expect(getCookie('dub_fid')).toBe(CLICK_ID);
+      expect(getCookie('dub_id')).toBe(IDENTIFIED_CLICK_ID);
     });
 
     expect(loadedIdentityScripts()).toEqual([
@@ -223,9 +225,8 @@ describe('identity extension', () => {
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
-  it('skips when dub_fid already matches the click', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
-    document.cookie = `dub_fid=${CLICK_ID}; path=/`;
+  it('skips when dub_id is already suffixed with a visitorId', async () => {
+    document.cookie = `dub_id=${IDENTIFIED_CLICK_ID}; path=/`;
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
@@ -236,18 +237,45 @@ describe('identity extension', () => {
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
-  it('identifies again when dub_fid belongs to another click', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
-    document.cookie = 'dub_fid=otherClickId; path=/';
-    replaceState.call(window.history, null, '', '/signup');
+  it('identifies a new ?via= click that replaced an identified dub_id', async () => {
+    document.cookie = 'dub_id=oldClickId_oldVisitorId; path=/';
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          clickId: CLICK_ID,
+        }),
+      ),
+    );
+    replaceState.call(window.history, null, '', '/signup?via=partner');
 
     runScript({
+      'data-domains': JSON.stringify({
+        refer: 'dub.sh',
+      }),
       'data-identity-paths': JSON.stringify(['/signup']),
     });
 
     await vi.waitFor(() => {
-      expect(getCookie('dub_fid')).toBe(CLICK_ID);
+      expect(getCookie('dub_id')).toBe(IDENTIFIED_CLICK_ID);
     });
+    expect(identify).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clickId: CLICK_ID,
+      }),
+    );
+  });
+
+  it('keeps a new click that replaced dub_id while identifying', async () => {
+    identify.mockImplementation(async () => {
+      document.cookie = 'dub_id=newClickId; path=/';
+      return VISITOR_ID;
+    });
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+
+    runScript();
+    await window.dubAnalytics.trackIdentity();
+
+    expect(getCookie('dub_id')).toBe('newClickId');
   });
 
   it('waits for a ?via= click before identifying', async () => {
@@ -286,8 +314,8 @@ describe('identity extension', () => {
     });
   });
 
-  it('does not set dub_fid when identification fails', async () => {
-    identify.mockResolvedValue(false);
+  it('keeps dub_id unchanged when identification fails', async () => {
+    identify.mockResolvedValue(null);
     document.cookie = `dub_id=${CLICK_ID}; path=/`;
     replaceState.call(window.history, null, '', '/signup');
 
@@ -300,7 +328,7 @@ describe('identity extension', () => {
     });
     await flush();
 
-    expect(getCookie('dub_fid')).toBeUndefined();
+    expect(getCookie('dub_id')).toBe(CLICK_ID);
   });
 
   it('never throws when identity-agent.js fails to load', async () => {
@@ -314,7 +342,7 @@ describe('identity extension', () => {
     runScript();
 
     await expect(window.dubAnalytics.trackIdentity()).resolves.toBeUndefined();
-    expect(getCookie('dub_fid')).toBeUndefined();
+    expect(getCookie('dub_id')).toBe(CLICK_ID);
   });
 
   it('identifies after a client-side navigation to a matching path', async () => {
@@ -376,7 +404,7 @@ describe('identity extension', () => {
     await window.dubAnalytics.trackIdentity();
 
     expect(identify).toHaveBeenCalledTimes(1);
-    expect(getCookie('dub_fid')).toBe(CLICK_ID);
+    expect(getCookie('dub_id')).toBe(IDENTIFIED_CLICK_ID);
   });
 
   it('runs a trackIdentity call queued before the script loaded', async () => {
