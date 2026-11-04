@@ -255,7 +255,8 @@
     };
 
     // Dub Conversions tracking (via direct click ID in URL)
-    const clickId = params.get(DUB_ID_VAR);
+    // Drop any visitorId suffix, so this visit gets identified on its own
+    const clickId = params.get(DUB_ID_VAR)?.split('_')[0];
     if (clickId && shouldSetCookie()) {
       cookieManager.set(DUB_ID_VAR, clickId);
     }

@@ -237,6 +237,23 @@ describe('identity extension', () => {
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
+  it('identifies a ?dub_id= click that carries a visitorId suffix', async () => {
+    replaceState.call(
+      window.history,
+      null,
+      '',
+      `/signup?dub_id=${CLICK_ID}_otherVisitorId`,
+    );
+
+    runScript({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+
+    await vi.waitFor(() => {
+      expect(getCookie('dub_id')).toBe(IDENTIFIED_CLICK_ID);
+    });
+  });
+
   it('identifies a new ?via= click that replaced an identified dub_id', async () => {
     document.cookie = 'dub_id=oldClickId_oldVisitorId; path=/';
     fetchMock.mockResolvedValue(
