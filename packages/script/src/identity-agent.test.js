@@ -90,13 +90,30 @@ describe('identity-agent.js', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('resolves the visitorId without waiting for the request', async () => {
-    fetchMock.mockReturnValue(new Promise(() => undefined));
+  it('waits for the request before resolving the visitorId', async () => {
+    let respond = (_response) => undefined;
 
-    await expect(identify()).resolves.toBe(VISITOR_ID);
+    fetchMock.mockReturnValue(
+      new Promise((resolve) => {
+        respond = resolve;
+      }),
+    );
+
+    const pending = identify();
+    let settled = false;
+    pending.then(() => {
+      settled = true;
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(settled).toBe(false);
+
+    respond(new Response('{}'));
+
+    await expect(pending).resolves.toBe(VISITOR_ID);
   });
 
-  it('warns when the request is rejected', async () => {
+  it('resolves the visitorId after a 4xx, since retrying would fail again', async () => {
     fetchMock.mockResolvedValue(
       new Response('Bad Request', {
         status: 400,
@@ -105,10 +122,27 @@ describe('identity-agent.js', () => {
 
     await expect(identify()).resolves.toBe(VISITOR_ID);
 
-    await vi.waitFor(() => {
-      expect(console.warn).toHaveBeenCalledWith(
-        '[dubAnalytics] trackIdentity failed with status 400.',
+    expect(console.warn).toHaveBeenCalledWith(
+      '[dubAnalytics] trackIdentity failed with status 400.',
+    );
+  });
+
+  it.each([429, 500, 503])(
+    'resolves null after a %i so the next page load retries',
+    async (status) => {
+      fetchMock.mockResolvedValue(
+        new Response('Error', {
+          status,
+        }),
       );
-    });
+
+      await expect(identify()).resolves.toBeNull();
+    },
+  );
+
+  it('resolves null when the request fails to send', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    await expect(identify()).resolves.toBeNull();
   });
 });

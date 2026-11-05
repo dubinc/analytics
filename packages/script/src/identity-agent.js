@@ -2,7 +2,7 @@ import { start } from '@fingerprint/agent';
 
 const FINGERPRINT_PUBLIC_KEY = process.env.DUB_FINGERPRINT_PUBLIC_KEY;
 
-// Loaded on demand by the identity extension; resolves the visitorId once the device is identified
+// Loaded on demand by the identity extension; resolves the visitorId once Dub has accepted or rejected the identification
 async function identify({ apiHost, clickId }) {
   if (!FINGERPRINT_PUBLIC_KEY) {
     return null;
@@ -19,27 +19,40 @@ async function identify({ apiHost, clickId }) {
     return null;
   }
 
-  fetch(`${apiHost}/track/identity`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      eventId,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        console.warn(
-          `[dubAnalytics] trackIdentity failed with status ${response.status}.`,
-        );
-      }
-    })
-    .catch((error) => {
-      console.warn('[dubAnalytics] trackIdentity failed.', error);
+  try {
+    const response = await fetch(`${apiHost}/track/identity`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        eventId,
+      }),
     });
 
-  return visitorId;
+    if (response.ok) {
+      return visitorId;
+    }
+
+    console.warn(
+      `[dubAnalytics] trackIdentity failed with status ${response.status}.`,
+    );
+
+    // A 4xx won't succeed on retry, so the click is done; a 5xx or 429 is left for the next page load
+    if (
+      response.status >= 400 &&
+      response.status < 500 &&
+      response.status !== 429
+    ) {
+      return visitorId;
+    }
+
+    return null;
+  } catch (error) {
+    console.warn('[dubAnalytics] trackIdentity failed.', error);
+
+    return null;
+  }
 }
 
 window._dubIdentity = {
