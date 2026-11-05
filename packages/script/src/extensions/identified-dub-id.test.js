@@ -46,7 +46,7 @@ describe('dub_id suffixed by the identity extension', () => {
 
   it.each([
     ['trackLead', IDENTIFIED_CLICK_ID],
-    ['trackSale', CLICK_ID],
+    ['trackSale', IDENTIFIED_CLICK_ID],
   ])('%s sends %s as the clickId', async (method, clickId) => {
     runScript('conversion-tracking', {
       'data-publishable-key': 'dub_pk_test',
