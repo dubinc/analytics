@@ -92,7 +92,7 @@ Identifies the visitor's device on the given paths and links it to their Dub cli
 
 A path matches exactly (a trailing slash is ignored). A trailing `/*` also matches everything under the path, so `/checkout/*` matches `/checkout` and `/checkout/plan`. It runs on the first page load and on client-side navigation to a matching path.
 
-It only runs for visitors with a `dub_id` cookie, once per click: after identifying, it appends the device's visitor ID to the cookie (`dub_id=<clickId>_<visitorId>`). A new click replaces the cookie and gets identified again. The script strips the suffix before sending the click ID with `trackLead`, `trackSale` or outbound links, but if you read the `dub_id` cookie yourself, use the part before `_`. The device identification agent is loaded only when identification runs, and failures never throw or block the page.
+It only runs for visitors with a `dub_id` cookie, once per click: after identifying, it appends the device's visitor ID to the cookie (`dub_id=<clickId>_<visitorId>`). A new click replaces the cookie and gets identified again. `trackLead` sends the full value, so Dub can link the lead to the device; pass the cookie as is when you track leads from your server too. The script strips the suffix for `trackSale` and outbound links, and anywhere else you read the `dub_id` cookie yourself, the click ID is the part before `_`. The device identification agent is loaded only when identification runs, and failures never throw or block the page.
 
 Identification needs Sealed Client Results turned off in the Fingerprint workspace, so the agent returns the visitor ID.
 

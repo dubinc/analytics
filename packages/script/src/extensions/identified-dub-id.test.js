@@ -44,25 +44,23 @@ describe('dub_id suffixed by the identity extension', () => {
     vi.clearAllMocks();
   });
 
-  it.each(['trackLead', 'trackSale'])(
-    '%s sends the bare clickId',
-    async (method) => {
-      runScript('conversion-tracking', {
-        'data-publishable-key': 'dub_pk_test',
-      });
+  it.each([
+    ['trackLead', IDENTIFIED_CLICK_ID],
+    ['trackSale', CLICK_ID],
+  ])('%s sends %s as the clickId', async (method, clickId) => {
+    runScript('conversion-tracking', {
+      'data-publishable-key': 'dub_pk_test',
+    });
 
-      window.dubAnalytics[method]({
-        eventName: 'Sign up',
-      });
+    window.dubAnalytics[method]({
+      eventName: 'Sign up',
+    });
 
-      await vi.waitFor(() => {
-        expect(fetchMock).toHaveBeenCalledTimes(1);
-      });
-      expect(JSON.parse(fetchMock.mock.calls[0][1].body).clickId).toBe(
-        CLICK_ID,
-      );
-    },
-  );
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).clickId).toBe(clickId);
+  });
 
   it('decorates outbound links with the bare clickId', () => {
     document.body.innerHTML = '<a href="https://app.example.com/signup">Go</a>';
