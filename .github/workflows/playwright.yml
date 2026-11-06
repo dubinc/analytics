@@ -42,10 +42,6 @@ jobs:
           nohup python3 -m http.server 4000 > /dev/null 2>&1 &
           curl --silent --fail --retry 10 --retry-connrefused --retry-delay 1 --output /dev/null http://localhost:4000/analytics/script.js
 
-      - name: Install Playwright
-        working-directory: apps/nextjs
-        run: pnpm add -D @playwright/test
-
       - name: Install Playwright Browsers
         working-directory: apps/nextjs
         run: pnpm exec playwright install chromium --with-deps
