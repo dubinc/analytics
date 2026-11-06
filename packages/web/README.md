@@ -104,7 +104,7 @@ Identification needs Sealed Client Results turned off in the Fingerprint workspa
 
 To identify conditionally instead, call `trackIdentity` yourself. It follows the same `dub_id` rules, and needs the `trackIdentity` prop to load the identity variant (`paths: []` turns off automatic identification).
 
-Where the law requires consent for device fingerprinting, use `paths: []` and call `trackIdentity()` only after the visitor gives consent. The script has no consent or opt-out setting of its own.
+Where the law requires consent for device fingerprinting, use `paths: []` and call `trackIdentity()` only after the visitor gives consent. The script has no consent or opt-out setting of its own. A call first waits for a pending `?via=` click, and it can't be canceled, so identification can still start if consent is withdrawn during that wait.
 
 ```tsx
 const { trackIdentity } = useAnalytics();
