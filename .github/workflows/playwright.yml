@@ -38,7 +38,9 @@ jobs:
 
       - name: Serve the analytics script
         working-directory: packages/script/dist
-        run: nohup python3 -m http.server 4000 > /dev/null 2>&1 &
+        run: |
+          nohup python3 -m http.server 4000 > /dev/null 2>&1 &
+          curl --silent --fail --retry 10 --retry-connrefused --retry-delay 1 --output /dev/null http://localhost:4000/analytics/script.js
 
       - name: Install Playwright
         working-directory: apps/nextjs
