@@ -1,6 +1,7 @@
 const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
+const { verifyEnv } = require('./verify-env');
 const { verifyOutputs } = require('./verify-outputs');
 
 const baseConfig = {
@@ -35,6 +36,13 @@ const combinations = EXTENSIONS.reduce(
 
 const variantFile = (extensions) =>
   `dist/analytics/${['script', ...extensions, 'js'].join('.')}`;
+
+try {
+  verifyEnv(process.env);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 
 // Ensure dist/analytics exists
 fs.mkdirSync(path.join(__dirname, 'dist/analytics'), { recursive: true });
