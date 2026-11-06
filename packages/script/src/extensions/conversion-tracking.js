@@ -18,6 +18,7 @@ const initConversionTracking = () => {
 
   // Track lead conversion
   const trackLead = async (input) => {
+    // Keep the visitorId the identity extension appends to dub_id, so the lead is linked to the device
     const clickId = cookieManager?.get(DUB_ID_VAR);
     const requestBody = {
       clickId: clickId ?? '',
@@ -44,6 +45,7 @@ const initConversionTracking = () => {
 
   // Track sale conversion
   const trackSale = async (input) => {
+    // Keep the visitorId so a sale that creates the customer is linked to the device
     const clickId = cookieManager?.get(DUB_ID_VAR);
     const requestBody = {
       clickId: clickId ?? '',

@@ -44,7 +44,9 @@ const initOutboundDomains = () => {
       .map(normalizeDomain)
       .filter((d) => d !== currentDomain);
 
-    const existingCookie = clickId || cookieManager.get(DUB_ID_VAR);
+    // Drop the visitorId the identity extension appends to dub_id, so each domain identifies its own visit
+    const existingCookie =
+      clickId || cookieManager.get(DUB_ID_VAR)?.split('_')[0];
     if (!existingCookie) return;
 
     // Get all links and iframes

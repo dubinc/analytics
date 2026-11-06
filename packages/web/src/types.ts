@@ -155,6 +155,15 @@ export interface AnalyticsProps {
   queryParams?: string[];
 
   /**
+   * Identify the visitor's device on these paths and link it to their Dub click, for partner
+   * risk monitoring. Only runs for partner clicks tracked with `?via=`, so set `domainsConfig.refer`.
+   * Paths match exactly. A trailing `/*` also matches everything under the path (e.g. `/checkout/*`).
+   */
+  trackIdentity?: {
+    paths: string[];
+  };
+
+  /**
    * Custom properties to pass to the script.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement
    */

@@ -147,8 +147,9 @@
         .find(([k]) => k === key)?.[1];
     },
 
-    set(key, value) {
-      const cookieString = Object.entries(COOKIE_OPTIONS)
+    // options override COOKIE_OPTIONS for this write, and a falsy value drops that attribute
+    set(key, value, options = {}) {
+      const cookieString = Object.entries({ ...COOKIE_OPTIONS, ...options })
         .filter(([, v]) => v)
         .map(([k, v]) => `${k}=${v}`)
         .join('; ');
@@ -191,6 +192,7 @@
   };
 
   let clientClickTracked = false;
+  let pendingClick = Promise.resolve();
 
   // Track click and set cookie
   function trackClick({ domain, key }) {
@@ -200,7 +202,7 @@
 
     clientClickTracked = true;
 
-    fetch(`${API_HOST}/track/click`, {
+    pendingClick = fetch(`${API_HOST}/track/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -254,7 +256,8 @@
     };
 
     // Dub Conversions tracking (via direct click ID in URL)
-    const clickId = params.get(DUB_ID_VAR);
+    // Drop any visitorId suffix, so this visit gets identified on its own
+    const clickId = params.get(DUB_ID_VAR)?.split('_')[0];
     if (clickId && shouldSetCookie()) {
       cookieManager.set(DUB_ID_VAR, clickId);
     }
@@ -290,12 +293,15 @@
     c: cookieManager,
     qm: queueManager,
     i: DUB_ID_VAR,
+    pc: DUB_PARTNER_COOKIE,
     h: HOSTNAME,
     a: API_HOST,
     d: SHORT_DOMAIN,
     v: QUERY_PARAM_VALUE,
     n: DOMAINS_CONFIG,
     k: PUBLISHABLE_KEY,
+    s: script,
+    p: () => pendingClick,
   };
 
   // Initialize
