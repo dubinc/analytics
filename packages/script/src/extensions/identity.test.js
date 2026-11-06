@@ -60,6 +60,19 @@ function getCookie(name) {
     .find(([key]) => key === name)?.[1];
 }
 
+// A ?via= partner click sets dub_id and dub_partner_data with the same clickId
+function setPartnerClick(clickId = CLICK_ID) {
+  document.cookie = `dub_id=${clickId}; path=/`;
+  setPartnerData(clickId);
+}
+
+function setPartnerData(clickId = CLICK_ID) {
+  document.cookie = `dub_partner_data=${JSON.stringify({
+    clickId,
+    partner: { id: 'pn_1', name: 'Partner', image: null },
+  })}; path=/`;
+}
+
 function flush() {
   return new Promise((resolve) => {
     setTimeout(resolve, 0);
@@ -113,7 +126,7 @@ describe('identity extension', () => {
   });
 
   it('loads identity-agent.js next to the script and identifies the click on a matching path', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
@@ -140,7 +153,7 @@ describe('identity extension', () => {
     ['/checkout/plan/pro', ['/checkout/*']],
     ['/anything', ['/*']],
   ])('identifies on %s for paths %j', async (pathname, paths) => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
     replaceState.call(window.history, null, '', pathname);
 
     runScript({
@@ -158,7 +171,7 @@ describe('identity extension', () => {
     ['/signup-old', ['/signup']],
     ['/checkouts', ['/checkout/*']],
   ])('skips %s for paths %j', async (pathname, paths) => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
     replaceState.call(window.history, null, '', pathname);
 
     runScript({
@@ -170,7 +183,7 @@ describe('identity extension', () => {
   });
 
   it('is not part of variants without the identity extension', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
     replaceState.call(window.history, null, '', '/signup');
 
     runScript(
@@ -186,7 +199,7 @@ describe('identity extension', () => {
   });
 
   it('does nothing without data-identity-paths', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
 
     runScript();
     await flush();
@@ -195,7 +208,7 @@ describe('identity extension', () => {
   });
 
   it('ignores data-identity-paths that is not an array of paths', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
     replaceState.call(window.history, null, '', '/signup');
 
     expect(() =>
@@ -225,6 +238,44 @@ describe('identity extension', () => {
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
+  it('skips a dub_id click without dub_partner_data, like an ad or site-visit click', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    replaceState.call(window.history, null, '', '/signup');
+
+    runScript({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+    await flush();
+
+    expect(loadedIdentityScripts()).toEqual([]);
+    await expect(window.dubAnalytics.trackIdentity()).resolves.toBeUndefined();
+    expect(loadedIdentityScripts()).toEqual([]);
+    expect(getCookie('dub_id')).toBe(CLICK_ID);
+  });
+
+  it('skips a newer click when dub_partner_data belongs to another click', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerData('olderClickId');
+    replaceState.call(window.history, null, '', '/signup');
+
+    runScript({
+      'data-identity-paths': JSON.stringify(['/signup']),
+    });
+    await flush();
+
+    expect(loadedIdentityScripts()).toEqual([]);
+  });
+
+  it('skips when dub_partner_data is not valid JSON', async () => {
+    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    document.cookie = 'dub_partner_data=not-json; path=/';
+
+    runScript();
+
+    await expect(window.dubAnalytics.trackIdentity()).resolves.toBeUndefined();
+    expect(loadedIdentityScripts()).toEqual([]);
+  });
+
   it('skips when dub_id is already suffixed with a visitorId', async () => {
     document.cookie = `dub_id=${IDENTIFIED_CLICK_ID}; path=/`;
     replaceState.call(window.history, null, '', '/signup');
@@ -238,6 +289,7 @@ describe('identity extension', () => {
   });
 
   it('identifies a ?dub_id= click that carries a visitorId suffix', async () => {
+    setPartnerData();
     replaceState.call(
       window.history,
       null,
@@ -260,6 +312,7 @@ describe('identity extension', () => {
       new Response(
         JSON.stringify({
           clickId: CLICK_ID,
+          partner: { id: 'pn_1', name: 'Partner', image: null },
         }),
       ),
     );
@@ -287,7 +340,7 @@ describe('identity extension', () => {
       document.cookie = 'dub_id=newClickId; path=/';
       return VISITOR_ID;
     });
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
 
     runScript();
     await window.dubAnalytics.trackIdentity();
@@ -318,6 +371,7 @@ describe('identity extension', () => {
       new Response(
         JSON.stringify({
           clickId: CLICK_ID,
+          partner: { id: 'pn_1', name: 'Partner', image: null },
         }),
       ),
     );
@@ -333,7 +387,7 @@ describe('identity extension', () => {
 
   it('keeps dub_id unchanged when identification fails', async () => {
     identify.mockResolvedValue(null);
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
@@ -354,7 +408,7 @@ describe('identity extension', () => {
       setTimeout(() => node.onerror());
       return node;
     });
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
 
     runScript();
 
@@ -363,7 +417,7 @@ describe('identity extension', () => {
   });
 
   it('identifies after a client-side navigation to a matching path', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
 
     runScript({
       'data-identity-paths': JSON.stringify(['/signup']),
@@ -380,7 +434,7 @@ describe('identity extension', () => {
   });
 
   it('identifies when going back to a matching path', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
 
     runScript({
       'data-identity-paths': JSON.stringify(['/signup']),
@@ -396,7 +450,7 @@ describe('identity extension', () => {
   });
 
   it('ignores history updates that keep the same path', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
@@ -407,7 +461,7 @@ describe('identity extension', () => {
     });
 
     clearCookies();
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
     window.history.replaceState(null, '', '/signup?step=2');
     await flush();
 
@@ -415,7 +469,7 @@ describe('identity extension', () => {
   });
 
   it('exposes trackIdentity on window.dubAnalytics without paths', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
 
     runScript();
     await window.dubAnalytics.trackIdentity();
@@ -425,7 +479,7 @@ describe('identity extension', () => {
   });
 
   it('runs a trackIdentity call queued before the script loaded', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
     window.dubAnalytics('trackIdentity');
 
     runScript();
@@ -436,7 +490,7 @@ describe('identity extension', () => {
   });
 
   it('shares one identification between concurrent calls', async () => {
-    document.cookie = `dub_id=${CLICK_ID}; path=/`;
+    setPartnerClick();
 
     runScript();
     await Promise.all([

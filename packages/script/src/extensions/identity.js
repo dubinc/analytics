@@ -7,6 +7,9 @@ const initIdentity = () => {
     p: getPendingClick,
   } = window._dubAnalytics || {};
 
+  // Same name as DUB_PARTNER_COOKIE in base.js
+  const DUB_PARTNER_COOKIE = 'dub_partner_data';
+
   const IDENTITY_PATHS = (() => {
     const identityPaths = script.getAttribute('data-identity-paths');
 
@@ -67,6 +70,16 @@ const initIdentity = () => {
     return identityAgent;
   }
 
+  // A ?via= partner click stores its /track/click response, clickId included, in dub_partner_data
+  function getPartnerClickId() {
+    try {
+      return JSON.parse(cookieManager.get(DUB_PARTNER_COOKIE) || 'null')
+        ?.clickId;
+    } catch (error) {
+      return undefined;
+    }
+  }
+
   // Links the visitor's device to their click once, then suffixes dub_id with the visitorId
   async function identifyClick() {
     await getPendingClick().catch(() => undefined);
@@ -75,6 +88,11 @@ const initIdentity = () => {
 
     // Click ids never contain "_", so a suffixed dub_id is already identified
     if (!clickId || clickId.includes('_')) {
+      return;
+    }
+
+    // Fingerprint is only for partner clicks, so skip ad and site-visit clicks, and clicks newer than the partner data
+    if (getPartnerClickId() !== clickId) {
       return;
     }
 
