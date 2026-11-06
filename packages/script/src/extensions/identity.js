@@ -3,13 +3,11 @@ const initIdentity = () => {
     a: API_HOST,
     c: cookieManager,
     i: DUB_ID_VAR,
+    pc: DUB_PARTNER_COOKIE,
     h: HOSTNAME,
     s: script,
     p: getPendingClick,
   } = window._dubAnalytics || {};
-
-  // Same name as DUB_PARTNER_COOKIE in base.js
-  const DUB_PARTNER_COOKIE = 'dub_partner_data';
 
   const IDENTITY_PATHS = (() => {
     const identityPaths = script.getAttribute('data-identity-paths');

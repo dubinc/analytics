@@ -293,6 +293,7 @@
     c: cookieManager,
     qm: queueManager,
     i: DUB_ID_VAR,
+    pc: DUB_PARTNER_COOKIE,
     h: HOSTNAME,
     a: API_HOST,
     d: SHORT_DOMAIN,
