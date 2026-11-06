@@ -147,8 +147,9 @@
         .find(([k]) => k === key)?.[1];
     },
 
-    set(key, value) {
-      const cookieString = Object.entries(COOKIE_OPTIONS)
+    // options override COOKIE_OPTIONS for this write, and a falsy value drops that attribute
+    set(key, value, options = {}) {
+      const cookieString = Object.entries({ ...COOKIE_OPTIONS, ...options })
         .filter(([, v]) => v)
         .map(([k, v]) => `${k}=${v}`)
         .join('; ');

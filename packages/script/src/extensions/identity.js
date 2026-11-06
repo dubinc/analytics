@@ -3,6 +3,7 @@ const initIdentity = () => {
     a: API_HOST,
     c: cookieManager,
     i: DUB_ID_VAR,
+    h: HOSTNAME,
     s: script,
     p: getPendingClick,
   } = window._dubAnalytics || {};
@@ -80,6 +81,36 @@ const initIdentity = () => {
     }
   }
 
+  // The cookie domains this page can write, most specific first: host-only, .app.example.com, .example.com
+  function cookieDomains() {
+    const parts = HOSTNAME.split('.');
+
+    return [
+      undefined,
+      ...parts.slice(0, -1).map((_, i) => `.${parts.slice(i).join('.')}`),
+    ];
+  }
+
+  function hasCookie(name, value) {
+    return document.cookie
+      .split(';')
+      .some((cookie) => cookie.trim() === `${name}=${value}`);
+  }
+
+  // dub_id can come from a parent domain, for a click on example.com and a signup on app.example.com.
+  // So also write each domain level until no bare copy is left, and stop there to keep the original scope.
+  function setIdentifiedClickId(clickId, visitorId) {
+    const identifiedClickId = `${clickId}_${visitorId}`;
+
+    cookieManager.set(DUB_ID_VAR, identifiedClickId);
+
+    for (const domain of cookieDomains()) {
+      if (!hasCookie(DUB_ID_VAR, clickId)) return;
+
+      cookieManager.set(DUB_ID_VAR, identifiedClickId, { domain });
+    }
+  }
+
   // Links the visitor's device to their click once, then suffixes dub_id with the visitorId
   async function identifyClick() {
     await getPendingClick().catch(() => undefined);
@@ -104,7 +135,7 @@ const initIdentity = () => {
 
     // Skip when a new click replaced dub_id while identifying
     if (visitorId && cookieManager.get(DUB_ID_VAR) === clickId) {
-      cookieManager.set(DUB_ID_VAR, `${clickId}_${visitorId}`);
+      setIdentifiedClickId(clickId, visitorId);
     }
   }
 
