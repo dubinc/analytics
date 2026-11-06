@@ -156,8 +156,8 @@ export interface AnalyticsProps {
 
   /**
    * Identify the visitor's device on these paths and link it to their Dub click, for partner
-   * risk monitoring. Only runs for visitors with a `dub_id` cookie.
-   * Paths match exactly; a trailing `/*` also matches everything under the path (e.g. `/checkout/*`).
+   * risk monitoring. Only runs for partner clicks tracked with `?via=`, so set `domainsConfig.refer`.
+   * Paths match exactly. A trailing `/*` also matches everything under the path (e.g. `/checkout/*`).
    */
   trackIdentity?: {
     paths: string[];
