@@ -98,11 +98,10 @@ const initIdentity = () => {
   }
 
   // dub_id can come from a parent domain, for a click on example.com and a signup on app.example.com.
-  // So also write each domain level until no bare copy is left, and stop there to keep the original scope.
+  // So write each domain level, most specific first, and stop when no bare copy is left to keep the original scope.
+  // The default COOKIE_OPTIONS domain is not used here, because on www.example.com it is .example.com.
   function setIdentifiedClickId(clickId, visitorId) {
     const identifiedClickId = `${clickId}_${visitorId}`;
-
-    cookieManager.set(DUB_ID_VAR, identifiedClickId);
 
     for (const domain of cookieDomains()) {
       if (!hasCookie(DUB_ID_VAR, clickId)) return;

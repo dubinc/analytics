@@ -97,6 +97,30 @@ describe('identity extension cookie scope', () => {
     expect(identify).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps a host-only dub_id on www to one cookie, with no parent-domain copy', async () => {
+    // eslint-disable-next-line no-undef
+    jsdom.reconfigure({ url: 'https://www.example.com/signup' });
+
+    try {
+      document.cookie = `dub_id=${CLICK_ID}; path=/`;
+      document.cookie = `dub_partner_data=${JSON.stringify({
+        clickId: CLICK_ID,
+        partner: { id: 'pn_1', name: 'Partner', image: null },
+      })}; path=/`;
+
+      runScript();
+      await window.dubAnalytics.trackIdentity();
+
+      expect(dubIdValues()).toEqual([IDENTIFIED_CLICK_ID]);
+    } finally {
+      ['dub_id', 'dub_partner_data'].forEach((name) => {
+        document.cookie = `${name}=; path=/; max-age=0`;
+      });
+      // eslint-disable-next-line no-undef
+      jsdom.reconfigure({ url: 'https://app.example.com/signup' });
+    }
+  });
+
   it('keeps a dub_id set on this subdomain to one cookie', async () => {
     setPartnerClick('.app.example.com');
 
