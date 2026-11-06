@@ -59,6 +59,7 @@ describe('identity-agent.js', () => {
 
     expect(start).toHaveBeenCalledWith({
       apiKey: 'test_public_key',
+      endpoints: ['https://identity.dub.co'],
     });
     expect(get).toHaveBeenCalledWith({
       linkedId: CLICK_ID,
