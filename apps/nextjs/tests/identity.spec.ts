@@ -1,11 +1,8 @@
 import { DUB_ANALYTICS_SCRIPT_URL } from '@/app/constants';
 import { expect, test, type Page } from '@playwright/test';
 
-// The identity variant from the same build as the other specs
-const IDENTITY_SCRIPT_URL = DUB_ANALYTICS_SCRIPT_URL.replace(
-  /script[^/]*\.js$/,
-  'script.identity.js',
-);
+// The folder of the build the other specs use
+const BUILD_URL = DUB_ANALYTICS_SCRIPT_URL.replace(/script[^/]*\.js$/, '');
 const SITE = 'http://identity.test';
 const CLICK_ID = 'idE2EClick01';
 const VISITOR_ID = 'idE2EVisitor01';
@@ -27,7 +24,7 @@ async function serveSite(page: Page) {
               })(window, 'dubAnalytics');
             </script>
             <script
-              src="${IDENTITY_SCRIPT_URL}"
+              src="${SITE}/analytics/script.identity.js"
               defer
               data-domains='{"refer":"dub.sh"}'
               data-identity-paths='["/signup"]'
@@ -37,6 +34,15 @@ async function serveSite(page: Page) {
         </html>`,
     }),
   );
+
+  // Chromium blocks a public origin from loading a script from localhost, so the build is fetched here and served from the test origin.
+  // Registered after the page route, because Playwright tries the newest matching route first.
+  await page.route(`${SITE}/analytics/**`, async (route) => {
+    const file = new URL(route.request().url()).pathname.split('/').pop();
+    const response = await route.fetch({ url: `${BUILD_URL}${file}` });
+
+    await route.fulfill({ response });
+  });
 }
 
 // Stubs the Fingerprint agent, so the spec checks the script without calling Fingerprint or Dub
