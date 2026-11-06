@@ -1,6 +1,7 @@
 const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
+const { verifyOutputs } = require('./verify-outputs');
 
 const baseConfig = {
   bundle: true,
@@ -32,6 +33,9 @@ const combinations = EXTENSIONS.reduce(
   [[]],
 );
 
+const variantFile = (extensions) =>
+  `dist/analytics/${['script', ...extensions, 'js'].join('.')}`;
+
 // Ensure dist/analytics exists
 fs.mkdirSync(path.join(__dirname, 'dist/analytics'), { recursive: true });
 
@@ -54,7 +58,7 @@ Promise.all([
         resolveDir: __dirname,
         sourcefile: extensions.length ? 'combined.js' : 'base.js',
       },
-      outfile: `dist/analytics/${['script', ...extensions, 'js'].join('.')}`,
+      outfile: variantFile(extensions),
     }),
   ),
 
@@ -68,4 +72,15 @@ Promise.all([
     },
     outfile: 'dist/analytics/identity-agent.js',
   }),
-]).catch(() => process.exit(1));
+])
+  .then(() =>
+    verifyOutputs([
+      ...combinations.map(variantFile),
+      'dist/analytics/identity-agent.js',
+      'dist/_redirects',
+    ]),
+  )
+  .catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+  });
