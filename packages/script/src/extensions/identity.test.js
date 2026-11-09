@@ -131,7 +131,7 @@ describe('identity extension', () => {
 
     runScript({
       'data-api-host': 'https://api.example.com',
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
 
     await vi.waitFor(() => {
@@ -157,7 +157,7 @@ describe('identity extension', () => {
     replaceState.call(window.history, null, '', pathname);
 
     runScript({
-      'data-identity-paths': JSON.stringify(paths),
+      'data-track-identity-paths': JSON.stringify(paths),
     });
 
     await vi.waitFor(() => {
@@ -175,7 +175,7 @@ describe('identity extension', () => {
     replaceState.call(window.history, null, '', pathname);
 
     runScript({
-      'data-identity-paths': JSON.stringify(paths),
+      'data-track-identity-paths': JSON.stringify(paths),
     });
     await flush();
 
@@ -188,7 +188,7 @@ describe('identity extension', () => {
 
     runScript(
       {
-        'data-identity-paths': JSON.stringify(['/signup']),
+        'data-track-identity-paths': JSON.stringify(['/signup']),
       },
       BASE_SOURCE,
     );
@@ -198,7 +198,7 @@ describe('identity extension', () => {
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
-  it('does nothing without data-identity-paths', async () => {
+  it('does nothing without data-track-identity-paths', async () => {
     setPartnerClick();
 
     runScript();
@@ -207,18 +207,18 @@ describe('identity extension', () => {
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
-  it('ignores data-identity-paths that is not an array of paths', async () => {
+  it('ignores data-track-identity-paths that is not an array of paths', async () => {
     setPartnerClick();
     replaceState.call(window.history, null, '', '/signup');
 
     expect(() =>
       runScript({
-        'data-identity-paths': JSON.stringify('/signup'),
+        'data-track-identity-paths': JSON.stringify('/signup'),
       }),
     ).not.toThrow();
     expect(() =>
       runScript({
-        'data-identity-paths': JSON.stringify([42, '/signup']),
+        'data-track-identity-paths': JSON.stringify([42, '/signup']),
       }),
     ).not.toThrow();
 
@@ -231,7 +231,7 @@ describe('identity extension', () => {
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
 
@@ -243,7 +243,7 @@ describe('identity extension', () => {
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
 
@@ -259,7 +259,7 @@ describe('identity extension', () => {
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
 
@@ -281,7 +281,7 @@ describe('identity extension', () => {
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
 
@@ -298,7 +298,7 @@ describe('identity extension', () => {
     );
 
     runScript({
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
 
     await vi.waitFor(() => {
@@ -322,7 +322,7 @@ describe('identity extension', () => {
       'data-domains': JSON.stringify({
         refer: 'dub.sh',
       }),
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
 
     await vi.waitFor(() => {
@@ -361,7 +361,7 @@ describe('identity extension', () => {
       'data-domains': JSON.stringify({
         refer: 'dub.sh',
       }),
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
 
@@ -391,7 +391,7 @@ describe('identity extension', () => {
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
 
     await vi.waitFor(() => {
@@ -420,7 +420,7 @@ describe('identity extension', () => {
     setPartnerClick();
 
     runScript({
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
 
@@ -437,7 +437,7 @@ describe('identity extension', () => {
     setPartnerClick();
 
     runScript({
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
     await flush();
 
@@ -454,7 +454,7 @@ describe('identity extension', () => {
     replaceState.call(window.history, null, '', '/signup');
 
     runScript({
-      'data-identity-paths': JSON.stringify(['/signup']),
+      'data-track-identity-paths': JSON.stringify(['/signup']),
     });
     await vi.waitFor(() => {
       expect(identify).toHaveBeenCalledTimes(1);

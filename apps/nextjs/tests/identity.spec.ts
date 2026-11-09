@@ -27,7 +27,7 @@ async function serveSite(page: Page) {
               src="${SITE}/analytics/script.identity.js"
               defer
               data-domains='{"refer":"dub.sh"}'
-              data-identity-paths='["/signup"]'
+              data-track-identity-paths='["/signup"]'
             ></script>
           </head>
           <body>Identity test</body>

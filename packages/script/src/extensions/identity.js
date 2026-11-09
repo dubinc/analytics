@@ -10,7 +10,7 @@ const initIdentity = () => {
   } = window._dubAnalytics || {};
 
   const IDENTITY_PATHS = (() => {
-    const identityPaths = script.getAttribute('data-identity-paths');
+    const identityPaths = script.getAttribute('data-track-identity-paths');
 
     if (!identityPaths) return [];
 
@@ -22,7 +22,7 @@ const initIdentity = () => {
         : [];
     } catch (error) {
       console.warn(
-        '[dubAnalytics] Failed to parse data-identity-paths.',
+        '[dubAnalytics] Failed to parse data-track-identity-paths.',
         error,
       );
       return [];
