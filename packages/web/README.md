@@ -86,7 +86,7 @@ import { Analytics as DubAnalytics } from "@dub/analytics"
 
 The query parameter to listen to for client-side click-tracking (e.g. `?via=john`, `?ref=jane`). The default is `via`.
 
-### `trackIdentity`
+### `trackIdentityPaths`
 
 Identifies the visitor's device on the given paths and links it to their Dub click, for partner risk monitoring.
 
@@ -99,12 +99,12 @@ It runs once per click: after identifying, it appends the device's visitor ID to
 Identification needs Sealed Client Results turned off in the Fingerprint workspace, so the agent returns the visitor ID.
 
 ```tsx
-<DubAnalytics trackIdentity={{ paths: ['/signup', '/checkout/*'] }} />
+<DubAnalytics trackIdentityPaths={['/signup', '/checkout/*']} />
 ```
 
-To identify conditionally instead, call `trackIdentity` yourself. It follows the same `dub_id` rules, and needs the `trackIdentity` prop to load the identity variant (`paths: []` turns off automatic identification).
+To identify conditionally instead, call `trackIdentity` yourself. It follows the same `dub_id` rules, and needs the `trackIdentityPaths` prop to load the identity variant (`trackIdentityPaths={[]}` turns off automatic identification).
 
-Where the law requires consent for device fingerprinting, use `paths: []` and call `trackIdentity()` only after the visitor gives consent. The script has no consent or opt-out setting of its own. A call first waits for a pending `?via=` click, and it can't be canceled, so identification can still start if consent is withdrawn during that wait.
+Where the law requires consent for device fingerprinting, use `trackIdentityPaths={[]}` and call `trackIdentity()` only after the visitor gives consent. The script has no consent or opt-out setting of its own. A call first waits for a pending `?via=` click, and it can't be canceled, so identification can still start if consent is withdrawn during that wait.
 
 ```tsx
 const { trackIdentity } = useAnalytics();
@@ -112,12 +112,12 @@ const { trackIdentity } = useAnalytics();
 await trackIdentity();
 ```
 
-Without React, use the `identity` script variant (`script.identity.js`, or combined like `script.site-visit.identity.js`). Set the paths with a `data-identity-paths` attribute, and call `dubAnalytics.trackIdentity()`. To queue calls made before the script loads, add `trackIdentity` to the snippet's method list.
+Without React, use the `identity` script variant (`script.identity.js`, or combined like `script.site-visit.identity.js`). Set the paths with a `data-track-identity-paths` attribute, and call `dubAnalytics.trackIdentity()`. To queue calls made before the script loads, add `trackIdentity` to the snippet's method list.
 
 ```html
 <script
   src="https://www.dubcdn.com/analytics/script.identity.js"
-  data-identity-paths='["/signup", "/checkout/*"]'
+  data-track-identity-paths='["/signup", "/checkout/*"]'
   defer
 ></script>
 ```
