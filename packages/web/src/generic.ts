@@ -35,7 +35,7 @@ function inject(props: AnalyticsProps): void {
   if (props.domainsConfig?.site) features.push('site-visit');
   if (props.domainsConfig?.outbound) features.push('outbound-domains');
   if (props.publishableKey) features.push('conversion-tracking');
-  if (props.trackIdentity) features.push('identity');
+  if (props.trackIdentityPaths) features.push('identity');
 
   const src =
     props.scriptProps?.src ||
@@ -86,10 +86,10 @@ function inject(props: AnalyticsProps): void {
     script.setAttribute('data-query-params', JSON.stringify(props.queryParams));
   }
 
-  if (props.trackIdentity) {
+  if (props.trackIdentityPaths) {
     script.setAttribute(
-      'data-identity-paths',
-      JSON.stringify(props.trackIdentity.paths),
+      'data-track-identity-paths',
+      JSON.stringify(props.trackIdentityPaths),
     );
   }
 
