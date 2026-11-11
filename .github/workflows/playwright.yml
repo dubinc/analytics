@@ -1,8 +1,13 @@
 name: Playwright Tests
 
+# Tests the script built from this commit, so a PR is checked before Cloudflare Pages deploys it
 on:
-  repository_dispatch:
-    types: [analytics-script-deployed]
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -28,9 +33,17 @@ jobs:
       - name: Build workspace dependencies
         run: pnpm --filter @dub/analytics build
 
-      - name: Install Playwright
-        working-directory: apps/nextjs
-        run: pnpm add -D @playwright/test
+      - name: Build the analytics script
+        run: pnpm --filter @dub/analytics-script build
+
+      - name: Run the analytics script unit tests
+        run: pnpm --filter @dub/analytics-script test
+
+      - name: Serve the analytics script
+        working-directory: packages/script/dist
+        run: |
+          nohup python3 -m http.server 4000 > /dev/null 2>&1 &
+          curl --silent --fail --retry 10 --retry-connrefused --retry-delay 1 --output /dev/null http://localhost:4000/analytics/script.js
 
       - name: Install Playwright Browsers
         working-directory: apps/nextjs
@@ -40,4 +53,4 @@ jobs:
         working-directory: apps/nextjs
         run: pnpm exec playwright test --reporter=list
         env:
-          DUB_ANALYTICS_SCRIPT_URL: ${{ github.event.client_payload.deployment_url }}/analytics/script.site-visit.outbound-domains.js
+          DUB_ANALYTICS_SCRIPT_URL: http://localhost:4000/analytics/script.site-visit.outbound-domains.js

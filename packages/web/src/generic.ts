@@ -19,11 +19,13 @@ function inject(props: AnalyticsProps): void {
         (w[da].q = w[da].q || []).push(arguments);
       };
 
-    ['trackClick', 'trackLead', 'trackSale'].forEach(function (m) {
-      w[da][m] = function () {
-        (w[da].q = w[da].q || []).push([m, ...Array.from(arguments)]);
-      };
-    });
+    ['trackClick', 'trackLead', 'trackSale', 'trackIdentity'].forEach(
+      function (m) {
+        w[da][m] = function () {
+          (w[da].q = w[da].q || []).push([m, ...Array.from(arguments)]);
+        };
+      },
+    );
   })(window as DubAnalyticsWindow, 'dubAnalytics');
 
   // Determine script source based on enabled features
@@ -33,6 +35,7 @@ function inject(props: AnalyticsProps): void {
   if (props.domainsConfig?.site) features.push('site-visit');
   if (props.domainsConfig?.outbound) features.push('outbound-domains');
   if (props.publishableKey) features.push('conversion-tracking');
+  if (props.trackIdentityPaths) features.push('identity');
 
   const src =
     props.scriptProps?.src ||
@@ -81,6 +84,13 @@ function inject(props: AnalyticsProps): void {
 
   if (props.queryParams) {
     script.setAttribute('data-query-params', JSON.stringify(props.queryParams));
+  }
+
+  if (props.trackIdentityPaths) {
+    script.setAttribute(
+      'data-track-identity-paths',
+      JSON.stringify(props.trackIdentityPaths),
+    );
   }
 
   if (props.scriptProps) {
