@@ -21,6 +21,7 @@ vi.mock('@fingerprint/agent', () => ({
 }));
 
 const fetchMock = vi.fn();
+const startCallsOnLoad = [...start.mock.calls];
 
 function identify() {
   return window._dubIdentity.identify({
@@ -54,13 +55,28 @@ describe('identity-agent.js', () => {
     vi.clearAllMocks();
   });
 
+  it('starts the agent once when the file loads', async () => {
+    expect(startCallsOnLoad).toEqual([
+      [
+        {
+          apiKey: 'test_public_key',
+          endpoints: ['https://identity.dub.co'],
+        },
+      ],
+    ]);
+
+    const startCalls = start.mock.calls.length;
+
+    await identify();
+    await identify();
+
+    expect(start).toHaveBeenCalledTimes(startCalls);
+    expect(get).toHaveBeenCalledTimes(2);
+  });
+
   it('identifies with linkedId set to the clickId and posts only the eventId', async () => {
     await expect(identify()).resolves.toBe(VISITOR_ID);
 
-    expect(start).toHaveBeenCalledWith({
-      apiKey: 'test_public_key',
-      endpoints: ['https://identity.dub.co'],
-    });
     expect(get).toHaveBeenCalledWith({
       linkedId: CLICK_ID,
     });
