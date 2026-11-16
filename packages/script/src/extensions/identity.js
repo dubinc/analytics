@@ -108,19 +108,36 @@ const initIdentity = () => {
     }
   }
 
-  // Links the visitor's device to their click once, then suffixes dub_id with the visitorId
-  async function identifyClick() {
+  async function getUnidentifiedPartnerClickId() {
     await getPendingClick().catch(() => undefined);
 
     const clickId = cookieManager.get(DUB_ID_VAR);
 
     // Click ids never contain "_", so a suffixed dub_id is already identified
     if (!clickId || clickId.includes('_')) {
-      return;
+      return undefined;
     }
 
     // Fingerprint is only for partner clicks, so skip ad and site-visit clicks, and clicks newer than the partner data
     if (getPartnerClickId() !== clickId) {
+      return undefined;
+    }
+
+    return clickId;
+  }
+
+  // Loading the agent early lets Fingerprint collect signals before trackIdentity() needs the visitorId
+  async function preloadIdentityAgent() {
+    if (await getUnidentifiedPartnerClickId()) {
+      await loadIdentityAgent();
+    }
+  }
+
+  // Links the visitor's device to their click once, then suffixes dub_id with the visitorId
+  async function identifyClick() {
+    const clickId = await getUnidentifiedPartnerClickId();
+
+    if (!clickId) {
       return;
     }
 
@@ -210,6 +227,8 @@ const initIdentity = () => {
 
     queueManager.queue = remainingQueue;
   }
+
+  preloadIdentityAgent().catch(() => undefined);
 
   watchIdentityPaths();
 };
