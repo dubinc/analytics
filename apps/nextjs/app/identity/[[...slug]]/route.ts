@@ -61,7 +61,11 @@ function renderPage(pathname: string) {
         var cookies = Object.fromEntries(
           document.cookie.split(';').filter(Boolean).map(function (c) {
             var i = c.indexOf('=');
-            return [c.slice(0, i).trim(), decodeURIComponent(c.slice(i + 1))];
+            var value = c.slice(i + 1);
+            try {
+              value = decodeURIComponent(value);
+            } catch (error) {}
+            return [c.slice(0, i).trim(), value];
           }),
         );
         document.getElementById('cookies').textContent = JSON.stringify(
