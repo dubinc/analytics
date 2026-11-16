@@ -54,11 +54,33 @@ async function stubIdentityAgent(page: Page) {
 
     return route.fulfill({
       contentType: 'application/javascript',
-      body: `window._dubIdentity = { identify: async () => '${VISITOR_ID}' };`,
+      body: `window._dubIdentity = {
+        identify: async () => {
+          window.identifyCalls = (window.identifyCalls || 0) + 1;
+          return '${VISITOR_ID}';
+        },
+      };`,
     });
   });
 
   return agentRequests;
+}
+
+function mockPartnerClick(page: Page) {
+  return page.route('**/track/click', (route) =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        clickId: CLICK_ID,
+        partner: { id: 'pn_e2e', name: 'Partner', image: null },
+        discount: null,
+      }),
+    }),
+  );
+}
+
+function getIdentifyCalls(page: Page) {
+  return page.evaluate(() => (window as any).identifyCalls ?? 0);
 }
 
 async function getDubId(page: Page) {
@@ -74,16 +96,7 @@ test.describe('Identity tracking', () => {
     await serveSite(page);
     const agentRequests = await stubIdentityAgent(page);
 
-    await page.route('**/track/click', (route) =>
-      route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({
-          clickId: CLICK_ID,
-          partner: { id: 'pn_e2e', name: 'Partner', image: null },
-          discount: null,
-        }),
-      }),
-    );
+    await mockPartnerClick(page);
 
     await page.goto(`${SITE}/signup?via=partner`);
 
@@ -104,5 +117,36 @@ test.describe('Identity tracking', () => {
 
     expect(agentRequests).toHaveLength(0);
     expect(await getDubId(page)).toBe(CLICK_ID);
+  });
+
+  test('preloads the agent for a partner click outside an identity path, without identifying it', async ({
+    page,
+  }) => {
+    await serveSite(page);
+    const agentRequests = await stubIdentityAgent(page);
+    await mockPartnerClick(page);
+
+    await page.goto(`${SITE}/pricing?via=partner`);
+
+    await expect.poll(() => agentRequests.length).toBe(1);
+    await expect.poll(() => getDubId(page)).toBe(CLICK_ID);
+    expect(await getIdentifyCalls(page)).toBe(0);
+  });
+
+  test('reuses the preloaded agent when trackIdentity() runs', async ({
+    page,
+  }) => {
+    await serveSite(page);
+    const agentRequests = await stubIdentityAgent(page);
+    await mockPartnerClick(page);
+
+    await page.goto(`${SITE}/pricing?via=partner`);
+    await expect.poll(() => agentRequests.length).toBe(1);
+
+    await page.evaluate(() => (window as any).dubAnalytics.trackIdentity());
+
+    expect(await getDubId(page)).toBe(`${CLICK_ID}_${VISITOR_ID}`);
+    expect(await getIdentifyCalls(page)).toBe(1);
+    expect(agentRequests).toHaveLength(1);
   });
 });
