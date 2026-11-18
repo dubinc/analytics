@@ -4,7 +4,7 @@ const FINGERPRINT_PUBLIC_KEY = process.env.DUB_FINGERPRINT_PUBLIC_KEY;
 // Dub's Fingerprint custom subdomain, so ad blockers don't stop the agent; Fingerprint's default stays as the fallback
 const FINGERPRINT_ENDPOINTS = ['https://identity.dub.co'];
 
-// Loaded on demand by the identity extension; resolves the visitorId once Fingerprint has identified the click
+// Loaded on demand by the identity extension; resolves the visitorId once Fingerprint has identified the device
 async function identify({ clickId }) {
   if (!FINGERPRINT_PUBLIC_KEY) {
     return null;
