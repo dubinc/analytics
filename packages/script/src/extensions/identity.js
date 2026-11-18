@@ -1,5 +1,6 @@
 const initIdentity = () => {
   const {
+    a: API_HOST,
     c: cookieManager,
     i: DUB_ID_VAR,
     pc: DUB_PARTNER_COOKIE,
@@ -125,6 +126,7 @@ const initIdentity = () => {
 
     const identity = await loadIdentityAgent();
     const visitorId = await identity.identify({
+      apiHost: API_HOST,
       clickId,
     });
 

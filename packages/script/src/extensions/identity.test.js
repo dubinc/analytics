@@ -142,6 +142,7 @@ describe('identity extension', () => {
       'https://www.dubcdn.com/analytics/identity-agent.js',
     ]);
     expect(identify).toHaveBeenCalledWith({
+      apiHost: 'https://api.example.com',
       clickId: CLICK_ID,
     });
   });
