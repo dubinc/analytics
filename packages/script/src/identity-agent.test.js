@@ -42,7 +42,7 @@ describe('identity-agent.js', () => {
     vi.clearAllMocks();
   });
 
-  it('identifies with linkedId set to the clickId and resolves the visitorId without calling Dub', async () => {
+  it('identifies with linkedId set to the clickId and resolves the visitorId without a fetch request', async () => {
     await expect(identify()).resolves.toBe(VISITOR_ID);
 
     expect(start).toHaveBeenCalledWith({
