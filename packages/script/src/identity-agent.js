@@ -12,55 +12,18 @@ const agent = FINGERPRINT_PUBLIC_KEY
     })
   : null;
 
-// Loaded on demand by the identity extension; resolves the visitorId once Dub has accepted or rejected the identification
-async function identify({ apiHost, clickId }) {
+// Loaded on demand by the identity extension; resolves the visitorId once Fingerprint has identified the device
+async function identify({ clickId }) {
   if (!agent) {
     return null;
   }
 
   // Needs Sealed Client Results off for the workspace, so visitor_id comes back in plaintext
-  const { visitor_id: visitorId, event_id: eventId } = await agent.get({
+  const { visitor_id: visitorId } = await agent.get({
     linkedId: clickId,
   });
 
-  if (!visitorId || !eventId) {
-    return null;
-  }
-
-  try {
-    const response = await fetch(`${apiHost}/track/identity`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        eventId,
-      }),
-    });
-
-    if (response.ok) {
-      return visitorId;
-    }
-
-    console.warn(
-      `[dubAnalytics] trackIdentity failed with status ${response.status}.`,
-    );
-
-    // A 4xx won't succeed on retry, so the click is done; a 5xx or 429 is left for the next page load
-    if (
-      response.status >= 400 &&
-      response.status < 500 &&
-      response.status !== 429
-    ) {
-      return visitorId;
-    }
-
-    return null;
-  } catch (error) {
-    console.warn('[dubAnalytics] trackIdentity failed.', error);
-
-    return null;
-  }
+  return visitorId || null;
 }
 
 window._dubIdentity = {
