@@ -32,21 +32,12 @@ function identify() {
 describe('identity-agent.js', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', fetchMock);
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     get.mockResolvedValue({
       event_id: EVENT_ID,
       visitor_id: VISITOR_ID,
       sealed_result: null,
     });
-
-    fetchMock.mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          clickIdentificationId: 'cid_1',
-        }),
-      ),
-    );
   });
 
   afterEach(() => {
@@ -54,7 +45,7 @@ describe('identity-agent.js', () => {
     vi.clearAllMocks();
   });
 
-  it('identifies with linkedId set to the clickId and posts only the eventId', async () => {
+  it('identifies with linkedId set to the clickId and resolves the visitorId without calling Dub', async () => {
     await expect(identify()).resolves.toBe(VISITOR_ID);
 
     expect(start).toHaveBeenCalledWith({
@@ -64,85 +55,16 @@ describe('identity-agent.js', () => {
     expect(get).toHaveBeenCalledWith({
       linkedId: CLICK_ID,
     });
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.example.com/track/identity',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          eventId: EVENT_ID,
-        }),
-      },
-    );
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('skips the request without a visitor_id, as when Sealed Client Results are on', async () => {
+  it('resolves null without a visitor_id, as when Sealed Client Results are on', async () => {
     get.mockResolvedValue({
       event_id: EVENT_ID,
       sealed_result: {
         base64: () => 'noXc7Q==',
       },
     });
-
-    await expect(identify()).resolves.toBeNull();
-
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('waits for the request before resolving the visitorId', async () => {
-    let respond = (_response) => undefined;
-
-    fetchMock.mockReturnValue(
-      new Promise((resolve) => {
-        respond = resolve;
-      }),
-    );
-
-    const pending = identify();
-    let settled = false;
-    pending.then(() => {
-      settled = true;
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(settled).toBe(false);
-
-    respond(new Response('{}'));
-
-    await expect(pending).resolves.toBe(VISITOR_ID);
-  });
-
-  it('resolves the visitorId after a 4xx, since retrying would fail again', async () => {
-    fetchMock.mockResolvedValue(
-      new Response('Bad Request', {
-        status: 400,
-      }),
-    );
-
-    await expect(identify()).resolves.toBe(VISITOR_ID);
-
-    expect(console.warn).toHaveBeenCalledWith(
-      '[dubAnalytics] trackIdentity failed with status 400.',
-    );
-  });
-
-  it.each([429, 500, 503])(
-    'resolves null after a %i so the next page load retries',
-    async (status) => {
-      fetchMock.mockResolvedValue(
-        new Response('Error', {
-          status,
-        }),
-      );
-
-      await expect(identify()).resolves.toBeNull();
-    },
-  );
-
-  it('resolves null when the request fails to send', async () => {
-    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
 
     await expect(identify()).resolves.toBeNull();
   });
