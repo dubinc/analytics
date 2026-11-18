@@ -402,6 +402,25 @@ describe('identity extension', () => {
     expect(getCookie('dub_id')).toBe(CLICK_ID);
   });
 
+  it('keeps dub_id unchanged and retries when Fingerprint fails', async () => {
+    identify.mockRejectedValueOnce(new Error('Failed to fetch'));
+    setPartnerClick();
+
+    runScript();
+    await expect(window.dubAnalytics.trackIdentity()).resolves.toBeUndefined();
+
+    expect(getCookie('dub_id')).toBe(CLICK_ID);
+    expect(console.warn).toHaveBeenCalledWith(
+      '[dubAnalytics] trackIdentity failed.',
+      expect.any(Error),
+    );
+
+    await window.dubAnalytics.trackIdentity();
+
+    expect(identify).toHaveBeenCalledTimes(2);
+    expect(getCookie('dub_id')).toBe(IDENTIFIED_CLICK_ID);
+  });
+
   it('never throws when identity-agent.js fails to load', async () => {
     document.head.appendChild.mockImplementation((node) => {
       document.head.append(node);
