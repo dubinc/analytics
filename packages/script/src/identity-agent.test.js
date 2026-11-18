@@ -55,6 +55,17 @@ describe('identity-agent.js', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('resolves the visitorId without a fetch request when the result also has an event_id', async () => {
+    get.mockResolvedValue({
+      event_id: EVENT_ID,
+      visitor_id: VISITOR_ID,
+    });
+
+    await expect(identify()).resolves.toBe(VISITOR_ID);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('resolves null without a visitor_id, as when Sealed Client Results are on', async () => {
     get.mockResolvedValue({
       event_id: EVENT_ID,
