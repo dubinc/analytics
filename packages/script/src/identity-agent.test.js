@@ -33,9 +33,7 @@ describe('identity-agent.js', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     get.mockResolvedValue({
-      event_id: EVENT_ID,
       visitor_id: VISITOR_ID,
-      sealed_result: null,
     });
   });
 
