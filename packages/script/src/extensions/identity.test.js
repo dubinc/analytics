@@ -179,7 +179,7 @@ describe('identity extension', () => {
     });
     await flush();
 
-    expect(loadedIdentityScripts()).toEqual([]);
+    expect(identify).not.toHaveBeenCalled();
   });
 
   it('is not part of variants without the identity extension', async () => {
@@ -198,13 +198,49 @@ describe('identity extension', () => {
     expect(loadedIdentityScripts()).toEqual([]);
   });
 
-  it('does nothing without data-track-identity-paths', async () => {
+  it('preloads identity-agent.js for an unidentified partner click without identifying it', async () => {
     setPartnerClick();
 
     runScript();
+
+    await vi.waitFor(() => {
+      expect(loadedIdentityScripts()).toEqual([
+        'https://www.dubcdn.com/analytics/identity-agent.js',
+      ]);
+    });
     await flush();
 
-    expect(loadedIdentityScripts()).toEqual([]);
+    expect(identify).not.toHaveBeenCalled();
+    expect(getCookie('dub_id')).toBe(CLICK_ID);
+  });
+
+  it('reuses the preloaded identity-agent.js when identifying', async () => {
+    setPartnerClick();
+
+    runScript();
+    await vi.waitFor(() => {
+      expect(loadedIdentityScripts()).toHaveLength(1);
+    });
+
+    await window.dubAnalytics.trackIdentity();
+
+    expect(identify).toHaveBeenCalledTimes(1);
+    expect(loadedIdentityScripts()).toHaveLength(1);
+  });
+
+  it('never throws when the identity-agent.js preload fails', async () => {
+    document.head.appendChild.mockImplementation((node) => {
+      document.head.append(node);
+      setTimeout(() => node.onerror());
+      return node;
+    });
+    setPartnerClick();
+
+    expect(() => runScript()).not.toThrow();
+    await flush();
+    await flush();
+
+    expect(console.warn).not.toHaveBeenCalled();
   });
 
   it('ignores data-track-identity-paths that is not an array of paths', async () => {
@@ -443,7 +479,7 @@ describe('identity extension', () => {
     });
     await flush();
 
-    expect(loadedIdentityScripts()).toEqual([]);
+    expect(identify).not.toHaveBeenCalled();
 
     window.history.pushState(null, '', '/signup');
 
