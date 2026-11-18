@@ -24,7 +24,6 @@ const fetchMock = vi.fn();
 
 function identify() {
   return window._dubIdentity.identify({
-    apiHost: 'https://api.example.com',
     clickId: CLICK_ID,
   });
 }

@@ -5,7 +5,7 @@ const FINGERPRINT_PUBLIC_KEY = process.env.DUB_FINGERPRINT_PUBLIC_KEY;
 const FINGERPRINT_ENDPOINTS = ['https://identity.dub.co'];
 
 // Loaded on demand by the identity extension; resolves the visitorId once Fingerprint has identified the click
-async function identify({ apiHost, clickId }) {
+async function identify({ clickId }) {
   if (!FINGERPRINT_PUBLIC_KEY) {
     return null;
   }
